@@ -83,8 +83,8 @@ def definitions() -> list[SourceDefinition]:
         SourceDefinition(
             "Secret Tel Aviv",
             "secret_telaviv",
-            "https://jobs.secrettelaviv.com/",
-            "JF public HTML adapter; review live compatibility.",
+            "https://jobs.secrettelaviv.com/list/category/programmer/",
+            "Engineering/programmer category; bounded to ten details per run, without pagination.",
             10,
         ),
         SourceDefinition(

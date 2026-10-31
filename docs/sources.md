@@ -1,5 +1,9 @@
 # Adding and operating sources
 
+Company-first catalogue import, discovery, lifecycle and rollout are documented in
+[Company catalogue](company-catalogue.md). Prefer company-owned career endpoints;
+Secret Tel Aviv remains a supplementary board.
+
 ## Admin example
 
 Open `/admin/jobs/source/add/` after TOTP verification:
@@ -7,15 +11,15 @@ Open `/admin/jobs/source/add/` after TOTP verification:
 - Name: `Example careers`
 - Adapter: `Company page (JobPosting JSON-LD)`
 - URL: `https://careers.example.com/openings`
-- Interval: `360` minutes; maximum items: `100`
+- Interval: `1440` minutes; maximum items: `100000`
 - Enabled: leave off until configuration and source permissions are reviewed.
 
 Enable the source and use **Schedule selected sources now**. Beat finds due sources
 once per minute. View **Ingestion runs** for imported/rejected counts and a safe error
 category. A successful run updates last-success and last-seen timestamps. Failures
 back off exponentially, capped at one day. One source run holds a ten-minute lease;
-worker time limits are shorter. Each source is sequential, and worker concurrency
-bounds global ingestion work. Keep source access conservative and authorized.
+worker time limits are shorter. Each source is sequential; shared request leases and worker concurrency
+bound global and per-host ingestion work. Keep source access conservative and authorized.
 
 ## Supported adapters
 
@@ -85,10 +89,11 @@ A zero-import JSON-LD run does not prove that a JS-only careers page is supporte
 
 Greenhouse: https://boards-api.greenhouse.io/v1/boards/BOARD/jobs?content=true
 Ashby: https://api.ashbyhq.com/posting-api/job-board/BOARD
+Workday: https://TENANT.wdN.myworkdayjobs.com/SITE
 
 Set employer_name to the verified employer. Enable authoritative only after reviewing
-the employer-to-board relationship. A complete, successful ATS snapshot can close
-missing jobs in that exact provider/board scope. Truncated, failed, malformed and
+the employer-to-board relationship. Two complete, successful ATS inventories can establish missing jobs
+in the same endpoint scope. Closure requires the endpoint's `closure_enabled` rollout flag. Truncated, failed, malformed and
 partially rejected snapshots cannot close jobs. Board observations do not reactivate
 an employer-closed vacancy; a later authoritative observation can reopen it. Provider
 identities deduplicate supported hosted URLs across sources without matching titles.
@@ -118,15 +123,23 @@ do not establish reposting; no title-based merge or ghost-job verdict is made.
 
 ## Automatic employer-source proposals
 
-Board observations recognize supported Greenhouse/Ashby application links and create
+Board observations recognize supported Greenhouse/Ashby/Workday application links and create
 idempotent, disabled Source proposals. Verified-company website enrichment also
 examines bounded anchor/iframe links. Proposal creation does not fetch or execute
 embedded content, enable scheduling, or infer employer authority. Admin shows
 `discovered_from`, the evidence URL, and a `discovery_pending` filter. Verify the
 company-to-board relationship, clear pending, then explicitly enable the source and
 mark authoritative if appropriate. Pending proposals cannot ingest even if enabled
-through a direct database update. Existing operator source settings are preserved.
+through a direct database update. The company discovery task can activate recognized ATS links from a verified official
+site, retaining evidence; CSV imports and board observations cannot. Explicit operator
+disables are preserved on rediscovery.
 
 Once an employer source has supplied a vacancy, board observations retain their own
 origins/repost dates without replacing the employer's description, normalized fields,
 company, location, application URL, or publication date.
+
+Secret Tel Aviv now defaults to the engineering/programmer category at
+`https://jobs.secrettelaviv.com/list/category/programmer/`, rather than the mixed
+homepage. Its current collector still enriches only ten listings per run without
+pagination, so this source is not a complete technology-job inventory. Existing
+operator URLs are preserved by `seed_sources`; update the source explicitly in admin.

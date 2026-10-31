@@ -61,3 +61,11 @@ def test_ai_sections_reject_out_of_range_lines(monkeypatch):
     )
     with pytest.raises(AIUnavailable):
         normalize_with_ai("Python", normalize_description("Python"))
+
+
+def test_nodejs_and_required_vs_preferred_technologies():
+    result = normalize_description("Requirements\nNodeJS and Python\nNice to have\nRust and Golang")
+    assert result["required_technologies"] == ["Python", "Node.js"]
+    assert result["technologies"] == ["Python", "Go", "Rust", "Node.js"]
+    assert normalize_description("node.js service")["technologies"] == ["Node.js"]
+    assert normalize_description("We go to the office")["technologies"] == []

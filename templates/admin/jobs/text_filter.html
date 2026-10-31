@@ -1,0 +1,6 @@
+<div class="form-group">
+  <label class="visually-hidden" for="filter-{{ spec.parameter_name }}">{{ title }}</label>
+  <input id="filter-{{ spec.parameter_name }}" class="form-control" type="search"
+         name="{{ spec.parameter_name }}" value="{{ spec.value|default_if_none:'' }}"
+         placeholder="{{ title }}" maxlength="250">
+</div>

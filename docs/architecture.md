@@ -5,19 +5,24 @@
 One Django application and one PostgreSQL database, deployed as separate web, Celery
 worker, and singleton Beat processes. Redis is a broker; PostgreSQL is the source of
 truth for approved-but-unsent applications. The periodic dispatcher recovers work if
-publishing a task fails. Five-minute dispatch reservations and batches of twenty
-bound duplicate queue traffic; expired reservations recover lost task publication. Duplicate deliveries are expected and harmless before send.
+publishing a task fails. Five-minute dispatch reservations and bounded batches
+(100 source endpoints, 20 application/preparation items) limit duplicate queue traffic; expired reservations recover lost task publication. Duplicate deliveries are expected and harmless before send.
 
-Shared data: Source, Job, JobOrigin, IngestionRun.
+Shared data: Company, CompanyAlias, Source, Job, JobOrigin, JobEvent, IngestionRun.
 Private data: SavedJob, Document, GmailConnection, Application.
-Security records: Invitation, AuditEvent; Django's admin log records source changes.
+Security records: Invitation, AuditEvent; Django's admin log records operator changes.
 
-A job can appear in several sources. Canonical HTTPS URL is its identity, with common
-tracking parameters removed. This is conservative URL deduplication, not semantic
-cross-board matching. Different URLs may represent the same vacancy. Source observations
-are preserved separately. Missing listings do not automatically expire jobs because
-bounded runs are not complete snapshots; operators can archive jobs through a future
-explicit lifecycle feature. Last-seen dates are shown to users.
+Companies own multiple career endpoints. Verified official domains establish canonical
+company identities; ambiguous legacy identities remain distinct. Provider requisition
+identities deduplicate supported vacancies across hosted URLs; canonical HTTPS URL is
+the fallback. Titles are never used to infer duplicate vacancies.
+
+Per-endpoint observations and complete inventory evidence establish job lifecycle.
+Two complete inventories must omit a job before it becomes a closure candidate;
+partial and failed scans cannot establish absence. Closure defaults to shadow mode,
+and overlapping employer observations keep shared vacancies open. Admin content and
+status overrides remain separate from imported data. See [Company catalogue](company-catalogue.md)
+for migration, pagination, concurrency and rollout details.
 
 ## Submission invariant
 

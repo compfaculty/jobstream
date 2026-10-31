@@ -28,6 +28,7 @@ class Listing:
     apply_url: str = ""
     posted_at: datetime | None = None
     provider_key: str = ""
+    employer_status: str = "open"
 
 
 def plain(value) -> str:

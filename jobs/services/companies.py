@@ -14,7 +14,7 @@ from django.core.files.base import ContentFile
 from django.utils import timezone
 from PIL import Image, UnidentifiedImageError
 
-from jobs.models import Company, Source
+from jobs.models import Company, CompanyAlias, Source
 
 from .network import canonical_url, fetch_public_document
 
@@ -28,6 +28,12 @@ def resolve_company(name: str, source: Source) -> Company | None:
     name = " ".join(name.split())[:250]
     if not name:
         return None
+    if source.company_id:
+        return source.company
+    legacy = company_key(name, f"source:{source.pk}")
+    alias = CompanyAlias.objects.filter(legacy_identity=legacy).select_related("company").first()
+    if alias:
+        return alias.company
     company, _ = Company.objects.get_or_create(
         identity_key=company_key(name, f"source:{source.pk}"),
         defaults={"name": name, "source": source},

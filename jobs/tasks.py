@@ -1,7 +1,9 @@
 from datetime import timedelta
 
 from celery import shared_task
+from django.conf import settings
 from django.db import transaction
+from django.db.models import Q
 from django.utils import timezone
 
 from jobs.models import Application, Source
@@ -17,20 +19,30 @@ def ingest_source(source_id):
 @shared_task
 def schedule_sources():
     now = timezone.now()
+    from jobs.models import IngestionRun
+
+    IngestionRun.objects.filter(
+        status="running", finished_at__isnull=True, started_at__lt=now - timedelta(minutes=10)
+    ).update(
+        status="failed",
+        error_code="WorkerInterrupted",
+        finished_at=now,
+    )
     with transaction.atomic():
         sources = list(
             Source.objects.select_for_update(skip_locked=True)
+            .filter(Q(lease_until__isnull=True) | Q(lease_until__lte=now))
             .filter(
                 enabled=True,
                 discovery_pending=False,
                 next_run_at__lte=now,
                 next_dispatch_at__lte=now,
             )
-            .order_by("next_dispatch_at")[:20]
+            .order_by("next_run_at", "pk")[: settings.CRAWL_DISPATCH_BATCH]
         )
         for source in sources:
             source.next_dispatch_at = now + timedelta(minutes=5)
-            source.save(update_fields=["next_dispatch_at"])
+        Source.objects.bulk_update(sources, ["next_dispatch_at"])
     for source in sources:
         ingest_source.delay(source.pk)
 
@@ -103,3 +115,51 @@ def dispatch_batches():
             item.save(update_fields=["next_dispatch_at"])
     for item in items:
         prepare_batch_item.delay(item.pk)
+
+
+@shared_task
+def discover_company_careers(company_id):
+    from jobs.models import Company
+    from jobs.services.catalogue import discover_company
+    from jobs.services.crawl import CrawlDeferred
+
+    company = Company.objects.filter(
+        pk=company_id, website_verified=True, discovery_enabled=True
+    ).first()
+    if company is None:
+        return
+    try:
+        discover_company(company)
+    except CrawlDeferred as exc:
+        Company.objects.filter(pk=company_id).update(next_discovery_at=exc.until)
+    except Exception as exc:
+        Company.objects.filter(pk=company_id).update(
+            discovery_error=type(exc).__name__[:80],
+            next_discovery_at=timezone.now() + timedelta(days=1),
+        )
+    else:
+        Company.objects.filter(pk=company_id).update(
+            discovery_error="", next_discovery_at=timezone.now() + timedelta(days=7)
+        )
+
+
+@shared_task
+def schedule_company_discovery():
+    from jobs.models import Company
+
+    now = timezone.now()
+    with transaction.atomic():
+        companies = list(
+            Company.objects.select_for_update(skip_locked=True)
+            .filter(
+                website_verified=True,
+                discovery_enabled=True,
+                next_discovery_at__lte=now,
+            )
+            .order_by("next_discovery_at", "pk")[: settings.CRAWL_DISPATCH_BATCH]
+        )
+        for company in companies:
+            company.next_discovery_at = now + timedelta(minutes=10)
+            company.save(update_fields=["next_discovery_at"])
+    for company in companies:
+        discover_company_careers.delay(company.pk)

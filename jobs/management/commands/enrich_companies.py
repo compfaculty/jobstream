@@ -57,6 +57,9 @@ class Command(BaseCommand):
                 company.website_verified = True
                 if not options["dry_run"]:
                     company.save(update_fields=["website", "website_verified"])
+                    from jobs.services.catalogue import verify_company
+
+                    company = verify_company(company)
             try:
                 result = enrich_company(
                     company, dry_run=options["dry_run"], retries=options["retries"]

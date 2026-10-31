@@ -28,6 +28,7 @@ class Invitation(models.Model):
 
 class Source(models.Model):
     class Adapter(models.TextChoices):
+        WORKDAY = "workday", "Workday public careers"
         GREENHOUSE = "greenhouse", "Greenhouse public jobs API"
         ASHBY = "ashby", "Ashby public posting API"
         RSS = "rss", "RSS / Atom"
@@ -42,6 +43,21 @@ class Source(models.Model):
         AKEYLESS = "akeyless", "Akeyless / Comeet career links"
         AUDIOCODES = "audiocodes", "AudioCodes careers"
 
+    company = models.ForeignKey(
+        "Company", null=True, blank=True, on_delete=models.PROTECT, related_name="career_sources"
+    )
+    closure_enabled = models.BooleanField(
+        default=False, help_text="Enable after shadow validation."
+    )
+    last_complete_at = models.DateTimeField(null=True, blank=True)
+    inventory_token = models.UUIDField(null=True, blank=True, editable=False)
+    inventory_cursor = models.JSONField(default=dict, blank=True, editable=False)
+    inventory_config = models.CharField(max_length=64, blank=True, editable=False)
+    inventory_started_at = models.DateTimeField(null=True, blank=True, editable=False)
+    lease_token = models.UUIDField(null=True, blank=True, editable=False)
+    lease_until = models.DateTimeField(null=True, blank=True, editable=False, db_index=True)
+    last_error = models.CharField(max_length=80, blank=True)
+    review_reason = models.CharField(max_length=250, blank=True)
     discovered_from = models.ForeignKey(
         "self", null=True, blank=True, on_delete=models.SET_NULL, related_name="discovered_sources"
     )
@@ -60,9 +76,9 @@ class Source(models.Model):
         blank=True, db_default="", help_text="Adapter limitations and operator review notes."
     )
     enabled = models.BooleanField(default=False)
-    interval_minutes = models.PositiveIntegerField(default=360, validators=[MinValueValidator(15)])
+    interval_minutes = models.PositiveIntegerField(default=1440, validators=[MinValueValidator(15)])
     max_items = models.PositiveIntegerField(
-        default=100, validators=[MinValueValidator(1), MaxValueValidator(500)]
+        default=100000, validators=[MinValueValidator(1), MaxValueValidator(100000)]
     )
     max_response_bytes = models.PositiveIntegerField(
         default=2 * 1024 * 1024,
@@ -74,8 +90,34 @@ class Source(models.Model):
     next_run_at = models.DateTimeField(default=timezone.now, db_index=True)
     failure_count = models.PositiveIntegerField(default=0)
 
+    class Meta:
+        indexes = [
+            models.Index(
+                fields=["next_run_at", "next_dispatch_at"],
+                condition=models.Q(enabled=True, discovery_pending=False),
+                name="source_due_enabled",
+            )
+        ]
+
     def clean(self):
         super().clean()
+        from .services.network import canonical_url
+
+        try:
+            canonical_url(self.url)
+        except ValueError as exc:
+            raise ValidationError({"url": str(exc)}) from exc
+        if self.closure_enabled and not self.authoritative:
+            raise ValidationError("Only authoritative sources can enable automatic closure.")
+        if self.authoritative and self.company_id and not self.company.website_verified:
+            raise ValidationError("Verify the official company website before granting authority.")
+        if self.adapter == "workday":
+            from .services.inventories import workday_site
+
+            try:
+                workday_site(self.url)
+            except ValueError as exc:
+                raise ValidationError({"url": str(exc)}) from exc
         if self.discovery_pending and (self.enabled or self.authoritative):
             raise ValidationError(
                 "Review the employer relationship and clear discovery pending before enabling."
@@ -94,15 +136,30 @@ class IngestionRun(models.Model):
     enrichment_failed = models.PositiveIntegerField(default=0, db_default=0)
     status = models.CharField(max_length=20, default="running")
     error_code = models.CharField(max_length=80, blank=True)
+    complete = models.BooleanField(default=False)
+    scope = models.CharField(max_length=300, blank=True)
+    request_count = models.PositiveIntegerField(default=0)
+    queue_delay_seconds = models.FloatField(default=0)
+    duration_seconds = models.FloatField(default=0)
+    would_close = models.PositiveIntegerField(default=0)
 
 
 class Company(models.Model):
-    # Source-scoped identity until an operator has confirmed the employer's identity.
-    identity_key = models.CharField(max_length=64, unique=True, editable=False)
+    # Unverified identities remain distinct; verified official domains can be consolidated.
+    identity_key = models.CharField(
+        max_length=64, unique=True, editable=False, default=secrets.token_hex
+    )
     name = models.CharField(max_length=250, db_index=True)
-    source = models.ForeignKey(Source, null=True, blank=True, on_delete=models.SET_NULL)
+    source = models.ForeignKey(
+        Source, null=True, blank=True, on_delete=models.SET_NULL, related_name="legacy_companies"
+    )
     website = models.URLField(max_length=2048, blank=True)
     website_verified = models.BooleanField(default=False)
+    official_domain = models.CharField(max_length=253, null=True, blank=True, unique=True)
+    review_required = models.BooleanField(default=True)
+    discovery_enabled = models.BooleanField(default=True)
+    next_discovery_at = models.DateTimeField(default=timezone.now, db_index=True)
+    discovery_error = models.CharField(max_length=80, blank=True)
     description = models.TextField(blank=True)
     logo = models.FileField(upload_to="companies/logos/", blank=True)
     logo_source_url = models.URLField(max_length=2048, blank=True)
@@ -112,6 +169,17 @@ class Company(models.Model):
 
     class Meta:
         ordering = ["name", "pk"]
+        verbose_name_plural = "Companies"
+
+    def clean(self):
+        super().clean()
+        if self.website:
+            from .services.network import canonical_url
+
+            try:
+                canonical_url(self.website)
+            except ValueError as exc:
+                raise ValidationError({"website": str(exc)}) from exc
 
     def __str__(self):
         return self.name
@@ -125,7 +193,44 @@ class Company(models.Model):
         return f"{self.name} · {context}" if context else self.name
 
 
+class CompanyAlias(models.Model):
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name="aliases")
+    name = models.CharField(max_length=250)
+    legacy_identity = models.CharField(max_length=64, unique=True, null=True, blank=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["company", "name"], name="company_alias_name")
+        ]
+
+
+class CrawlLease(models.Model):
+    token = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    host = models.CharField(max_length=253, db_index=True)
+    expires_at = models.DateTimeField(db_index=True)
+
+
+class CrawlHost(models.Model):
+    host = models.CharField(max_length=253, primary_key=True)
+    available_at = models.DateTimeField(default=timezone.now)
+
+
 class Job(models.Model):
+    class Lifecycle(models.TextChoices):
+        OPEN = "open", "Open"
+        CLOSED = "closed", "Closed"
+        FILLED = "filled", "Filled (employer confirmed)"
+        ARCHIVED = "archived", "Archived"
+
+    lifecycle = models.CharField(
+        max_length=20, choices=Lifecycle.choices, default="open", db_index=True
+    )
+    status_override = models.CharField(max_length=20, choices=Lifecycle.choices, blank=True)
+    content_overrides = models.JSONField(default=dict, blank=True)
+    imported_content = models.JSONField(default=dict, blank=True, editable=False)
+    status_reason = models.CharField(max_length=100, blank=True)
+    status_changed_at = models.DateTimeField(default=timezone.now)
+
     provider_key = models.CharField(max_length=300, unique=True, null=True, blank=True)
     employer_source = models.ForeignKey(
         Source, null=True, blank=True, on_delete=models.SET_NULL, related_name="verified_jobs"
@@ -168,13 +273,60 @@ class Job(models.Model):
 
     class Meta:
         ordering = ["-discovered_at", "-pk"]
-        indexes = [GinIndex(fields=["search_document"], name="job_search_gin")]
+        indexes = [
+            GinIndex(fields=["search_document"], name="job_search_gin"),
+            GinIndex(fields=["normalized"], name="job_normalized_gin"),
+        ]
+
+    @classmethod
+    def from_db(cls, db, field_names, values):
+        instance = super().from_db(db, field_names, values)
+        instance._original_active = instance.__dict__.get("active")
+        instance._original_lifecycle = instance.__dict__.get("lifecycle")
+        return instance
+
+    def save(self, *args, **kwargs):
+        if self._state.adding and (not self.active or self.verification == "closed"):
+            if self.lifecycle == self.Lifecycle.OPEN:
+                self.lifecycle = self.Lifecycle.CLOSED
+        # Compatibility for callers explicitly assigning the old public boolean.
+        previous = getattr(self, "_original_active", None)
+        if (
+            previous is not None
+            and self.active != previous
+            and not self.status_override
+            and self.lifecycle == getattr(self, "_original_lifecycle", None)
+        ):
+            self.lifecycle = self.Lifecycle.OPEN if self.active else self.Lifecycle.CLOSED
+            if kwargs.get("update_fields") is not None:
+                kwargs["update_fields"] = set(kwargs["update_fields"]) | {"lifecycle"}
+        self.active = (self.status_override or self.lifecycle) == self.Lifecycle.OPEN
+        if kwargs.get("update_fields") is not None:
+            kwargs["update_fields"] = set(kwargs["update_fields"]) | {"active"}
+        super().save(*args, **kwargs)
+        self._original_active = self.active
+        self._original_lifecycle = self.lifecycle
 
     def __str__(self):
         return self.title
 
 
+class JobEvent(models.Model):
+    job = models.ForeignKey(Job, on_delete=models.CASCADE, related_name="lifecycle_events")
+    source = models.ForeignKey(Source, null=True, blank=True, on_delete=models.SET_NULL)
+    run = models.ForeignKey(IngestionRun, null=True, blank=True, on_delete=models.SET_NULL)
+    status = models.CharField(max_length=20)
+    reason = models.CharField(max_length=100)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
 class JobOrigin(models.Model):
+    scope = models.CharField(max_length=300, blank=True)
+    authoritative_observation = models.BooleanField(default=False)
+    inventory_token = models.UUIDField(null=True, blank=True, editable=False)
+    missing_count = models.PositiveIntegerField(default=0)
+    observed_status = models.CharField(max_length=20, default="open")
+    last_complete_at = models.DateTimeField(null=True, blank=True)
     job = models.ForeignKey(Job, on_delete=models.CASCADE, related_name="origins")
     source = models.ForeignKey(Source, on_delete=models.CASCADE)
     last_published_at = models.DateTimeField(null=True, blank=True)
@@ -183,6 +335,11 @@ class JobOrigin(models.Model):
     last_seen_at = models.DateTimeField(default=timezone.now)
 
     class Meta:
+        indexes = [
+            models.Index(
+                fields=["source", "scope", "inventory_token"], name="origin_inventory_scope"
+            )
+        ]
         constraints = [models.UniqueConstraint(fields=["job", "source"], name="unique_job_source")]
 
 

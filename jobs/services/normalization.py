@@ -4,7 +4,7 @@ import re
 
 from bs4 import BeautifulSoup
 
-VERSION = "sections-v1"
+VERSION = "sections-v2"
 HEADINGS = {
     "requirements": (
         "requirements",
@@ -27,11 +27,12 @@ HEADINGS = {
 }
 TECHNOLOGIES = {
     "Python": r"\bpython\b",
-    "Go": r"\bgolang\b|\bGo\b",
+    "Go": r"(?i:\bgolang\b)|\bGo\b",
     "Rust": r"\brust\b",
     "C++": r"(?<!\w)c\+\+(?!\w)",
     "Java": r"\bjava\b",
     "JavaScript": r"\bjavascript\b",
+    "Node.js": r"\bnode(?:\.js|js)\b",
     "TypeScript": r"\btypescript\b",
     "Linux": r"\blinux\b",
     "PostgreSQL": r"\bpostgres(?:ql)?\b",
@@ -71,7 +72,7 @@ def text_blocks(value) -> str:
 
 def normalize_description(description: str) -> dict:
     lines = text_blocks(description).splitlines()
-    result = {
+    result: dict = {
         "version": VERSION,
         "summary": "",
         "requirements": [],
@@ -81,7 +82,7 @@ def normalize_description(description: str) -> dict:
         "technology_mentions": [],
     }
     section = None
-    summary = []
+    summary: list[str] = []
     for line in lines:
         heading = line.strip(" :.-•").casefold().replace("’", "'")
         matched = next((key for key, headings in HEADINGS.items() if heading in headings), None)
@@ -94,13 +95,27 @@ def normalize_description(description: str) -> dict:
         elif section is None and len(summary) < 2:
             summary.append(line)
     result["summary"] = " ".join(summary)[:500]
+    result.update(technology_fields(description, result["requirements"]))
+    return result
+
+
+def technology_fields(description: str, requirements: list[str]) -> dict:
+    """Extract mentions separately from technologies evidenced by required qualifications."""
+    lines = text_blocks(description).splitlines()
+    technologies, mentions, required = [], [], []
     for name, pattern in TECHNOLOGIES.items():
         flags = 0 if name == "Go" else re.IGNORECASE
         evidence = [line for line in lines if re.search(pattern, line, flags=flags)]
         if evidence:
-            result["technologies"].append(name)
-            result["technology_mentions"].append({"name": name, "evidence": evidence[:3]})
-    return result
+            technologies.append(name)
+            mentions.append({"name": name, "evidence": evidence[:3]})
+        if any(re.search(pattern, line, flags=flags) for line in requirements):
+            required.append(name)
+    return {
+        "technologies": technologies,
+        "technology_mentions": mentions,
+        "required_technologies": required,
+    }
 
 
 def normalize_with_ai(description: str, deterministic: dict) -> dict:
@@ -138,5 +153,6 @@ def normalize_with_ai(description: str, deterministic: dict) -> dict:
     normalized = dict(deterministic)
     normalized.update({field: [lines[index] for index in result[field]] for field in fields})
     normalized["summary"] = " ".join(normalized["summary"])[:500]
-    normalized["version"] = "ai-line-sections-v1"
+    normalized["version"] = "ai-line-sections-v2"
+    normalized.update(technology_fields(description, normalized["requirements"]))
     return normalized

@@ -171,3 +171,70 @@ constraints remain pending; the inspected public vacancy is not a submission tar
   GET did not repeat the one-time notice; it was not treated as a fresh confirmation.
 - No real candidate credentials, CV or qualifications were used in the live tests.
   No third submission was made. Other portal integrations remain manual.
+
+## Company-first catalogue — 2026-10-31
+
+- Full suite: **218 passed** in 40.51 seconds, including six browser tests. One existing
+  pytest/Playwright fixture deprecation warning remains. A subsequently added admin
+  HTTP check also passed: MFA-verified staff could render job list/add/edit, company
+  list/add, source add and CSV import pages, and import an unverified company via upload.
+  That check emits Django 5.2 URLField scheme deprecation warnings.
+- Ruff check/format, trust-boundary mypy, Django checks, migration drift, OpenAPI
+  validation with warnings treated as errors, and the existing >=90% statement/branch
+  coverage gates passed. No dependencies changed.
+- Deterministic tests cover unverified import separation, verified-domain merges,
+  preserved application references, endpoint evidence and operator disables,
+  two-check closure/shadow mode, endpoint overlap, explicit filled status,
+  reopening, curated content, scope changes, failed/partial inventories,
+  interrupted workers, concurrent source leases, request limits and shared 429 cooldowns.
+- Greenhouse processing imported **501 jobs in three bounded batches**. Workday
+  fixtures imported **501 jobs in 51 batches** using 51 read-only search POSTs and
+  501 detail GETs. Detail checkpoints resumed after both capacity deferral and 429
+  without replaying the search or previously completed detail requests.
+- Synthetic PostgreSQL benchmark: **10,000 companies/endpoints**, all dispatched
+  exactly once in **1.113 seconds** across 100 scheduler invocations; setup plus a
+  100-run simulated collection sample took **4.279 seconds**. Average simulated run:
+  **0.0133 seconds**. The sample had **100% completion**, **0% failure**, and **zero
+  network requests**. Average recorded due-time delay was **3603.187 seconds** because
+  the fixture intentionally made every endpoint one hour overdue. This measures
+  scheduler/database behavior, not live crawling capacity. At the normal one-minute
+  Beat cadence, 100 scheduler batches span approximately 100 minutes, not 1.113 seconds.
+- Actual adapter smoke checks were read-only and did not store live postings:
+  NVIDIA Workday returned ten postings, a continuation at offset ten / reported total
+  2,000, using eleven requests in **10.49 seconds**; GitLab Greenhouse returned a
+  complete inventory of **238 jobs** in **1.20 seconds**. No applications were submitted.
+- Local rollout: private PostgreSQL backup taken with mode 0600 at
+  `/tmp/jobstream-company-first-pre-rollout-20261031.dump`; migrations **0027–0031**
+  applied; web, control, ingestion, preparation, delivery and Beat containers rebuilt
+  or restarted. All nine Compose services are running. `/health/` returned 200;
+  unauthenticated `/admin/jobs/job/` returned the expected 302 to authentication.
+  The database has **111 companies**, **three verified domains**, **two applications**,
+  **zero queued/submitting applications**, **zero enabled general boards**, **one
+  enabled Secret Tel Aviv source**, and **zero closure-enabled sources**.
+
+Collection metrics on pre-migration IngestionRun rows default to zero; historical
+rows do not establish new request/duration/completeness measurements. Use newly
+collected runs when evaluating the rollout cohort. Unsupported custom/JavaScript
+sites remain for review. Closure must be enabled explicitly after shadow validation.
+
+## Admin filters and Jazzmin — 2026-10-31
+
+- Full suite: **226 passed** in 43.93 seconds, including Chromium interaction with
+  Jazzmin's visible technology selector, combined location/company filtering, and
+  the job edit page. Existing Django URLField and pytest fixture deprecations remain.
+- Admin filters combine case-insensitive location/company text, normalized technology
+  mentions and required-qualification-only technology tags. Node.js/NodeJS recognition
+  and required/preferred separation are deterministic. Migration 0032 adds the JSON
+  containment GIN index; 0033 corrects the Companies label.
+- Installed **django-jazzmin 3.0.5** with native dark mode. No Node.js/npm/build tooling
+  was added. Visual inspection used `/tmp/jobstream-admin-refresh.png`. Browser tests
+  reported no JS errors or CSP violations. Theme assets/fonts are served locally.
+- Strict manifest compatibility is restricted to Jazzmin's Bootswatch directory URL;
+  a negative test confirms missing files still fail. Tests verify exact inline-script
+  hashes, preserved MFA enforcement, admin permissions and CSV import pages.
+- Ruff, formatting, trust-boundary mypy, Django checks, migration drift, OpenAPI and
+  existing coverage gates passed. The locked production dependency audit reported
+  **no known vulnerabilities** after adding Jazzmin.
+- Rebuilt and restarted the local containers, applied migrations 0032–0033, and
+  refreshed technology tags on **640 existing jobs** without AI calls. A private
+  pre-rollout backup is at `/tmp/jobstream-admin-refresh-rollout-20261031.dump`.

@@ -1,0 +1,7 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+<div class="col-12"><div class="card"><div class="card-body">
+<p>Columns: name, website, optional career_url. Imported websites require operator verification.</p>
+<form method="post" enctype="multipart/form-data">{% csrf_token %}{{ form.as_p }}<button class="btn btn-primary" type="submit">Import companies</button></form>
+</div></div></div>
+{% endblock %}

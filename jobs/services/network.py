@@ -2,6 +2,7 @@
 
 import http.client
 import ipaddress
+import json
 import socket
 import ssl
 from contextlib import closing
@@ -84,7 +85,20 @@ class PinnedHTTPSConnection(http.client.HTTPSConnection):
             raise
 
 
-def fetch_public_document(url: str, *, max_bytes: int = MAX_BYTES) -> tuple[bytes, str]:
+class HTTPStatusError(ValueError):
+    def __init__(self, status: int, retry_after: str = ""):
+        self.status = status
+        self.retry_after = retry_after
+        super().__init__(f"HTTP_{status}")
+
+
+def request_public_document(
+    url: str, *, max_bytes: int = MAX_BYTES, payload: dict | None = None
+) -> tuple[bytes, str]:
+    """GET or read-only JSON search POST. POST redirects are never replayed."""
+    from .crawl import cooldown, request_slot, stats
+    from .retries import retry_after_seconds
+
     if not 1 <= max_bytes <= 16 * 1024 * 1024:
         raise ValueError("Invalid response byte limit")
     for _ in range(4):
@@ -94,27 +108,40 @@ def fetch_public_document(url: str, *, max_bytes: int = MAX_BYTES) -> tuple[byte
         if host is None:
             raise UnsafeURL("Missing hostname")
         addresses = public_addresses(host)
-        with closing(PinnedHTTPSConnection(host, addresses[0])) as connection:
+        with request_slot(host), closing(PinnedHTTPSConnection(host, addresses[0])) as connection:
             target = parts.path + ("?" + parts.query if parts.query else "")
+            headers = {"User-Agent": "Jobstream/0.1", "Accept-Encoding": "identity"}
+            if payload is not None:
+                headers["Content-Type"] = "application/json"
             connection.request(
-                "GET",
+                "POST" if payload is not None else "GET",
                 target,
-                headers={"User-Agent": "Jobstream/0.1", "Accept-Encoding": "identity"},
+                body=json.dumps(payload).encode() if payload is not None else None,
+                headers=headers,
             )
             response = connection.getresponse()
             if response.status in {301, 302, 303, 307, 308}:
+                if payload is not None:
+                    raise UnsafeURL("Search POST redirect refused")
                 location = response.getheader("Location")
                 if not location:
                     raise UnsafeURL("Redirect without location")
                 url = urljoin(url, location)
                 continue
             if response.status != 200:
-                raise ValueError(f"HTTP_{response.status}")
+                retry = response.getheader("Retry-After") or ""
+                if response.status in {429, 503} and stats.get() is not None:
+                    cooldown(host, retry_after_seconds(retry, 60))
+                raise HTTPStatusError(response.status, retry)
             data = response.read(max_bytes + 1)
             if len(data) > max_bytes:
                 raise ValueError("Source response exceeds limit")
             return data, url
     raise UnsafeURL("Too many redirects")
+
+
+def fetch_public_document(url: str, *, max_bytes: int = MAX_BYTES) -> tuple[bytes, str]:
+    return request_public_document(url, max_bytes=max_bytes)
 
 
 def fetch_public(url: str, *, max_bytes: int = MAX_BYTES) -> bytes:

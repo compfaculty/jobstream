@@ -66,6 +66,7 @@ def test_ashby_parse():
 @pytest.mark.django_db
 def test_authoritative_snapshot_closes_only_verified_scope(monkeypatch):
     source = Source.objects.create(
+        closure_enabled=True,
         name="Example direct",
         adapter="greenhouse",
         url=URL,
@@ -81,6 +82,10 @@ def test_authoritative_snapshot_closes_only_verified_scope(monkeypatch):
     unrelated = Job.objects.create(canonical_url="https://elsewhere.com/job", title="Other")
     Source.objects.filter(pk=source.pk).update(next_run_at=timezone.now() - timedelta(seconds=1))
     monkeypatch.setattr("jobs.services.ingestion.fetch_public", lambda url: payload([]))
+    ingest(source.pk)
+    job.refresh_from_db()
+    assert job.active and job.origins.get(source=source).missing_count == 1
+    Source.objects.filter(pk=source.pk).update(next_run_at=timezone.now())
     ingest(source.pk)
     job.refresh_from_db()
     unrelated.refresh_from_db()

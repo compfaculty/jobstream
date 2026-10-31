@@ -17,6 +17,7 @@ if not SECRET_KEY:
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1,testserver").split(",")
 CSRF_TRUSTED_ORIGINS = list(filter(None, os.getenv("CSRF_TRUSTED_ORIGINS", "").split(",")))
 INSTALLED_APPS = [
+    "jazzmin",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -111,7 +112,7 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = 1024 * 1024
 MEDIA_ROOT = BASE_DIR / "private-media"
 STORAGES: dict[str, Any] = {
     "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
-    "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"},
+    "staticfiles": {"BACKEND": "config.static_storage.AdminStaticFilesStorage"},
 }
 if os.getenv("S3_BUCKET"):
     STORAGES["default"] = {
@@ -135,6 +136,7 @@ CELERY_TASK_ACKS_LATE = True
 CELERY_WORKER_PREFETCH_MULTIPLIER = 1
 CELERY_BEAT_SCHEDULE = {
     "batches": {"task": "jobs.tasks.dispatch_batches", "schedule": 30.0},
+    "company-discovery": {"task": "jobs.tasks.schedule_company_discovery", "schedule": 60.0},
     "sources": {"task": "jobs.tasks.schedule_sources", "schedule": 60.0},
     "outbox": {"task": "jobs.tasks.dispatch_submissions", "schedule": 30.0},
     "reconciliation": {"task": "jobs.tasks.reconcile_submissions", "schedule": 300.0},
@@ -146,7 +148,19 @@ REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 25,
 }
-SPECTACULAR_SETTINGS = {"TITLE": "Jobstream API", "VERSION": "1.0.0", "SERVE_INCLUDE_SCHEMA": False}
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Jobstream API",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+    "ENUM_NAME_OVERRIDES": {
+        "JobLifecycleEnum": [
+            ("open", "Open"),
+            ("closed", "Closed"),
+            ("filled", "Filled (employer confirmed)"),
+            ("archived", "Archived"),
+        ]
+    },
+}
 TOKEN_ENCRYPTION_KEY = os.getenv("TOKEN_ENCRYPTION_KEY", "")
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID", "")
 GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET", "")
@@ -208,6 +222,7 @@ AI_DAILY_TOKEN_BUDGET = int(os.getenv("AI_DAILY_TOKEN_BUDGET", "200000"))
 
 # Control tasks stay on the default queue; expensive stages have independent workers.
 CELERY_TASK_ROUTES = {
+    "jobs.tasks.discover_company_careers": {"queue": "ingestion"},
     "jobs.tasks.ingest_source": {"queue": "ingestion"},
     "jobs.tasks.prepare_batch_item": {"queue": "preparation"},
     "jobs.tasks.send_application": {"queue": "delivery"},
@@ -215,3 +230,35 @@ CELERY_TASK_ROUTES = {
 }
 
 SECRET_TLV_APPLY_INTERVAL = float(os.getenv("SECRET_TLV_APPLY_INTERVAL", "10"))
+
+# Public career collection: shared database limits apply across worker processes.
+CRAWL_GLOBAL_CONCURRENCY = int(os.getenv("CRAWL_GLOBAL_CONCURRENCY", "8"))
+CRAWL_HOST_CONCURRENCY = int(os.getenv("CRAWL_HOST_CONCURRENCY", "2"))
+CRAWL_HOST_INTERVAL = float(os.getenv("CRAWL_HOST_INTERVAL", "0"))
+CRAWL_DISPATCH_BATCH = int(os.getenv("CRAWL_DISPATCH_BATCH", "100"))
+
+
+# Jazzmin is a Python package with bundled static assets: no npm/Node build step.
+JAZZMIN_SETTINGS = {
+    "site_title": "JobStream Admin",
+    "site_header": "JobStream",
+    "site_brand": "JobStream",
+    "welcome_sign": "JobStream administration",
+    "copyright": "JobStream",
+    "show_ui_builder": False,
+    "show_theme_chooser": False,
+    "use_google_fonts_cdn": False,
+    "navigation_expanded": True,
+    "changeform_format": "single",
+    "order_with_respect_to": ["jobs", "jobs.Job", "jobs.Company", "jobs.Source"],
+    "icons": {
+        "jobs.Job": "fas fa-briefcase",
+        "jobs.Company": "fas fa-building",
+        "jobs.Source": "fas fa-satellite-dish",
+        "jobs.IngestionRun": "fas fa-history",
+        "jobs.AuditEvent": "fas fa-shield-alt",
+        "jobs.Invitation": "fas fa-user-plus",
+    },
+    "topmenu_links": [{"name": "JobStream", "url": "/", "new_window": False}],
+}
+JAZZMIN_UI_TWEAKS = {"theme": "default", "default_theme_mode": "dark"}

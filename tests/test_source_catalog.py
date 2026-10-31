@@ -13,6 +13,8 @@ pytestmark = pytest.mark.django_db
 
 def test_catalog_is_unique_and_supported():
     catalog = definitions()
+    secret = next(source for source in catalog if source.adapter == "secret_telaviv")
+    assert secret.url == "https://jobs.secrettelaviv.com/list/category/programmer/"
     assert len(catalog) == 54
     assert len({source.name for source in catalog}) == len(catalog)
     assert len({canonical_url(source.url) for source in catalog}) == len(catalog)

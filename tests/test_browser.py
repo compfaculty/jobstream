@@ -286,3 +286,69 @@ def test_secret_telaviv_review_and_approve_without_gmail(
     expect(page.get_by_text("Confirmed sent", exact=True)).to_be_visible()
     expect(page.get_by_role("link", name="Employer receipt page")).to_be_visible()
     page.screenshot(path="/tmp/jobstream-secret-telaviv-confirmed.png", full_page=True)
+
+
+def test_jazzmin_admin_filters(page, live_server, settings, client):
+    from django_otp import DEVICE_ID_SESSION_KEY
+
+    from jobs.services.normalization import normalize_description
+
+    settings.STORAGES = {
+        **settings.STORAGES,
+        "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
+    }
+    user = User.objects.create_superuser("admin-theme-test", password="browser-only-password-761")
+    device = user.totpdevice_set.create(name="synthetic-admin-browser", confirmed=True)
+    client.force_login(user)
+    session = client.session
+    session[DEVICE_ID_SESSION_KEY] = device.persistent_id
+    session.save()
+    page.context.add_cookies(
+        [
+            {
+                "name": settings.SESSION_COOKIE_NAME,
+                "value": client.cookies[settings.SESSION_COOKIE_NAME].value,
+                "url": live_server.url,
+            }
+        ]
+    )
+    for title, location, desc in [
+        ("Python Engineer", "Tel Aviv, Israel", "Requirements\nPython\nNice to have\nRust"),
+        ("Rust Engineer", "Haifa, Israel", "Requirements\nRust"),
+    ]:
+        Job.objects.create(
+            title=title,
+            location=location,
+            company="Acme",
+            canonical_url=f"https://example.com/{title.replace(' ', '-')}",
+            description=desc,
+            normalized=normalize_description(desc),
+        )
+    errors = []
+    violations = []
+    page.on("pageerror", lambda error: errors.append(str(error)))
+    page.on(
+        "console",
+        lambda message: (
+            violations.append(message.text)
+            if message.type == "error" and "Content Security Policy" in message.text
+            else None
+        ),
+    )
+    page.goto(live_server.url + "/admin/jobs/job/")
+    expect(page.locator("#jazzy-navbar")).to_be_visible()
+    page.get_by_label("Location contains", exact=True).fill("tel aviv")
+    page.get_by_label("Company contains", exact=True).fill("Acme")
+    # Jazzmin enhances these with Select2; exercise the visible controls.
+    tech = page.locator('select[data-name="technology"] + span')
+    tech.click()
+    page.get_by_role("option", name="Python", exact=True).click()
+    page.get_by_role("button", name="Search", exact=True).click()
+    expect(page.get_by_role("link", name="Python Engineer", exact=True)).to_be_visible()
+    expect(page.get_by_role("link", name="Rust Engineer", exact=True)).to_have_count(0)
+    expect(page.get_by_label("Location contains", exact=True)).to_have_value("tel aviv")
+    assert "technology=Python" in page.url
+    page.screenshot(path="/tmp/jobstream-admin-refresh.png", full_page=True)
+    page.get_by_role("link", name="Python Engineer", exact=True).click()
+    expect(page.locator("#id_title")).to_have_value("Python Engineer")
+    assert not errors and not violations

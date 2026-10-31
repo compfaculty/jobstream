@@ -65,3 +65,11 @@ docker compose logs --tail=100 preparation-worker delivery-worker
 Explicit Gmail 429 rejections schedule bounded durable retries; ambiguous delivery
 outcomes remain unknown. Do not manually enqueue an unknown send. See
 `docs/batch-applications.md` for cooldowns, approvals, cancellation and AI budgets.
+
+## Company catalogue rollout
+
+See [Company catalogue](company-catalogue.md) before migrations 0027–0031. Back up
+PostgreSQL first: verified company identities are consolidated and general boards
+are disabled. Keep automatic closure in shadow mode until a small cohort is checked.
+`python manage.py crawl_report --hours 24` provides collection health without exposing
+remote response bodies or applicant data.

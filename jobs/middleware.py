@@ -9,8 +9,16 @@ class SecurityHeadersMiddleware:
 
     def __call__(self, request):
         response = self.get_response(request)
+        # Jazzmin 3.0.5's fixed theme-mode bootstrap. Tests detect package/template drift.
+        # All other initialization is served as local external JS, without unsafe-inline/eval.
+        admin_script = (
+            " 'sha256-NXkd0T5TtFSa4/WcVcscnCfNRACcjmSaW8Yj/udt+Jw='"
+            if request.path.startswith("/admin/")
+            else ""
+        )
+        admin_style = " 'unsafe-inline'" if request.path.startswith("/admin/") else ""
         response["Content-Security-Policy"] = (
-            "default-src 'self'; script-src 'self'; style-src 'self'; "
+            f"default-src 'self'; script-src 'self'{admin_script}; style-src 'self'{admin_style}; "
             "img-src 'self' data:; connect-src 'self'; object-src 'none'; "
             "base-uri 'none'; frame-ancestors 'none'; form-action 'self'"
         )

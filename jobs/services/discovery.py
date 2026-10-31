@@ -29,6 +29,14 @@ def ats_endpoint(url: str) -> tuple[str, str] | None:
         match = re.fullmatch(r"/([\w-]+)(?:/[a-fA-F0-9-]{36}(?:/application)?)?/?", parts.path)
         if match:
             return "ashby", f"https://api.ashbyhq.com/posting-api/job-board/{match[1]}"
+    if re.fullmatch(r"[a-z0-9-]+\.wd\d+\.myworkdayjobs\.com", parts.hostname or ""):
+        from .inventories import workday_site
+
+        try:
+            host, _tenant, site = workday_site(url)
+        except ValueError:
+            return None
+        return "workday", f"https://{host}/{site}"
     return None
 
 

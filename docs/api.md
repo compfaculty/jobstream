@@ -48,3 +48,11 @@ resent automatically; known receipt URLs are checked read-only when possible.
 
 Application responses include channel, portal URL, private answers and an optional
 receipt URL. Unsupported employer portals continue to use manual handoff.
+
+## Company-first lifecycle fields
+
+Job responses additionally expose `active`, `lifecycle`, `status_override`, and
+`status_reason`. Existing response fields and application references are preserved.
+The public search still returns active jobs; Django admin exposes the full inventory
+and CRUD. The company catalogue and CSV import are administrative interfaces, not
+new public writable APIs.

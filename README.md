@@ -47,6 +47,9 @@ storage unless S3 variables are configured. Never expose this Compose stack publ
 
 ## What works
 
+- [Company-first catalogue](docs/company-catalogue.md): CSV/admin import, verified
+  official-site discovery, Workday/Greenhouse/Ashby inventories, and reviewed lifecycle closure.
+
 - Invite-only accounts, sessions, login throttling, mandatory staff TOTP.
 - Job search, location filters, saved jobs, private notes and application tracking.
 - Source management in Django Admin, scheduled ingestion, provenance and deduplication.
