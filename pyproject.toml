@@ -1,0 +1,55 @@
+[project]
+name = "jobstream"
+version = "0.1.0"
+description = "Private job search and approved applications"
+requires-python = ">=3.14,<3.15"
+dependencies = [
+  "Django>=5.2.8,<5.3",
+  "djangorestframework>=3.16,<4",
+  "drf-spectacular>=0.28,<1",
+  "psycopg[binary]>=3.2,<4",
+  "dj-database-url>=3,<4",
+  "redis>=6,<8",
+  "celery[redis]>=5.5,<6",
+  "django-storages[s3]>=1.14,<2",
+  "cryptography>=50,<51",
+  "httpx>=0.28,<1",
+  "feedparser>=6,<7",
+  "beautifulsoup4>=4.13,<5",
+  "django-otp>=1.6,<2",
+  "django-two-factor-auth[phonenumberslite]>=1.17,<2",
+  "django-axes>=8,<9",
+  "gunicorn>=23,<26",
+  "whitenoise>=6,<7",
+  "google-auth-oauthlib>=1.2,<2",
+  "google-api-python-client>=2,<3",
+  "sentry-sdk[django,celery]>=2,<3",
+  "opentelemetry-instrumentation-django>=0.58b0,<1",
+  "opentelemetry-exporter-otlp-proto-http>=1.37,<2",
+  "python-json-logger>=3,<5",
+  "pillow>=13,<14",
+  "pypdf>=6,<7",
+  "reportlab>=4,<5",
+]
+[dependency-groups]
+dev = ["pytest>=8,<10", "pytest-django>=4.11,<5", "pytest-cov>=6,<8", "ruff>=0.12,<1", "mypy>=1.17,<2", "django-stubs>=5.2,<5.3", "types-requests", "pip-audit>=2.9,<3", "pytest-playwright>=0.7,<1"]
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings"
+testpaths = ["tests"]
+addopts = "--strict-markers"
+markers = ["browser: real browser end-to-end checks", "integration: PostgreSQL and Redis checks"]
+[tool.ruff]
+line-length = 100
+target-version = "py314"
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+[tool.coverage.run]
+branch = true
+source = ["jobs"]
+[tool.mypy]
+python_version = "3.14"
+plugins = ["mypy_django_plugin.main"]
+ignore_missing_imports = true
+exclude = ["jobs/migrations/"]
+[tool.django-stubs]
+django_settings_module = "config.settings"
