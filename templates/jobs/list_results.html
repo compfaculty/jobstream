@@ -1,0 +1,17 @@
+<form method="post" action="{% url 'batch-create' %}">{% csrf_token %}
+<div class="results-heading"><h2>{% if request.GET.saved == '1' %}Saved opportunities{% else %}Explore opportunities{% endif %}</h2><span class="count">{{ page.paginator.count }} job{{ page.paginator.count|pluralize }}</span></div>
+<div class="job-list">
+{% for job in page %}
+<article class="job-card">
+<label class="job-selection"><input type="checkbox" name="jobs" value="{{ job.pk }}" aria-label="Select {{ job.title }}"></label>
+  {% if job.company_profile.logo %}<img class="company-logo" src="{% url 'company-logo' job.company_profile_id %}" alt="" width="48" height="48" loading="lazy">{% endif %}
+  <div class="job-card-content"><p class="company-name">{% if job.company_profile_id %}<a class="company-link" href="{% url 'company' job.company_profile_id %}">{{ job.company_profile.name }}</a>{% else %}{{ job.company|default:'Company not specified' }}{% endif %}</p><h2><a href="{% url 'job' job.pk %}">{{ job.title }}</a></h2><p class="job-meta"><span>{{ job.location|default:'Location not specified' }}</span><span>Added {{ job.discovered_at|date:'M j, Y' }}</span></p></div>
+  <span class="card-arrow" aria-hidden="true">↗</span>
+</article>
+{% empty %}
+<div class="empty-state"><span class="empty-symbol" aria-hidden="true">⌕</span><h2>No matching jobs yet</h2><p class="muted">Try a different keyword or a broader location.</p>{% if q or location or request.GET.saved or request.GET.company %}<a class="button secondary" href="/">Clear filters</a>{% endif %}<p class="helptext">Sources are managed by the operator.</p></div>
+{% endfor %}
+</div>
+<button>Apply to selected jobs</button>
+</form>
+{% include 'jobs/pagination.html' %}

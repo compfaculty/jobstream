@@ -1,0 +1,299 @@
+"""Approval and durable outbox. UNKNOWN is deliberately never automatically resent."""
+
+import hashlib
+import json
+import random
+import uuid
+from datetime import timedelta
+
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
+from django.db import transaction
+from django.utils import timezone
+from googleapiclient.errors import HttpError
+
+from jobs.models import Application, AuditEvent, GmailConnection
+
+from . import gmail
+from .retries import RetryWindowTooLong, retry_after_seconds
+from .secret_telaviv import PortalRateLimited, PortalRejected, PortalUnknown
+
+
+class InvalidTransition(ValidationError):
+    pass
+
+
+def digest(application: Application, sender: str) -> str:
+    payload = {
+        "recipient": application.recipient,
+        "subject": application.subject,
+        "body": application.body,
+        "document": application.document_id,
+        "document_sha256": application.document.sha256
+        if application.document is not None
+        else None,
+        "sender": sender,
+    }
+    if application.channel == "portal":
+        payload.update(
+            channel=application.channel,
+            portal_url=application.portal_url,
+            portal_answers=application.portal_answers,
+            portal_fingerprint=application.portal_fingerprint,
+        )
+    return hashlib.sha256(json.dumps(payload, sort_keys=True).encode()).hexdigest()
+
+
+def validate_content(application: Application, *, for_send: bool = True) -> None:
+    if not application.job.active:
+        raise ValidationError("This vacancy is no longer active.")
+    if for_send and application.channel != "email":
+        from .secret_telaviv import supported, validate_answers
+
+        if not supported(application):
+            raise ValidationError(
+                "Complete this application on the employer portal and update tracking."
+            )
+        validate_answers(application.portal_answers)
+        if not application.document_id:
+            raise ValidationError("Choose a CV for the Secret Tel Aviv application.")
+    if application.channel == "email":
+        validate_email(application.recipient)
+    if any(c in application.recipient + application.subject for c in "\r\n"):
+        raise ValidationError("Mail headers cannot contain newlines.")
+    if not application.subject.strip() or not application.body.strip():
+        raise ValidationError("Subject and message are required.")
+    if application.document is not None and application.document.owner_id != application.owner_id:
+        raise ValidationError("Document does not belong to applicant.")
+
+
+def approve(user, pk: int) -> Application:
+    if Application.objects.get(pk=pk, owner=user).channel == "portal":
+        from .secret_telaviv import approve_portal
+
+        return approve_portal(user, pk)
+    with transaction.atomic():
+        application = (
+            Application.objects.select_for_update(of=("self",))
+            .select_related("document")
+            .get(pk=pk, owner=user)
+        )
+        if application.status not in {Application.Status.DRAFT, Application.Status.FAILED}:
+            raise InvalidTransition("This application cannot be approved in its current state.")
+        validate_content(application)
+        try:
+            connection = GmailConnection.objects.get(owner=user, revoked=False)
+        except GmailConnection.DoesNotExist as exc:
+            raise ValidationError("Connect Gmail before approving.") from exc
+        application.send_attempts = 0
+        application.retry_not_before = None
+        application.approval_digest = digest(application, connection.email)
+        application.approved_at = timezone.now()
+        application.next_dispatch_at = timezone.now()
+        application.message_id = f"<{uuid.uuid4().hex}@applications.jobstream.invalid>"
+        application.status = Application.Status.APPROVED
+        application.error_code = ""
+        application.save()
+        AuditEvent.objects.create(actor=user, application=application, event="application.approved")
+        return application
+
+
+def edit(user, pk: int, values: dict) -> Application:
+    with transaction.atomic():
+        application = Application.objects.select_for_update(of=("self",)).get(pk=pk, owner=user)
+        if application.status in {
+            Application.Status.SUBMITTING,
+            Application.Status.CONFIRMED,
+            Application.Status.UNKNOWN,
+        }:
+            raise InvalidTransition("Submission content is locked; update tracking separately.")
+        for field in ("recipient", "subject", "body", "document", "portal_answers"):
+            if field in values:
+                setattr(application, field, values[field])
+        validate_content(application, for_send=False)
+        application.status = Application.Status.DRAFT
+        application.approval_digest = ""
+        application.approved_at = None
+        application.save()
+        AuditEvent.objects.create(actor=user, application=application, event="application.edited")
+        from .batches import refresh_ready
+
+        transaction.on_commit(lambda: refresh_ready(application.pk))
+        return application
+
+
+def attachment_bytes(application: Application) -> bytes | None:
+    if application.document is None:
+        return None
+    with application.document.file.open("rb") as stream:
+        content = stream.read(5 * 1024 * 1024 + 1)
+    if (
+        len(content) != application.document.size
+        or hashlib.sha256(content).hexdigest() != application.document.sha256
+    ):
+        raise ValidationError("Attachment integrity check failed.")
+    return content
+
+
+def submit(pk: int) -> None:
+    with transaction.atomic():
+        application = (
+            Application.objects.select_for_update(of=("self",))
+            .select_related("document")
+            .get(pk=pk)
+        )
+        if application.status != Application.Status.APPROVED:
+            return
+        if application.retry_not_before and application.retry_not_before > timezone.now():
+            return
+        try:
+            connection = None
+            sender = ""
+            if application.channel == "email":
+                connection = GmailConnection.objects.get(owner=application.owner, revoked=False)
+                sender = connection.email
+            validate_content(application)
+            if digest(application, sender) != application.approval_digest:
+                raise ValidationError("Approval no longer matches content.")
+            attachment = attachment_bytes(application)
+        except GmailConnection.DoesNotExist, ValidationError, OSError:
+            application.status = Application.Status.FAILED
+            application.error_code = "preflight_failed"
+            application.save()
+            AuditEvent.objects.create(
+                actor=application.owner,
+                application=application,
+                event="application.preflight_failed",
+            )
+            return
+        from .throttles import reserve
+
+        if not reserve(connection, application):
+            return
+        application.send_attempts += 1
+        application.status = Application.Status.SUBMITTING
+        application.started_at = timezone.now()
+        application.save()
+        AuditEvent.objects.create(
+            actor=application.owner, application=application, event="application.submitting"
+        )
+    try:
+        if application.channel == "portal":
+            from .secret_telaviv import send
+
+            provider_id = send(application, attachment)
+        else:
+            provider_id = gmail.send(connection, application, attachment)
+    except PortalRateLimited as exc:
+        retry_rate_limited(pk, exc.retry_after)
+    except PortalUnknown as exc:
+        finish(pk, Application.Status.UNKNOWN, error_code=str(exc), receipt_url=exc.receipt_url)
+    except PortalRejected as exc:
+        finish(pk, Application.Status.FAILED, error_code=str(exc))
+    except gmail.ReconnectRequired:
+        finish(pk, Application.Status.FAILED, error_code="gmail_reconnect_required")
+    except HttpError as exc:
+        # Only explicit rejection is safe to retry with a NEW approval.
+        if exc.resp.status == 429:
+            retry_rate_limited(pk, exc.resp.get("retry-after", ""))
+            return
+        rejected = exc.resp.status in {400, 401, 403, 404, 413}
+        finish(
+            pk,
+            Application.Status.FAILED if rejected else Application.Status.UNKNOWN,
+            error_code=f"gmail_http_{exc.resp.status}",
+        )
+    except Exception:
+        finish(pk, Application.Status.UNKNOWN, error_code="transport_outcome_unknown")
+    else:
+        finish(pk, Application.Status.CONFIRMED, provider_id=provider_id)
+
+
+def finish(
+    pk: int, status: str, provider_id: str = "", error_code: str = "", receipt_url: str = ""
+) -> None:
+    with transaction.atomic():
+        application = Application.objects.select_for_update(of=("self",)).get(pk=pk)
+        if application.status not in {Application.Status.SUBMITTING, Application.Status.UNKNOWN}:
+            return
+        application.status = status
+        if status == Application.Status.CONFIRMED and application.tracking_status == "interested":
+            application.tracking_status = "applied"
+        application.provider_id = provider_id
+        if receipt_url:
+            application.portal_receipt_url = receipt_url
+        elif application.channel == "portal" and provider_id.startswith("secret_telaviv:"):
+            receipt_id = provider_id.split(":", 1)[1]
+            if receipt_id.isascii() and receipt_id.isdecimal() and application.portal_url:
+                application.portal_receipt_url = (
+                    application.portal_url.split("?", 1)[0].rstrip("/") + f"/applied/{receipt_id}/"
+                )
+        application.error_code = error_code
+        application.save()
+        AuditEvent.objects.create(
+            actor=application.owner, application=application, event=f"application.{status}"
+        )
+
+
+def reconcile(pk: int) -> None:
+    application = Application.objects.get(pk=pk)
+    if application.status != Application.Status.UNKNOWN:
+        return
+    if application.channel == "portal":
+        if application.portal_receipt_url:
+            from .secret_telaviv import reconcile as reconcile_portal
+
+            try:
+                provider_id = reconcile_portal(application)
+            except Exception:
+                return
+            if provider_id:
+                finish(pk, Application.Status.CONFIRMED, provider_id=provider_id)
+        return
+    try:
+        connection = GmailConnection.objects.get(owner=application.owner, revoked=False)
+        provider_id = gmail.find_sent(connection, application.message_id)
+    except Exception:
+        # No state change on unavailable mailbox; retry the read-only reconciliation later.
+        return
+    if provider_id:
+        finish(pk, Application.Status.CONFIRMED, provider_id=provider_id)
+
+
+@transaction.atomic
+def retry_rate_limited(pk: int, retry_after: str) -> None:
+    application = Application.objects.select_for_update().get(pk=pk)
+    if application.status != Application.Status.SUBMITTING:
+        return
+    if application.send_attempts >= 5:
+        application.status = Application.Status.FAILED
+        application.error_code = "rate_limit_retries_exhausted"
+    else:
+        delay = min(60 * 2 ** max(application.send_attempts - 1, 0), 3600)
+        delay += random.uniform(0, delay * 0.25)
+        now = timezone.now()
+        try:
+            delay = retry_after_seconds(retry_after, delay, now=now)
+        except RetryWindowTooLong:
+            application.status = Application.Status.FAILED
+            application.error_code = "rate_limit_pause_requires_review"
+            application.save()
+            AuditEvent.objects.create(
+                actor=application.owner,
+                application=application,
+                event="application.rate_limit_pause_requires_review",
+            )
+            return
+        application.status = Application.Status.APPROVED
+        application.next_dispatch_at = now + timedelta(seconds=delay)
+        application.retry_not_before = application.next_dispatch_at
+        application.error_code = "rate_limit_retry_scheduled"
+        from .throttles import defer_delivery
+
+        defer_delivery(application, application.retry_not_before)
+    application.save()
+    AuditEvent.objects.create(
+        actor=application.owner,
+        application=application,
+        event=f"application.{application.error_code}",
+    )

@@ -1,0 +1,3 @@
+{% extends 'base.html' %}{% block content %}<h1>Your application batches</h1>
+{% for batch in page %}<article><h2><a href="{% url 'batch' batch.pk %}">Batch #{{ batch.pk }}</a></h2><p>{{ batch.document.name }} · {{ batch.created_at }}{% if batch.cancelled_at %} · Cancelled{% endif %}</p></article>{% empty %}<p>Select jobs in <a href="{% url 'jobs' %}">search results</a> to prepare your first batch.</p>{% endfor %}
+{% include 'jobs/pagination.html' %}{% endblock %}

@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block title %}{{ company.name }} · Jobstream{% endblock %}
+{% block content %}
+<a class="text-link" href="/">← All opportunities</a>
+<section class="company-intro">
+  {% if company.logo %}<img class="company-logo profile-logo" src="{% url 'company-logo' company.pk %}" alt="" width="80" height="80">{% endif %}
+  <div><p class="eyebrow">COMPANY PROFILE</p><h1>{{ company.name }}</h1>
+  {% if company.website and company.website_verified %}<a class="text-link" href="{{ company.website }}" target="_blank" rel="noopener noreferrer">Official website ↗</a>{% endif %}</div>
+</section>
+{% if company.description %}<div class="company-description">{{ company.description|linebreaks }}</div>{% endif %}
+{% include 'jobs/list_results.html' %}
+{% endblock %}

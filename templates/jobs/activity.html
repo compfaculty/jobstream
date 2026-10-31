@@ -1,0 +1,4 @@
+{% extends 'base.html' %}{% block content %}<h1>Your activity</h1>
+<p><a href="{% url 'applications' %}">Applications</a> · <a href="{% url 'batches' %}">Application batches</a></p>
+{% for entry in page %}<article><p><time>{{ entry.created_at }}</time> — {{ entry.label }}{% if entry.application_id %} · <a href="{% url 'application' entry.application_id %}">{{ entry.application.job.title }}</a>{% endif %}</p></article>{% empty %}<p>No activity yet.</p>{% endfor %}
+{% include 'jobs/pagination.html' %}{% endblock %}

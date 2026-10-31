@@ -1,0 +1,33 @@
+{% load static %}<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="htmx-config" content='{"allowEval":false,"includeIndicatorStyles":false,"historyCacheSize":0,"refreshOnHistoryMiss":true}'>
+  <title>{% block title %}Jobstream{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'app.css' %}">
+  <script src="{% static 'htmx.min.js' %}" defer></script>
+  <script src="{% static 'app.js' %}" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="site-header">
+  <a class="brand" href="/"><span class="brand-mark" aria-hidden="true">j<span>↗</span></span>Jobstream<span class="beta">BETA</span></a>
+  {% if user.is_authenticated %}
+  <nav aria-label="Main" class="main-nav">
+    <a href="/" {% if request.resolver_match.url_name == 'jobs' or request.resolver_match.url_name == 'job' or request.resolver_match.url_name == 'company' %}aria-current="page"{% endif %}>Jobs</a>
+    <a href="{% url 'applications' %}" {% if 'application' in request.resolver_match.url_name %}aria-current="page"{% endif %}>Applications</a>
+    <a href="{% url 'documents' %}" {% if request.resolver_match.url_name == 'documents' %}aria-current="page"{% endif %}>Resumes</a>
+    <a href="{% url 'gmail' %}" {% if request.resolver_match.url_name == 'gmail' %}aria-current="page"{% endif %}>Gmail</a>
+    {% if user.is_staff %}<a href="/admin/">Admin</a>{% endif %}
+  </nav>
+  <form class="account-action" action="{% url 'logout' %}" method="post">{% csrf_token %}<button class="quiet">Sign out <span aria-hidden="true">↗</span></button></form>
+  {% endif %}
+</header>
+<main id="main">
+  <p id="request-error" role="alert" class="notice" hidden></p>
+  {% for message in messages %}<p role="status" class="notice">{{ message }}</p>{% endfor %}
+  {% block content %}{% endblock %}
+</main>
+<footer><span class="footer-brand">Jobstream <span class="muted">/ Your next chapter</span></span><span>Private beta · Your search, your pace.</span></footer>
+</body></html>

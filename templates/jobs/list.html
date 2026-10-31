@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="page-intro">
+  <div><p class="eyebrow"><span class="live-dot" aria-hidden="true"></span> YOUR JOB SEARCH, IN FOCUS</p><h1>Find your next job<span class="accent">.</span></h1><p class="intro-copy">Discover opportunities. Keep your favorites close. Make your next move.</p></div>
+  <a class="text-link" href="{% url 'applications' %}">Your applications <span aria-hidden="true">↗</span></a>
+</section>
+<form class="search" method="get" hx-get="/" hx-target="#results" hx-push-url="true" hx-indicator="#loading">
+  <label><span class="field-label">Keywords</span><input name="q" value="{{ q }}" placeholder="Role, company, or skill" maxlength="200"></label>
+  <label><span class="field-label">Location</span><input name="location" value="{{ location }}" placeholder="City or country" maxlength="100"></label>
+  <div class="company-picker">
+    <label class="field-label" for="company-select">Company</label>
+    <select name="company" id="company-select" data-company-picker>
+      <option value="">All companies</option>
+      {% for company in companies %}<option value="{{ company.pk }}" {% if selected_company == company.pk|stringformat:'s' %}selected{% endif %}>{{ company.filter_label }}</option>{% endfor %}
+    </select>
+  </div>
+  <label class="check"><input type="checkbox" name="saved" value="1" {% if request.GET.saved == '1' %}checked{% endif %}> Saved only</label>
+  <button>Search <span aria-hidden="true">↗</span></button>
+</form>
+<p id="loading" class="htmx-indicator" role="status">Searching…</p>
+<div id="results" aria-live="polite">{% include 'jobs/list_results.html' %}</div>
+{% endblock %}

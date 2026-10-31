@@ -1,0 +1,14 @@
+{% extends 'base.html' %}{% block content %}
+<h1>Prepare applications</h1>
+<p>Select your base CV. Applications will be prepared for review before sending.</p>
+<p>Choose a reviewed factual profile to tailor the order and emphasis for each job. Without a profile, the original PDF is used unchanged.</p>
+<form method="post">{% csrf_token %}
+<input type="hidden" name="request_key" value="{{ request_key }}">
+{% for job in jobs %}<input type="hidden" name="jobs" value="{{ job.pk }}"><p>{{ job.title }} — {{ job.company }}</p>{% endfor %}
+<label>Base CV <select name="document" required>{% for document in documents %}<option value="{{ document.pk }}">{{ document.name }}</option>{% endfor %}</select></label>
+<label>Reviewed profile <select name="profile"><option value="">Use original PDF unchanged</option>{% for profile in profiles %}<option value="{{ profile.pk }}">{{ profile.name }} — {{ profile.document.name }} — {{ profile.confirmed_at }}</option>{% endfor %}</select></label>
+<label><input type="checkbox" name="use_ai" value="1"> Use OpenAI to prioritize confirmed experience and identify gaps</label><p>This optional step sends confirmed career facts and job descriptions to the configured OpenAI API. Your name, contact details, and original PDF are not included as separate fields. Facts may contain personal details you entered.</p>
+<details><summary>Secret Tel Aviv applicant details (optional)</summary><p>Fill these once for all selected Secret Tel Aviv jobs. You will review and approve each application before sending. <a href="https://www.secrettelaviv.com/terms-and-conditions-2" target="_blank" rel="noopener noreferrer">Read terms</a>.</p>{{ applicant_form.as_p }}</details>
+<button>Prepare selected applications</button>
+</form><a href="{% url 'documents' %}">Upload a CV</a>
+{% endblock %}

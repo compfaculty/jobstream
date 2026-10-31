@@ -1,0 +1,6 @@
+{% extends 'base.html' %}{% block content %}
+<h1>Review factual profile</h1><p>Base CV: {{ document.name }}</p>
+<p>Review extracted text, organize it into sections, and add genuine experience omitted from your CV, including AI projects. Keep employer names, roles, dates, and accomplishments together in a paragraph. Separate independent facts with a blank line.</p>
+<p>Each save creates an immutable version. Tailoring uses these confirmed paragraphs; it cannot invent qualifications from a job description.</p>
+<form method="post" class="stack">{% csrf_token %}{{ form.as_p }}<button>Confirm and save profile</button></form>
+{% endblock %}

@@ -1,0 +1,13 @@
+{% extends "two_factor/core/setup.html" %}
+
+{% block content %}
+  {% if wizard.steps.current == 'generator' %}
+    <aside class="notice" aria-label="Authenticator setup guidance">
+      Use the code from the QR shown on this page. Refreshing or restarting setup
+      creates a new secret: remove the old Jobstream entry and scan the current QR again.
+      Microsoft Authenticator supports this as an <strong>Other account</strong>.
+      Your phone’s date and time should be set automatically.
+    </aside>
+  {% endif %}
+  {{ block.super }}
+{% endblock %}
