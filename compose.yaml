@@ -1,0 +1,68 @@
+x-app: &app
+  image: jobstream:local
+  build: .
+  env_file: .env
+  environment:
+    DATABASE_URL: postgresql://jobstream:local-only@db:5432/jobstream
+    REDIS_URL: redis://redis:6379/0
+    S3_ENDPOINT_URL: http://storage:4566
+    S3_BUCKET: jobstream-private
+    AWS_ACCESS_KEY_ID: local-storage
+    AWS_SECRET_ACCESS_KEY: local-storage-password
+  depends_on:
+    db: {condition: service_healthy}
+    redis: {condition: service_healthy}
+    storage: {condition: service_healthy}
+  init: true
+  read_only: true
+  tmpfs: ["/tmp:size=128m,mode=1777"]
+  cap_drop: [ALL]
+  security_opt: ["no-new-privileges:true"]
+  mem_limit: 768m
+  pids_limit: 256
+services:
+  web:
+    <<: *app
+    command: ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "2", "--timeout", "60"]
+    ports: ["127.0.0.1:8000:8000"]
+  worker:
+    <<: *app
+    command: ["celery", "-A", "config", "worker", "--loglevel=INFO", "--queues=celery", "--concurrency=1"]
+  ingestion-worker:
+    <<: *app
+    command: ["celery", "-A", "config", "worker", "--loglevel=INFO", "--queues=ingestion", "--concurrency=2"]
+  preparation-worker:
+    <<: *app
+    command: ["celery", "-A", "config", "worker", "--loglevel=INFO", "--queues=preparation", "--concurrency=2"]
+  delivery-worker:
+    <<: *app
+    command: ["celery", "-A", "config", "worker", "--loglevel=INFO", "--queues=delivery", "--concurrency=1"]
+  beat:
+    <<: *app
+    command: ["celery", "-A", "config", "beat", "--loglevel=INFO", "--schedule=/tmp/celerybeat-schedule"]
+  db:
+    image: postgres:17-alpine
+    environment: {POSTGRES_USER: jobstream, POSTGRES_PASSWORD: local-only, POSTGRES_DB: jobstream}
+    ports: ["127.0.0.1:5432:5432"]
+    volumes: ["postgres:/var/lib/postgresql/data"]
+    healthcheck: {test: ["CMD-SHELL", "pg_isready -U jobstream"], interval: 3s, timeout: 3s, retries: 20}
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "256mb", "--maxmemory-policy", "noeviction"]
+    ports: ["127.0.0.1:6379:6379"]
+    volumes: ["redis:/data"]
+    healthcheck: {test: ["CMD", "redis-cli", "ping"], interval: 3s, timeout: 3s, retries: 20}
+  storage:
+    image: localstack/localstack:4.8.1@sha256:8c9756bddc44625cd6e890f5e4bcc29b045eebe108b268482b848f4f832ec153
+    environment: {SERVICES: s3, AWS_DEFAULT_REGION: us-east-1}
+    ports: ["127.0.0.1:4566:4566"]
+    volumes: ["./scripts/init-storage.sh:/etc/localstack/init/ready.d/init-storage.sh:ro"]
+    healthcheck:
+      test: ["CMD-SHELL", "awslocal s3api head-bucket --bucket jobstream-private"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+volumes:
+  postgres:
+  redis:

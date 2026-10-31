@@ -1,0 +1,56 @@
+name: CI
+on: [push, pull_request]
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env: {POSTGRES_USER: jobstream, POSTGRES_PASSWORD: local-only, POSTGRES_DB: jobstream}
+        ports: ['5432:5432']
+        options: --health-cmd 'pg_isready -U jobstream' --health-interval 5s --health-timeout 5s --health-retries 20
+      redis:
+        image: redis:7-alpine
+        ports: ['6379:6379']
+        options: --health-cmd 'redis-cli ping' --health-interval 5s --health-timeout 5s --health-retries 20
+    env:
+      DEBUG: '1'
+      DATABASE_URL: postgresql://jobstream:local-only@127.0.0.1:5432/jobstream
+      REDIS_URL: redis://127.0.0.1:6379/0
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6
+        with: {version: '0.13.6', python-version: '3.14'}
+      - run: uv sync --frozen
+      - run: uv run python manage.py collectstatic --noinput
+      - run: make check
+      - run: uv run pytest -m 'not browser' --cov=jobs --cov-report=json --cov-report=term-missing
+      - run: uv run python scripts/check_coverage.py
+      - run: uv run playwright install --with-deps chromium
+      - run: uv run pytest -m browser
+      - run: uv run python manage.py spectacular --file /tmp/openapi.yml --validate --fail-on-warn
+      - run: uv export --frozen --no-dev --no-hashes -o /tmp/requirements.txt --quiet && uv run pip-audit -r /tmp/requirements.txt --no-deps --disable-pip
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with:
+          name: test-results
+          path: |
+            coverage.json
+            test-results/
+  container:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - run: docker build -t jobstream:${{ github.sha }} .
+      - uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1 # 0.35.0
+        with:
+          image-ref: jobstream:${{ github.sha }}
+          severity: CRITICAL,HIGH
+          exit-code: '1'
+          ignore-unfixed: true
+      - run: docker run --rm -v "$PWD:/repo:ro" zricethezav/gitleaks:v8.24.2 dir /repo --redact --no-banner
