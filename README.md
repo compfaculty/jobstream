@@ -65,6 +65,7 @@ storage unless S3 variables are configured. Never expose this Compose stack publ
 Browser form submission is intentionally gated. External employer links are available.
 Supported Cato Networks applications use the official hosted Greenhouse form after
 review and approval. Run the dedicated `browser-worker` for these applications;
+Camunda applications use the same isolated worker with an Ashby adapter;
 other delivery workers do not need Chromium. See the [Cato integration](docs/integrations/cato-networks.md).
 Production hosting and Terraform follow the budget/provider decision; this repository
 has not provisioned cloud infrastructure or claimed production capacity.
@@ -140,3 +141,5 @@ Profiles without a validated logo have no avatar placeholder.
 Company-by-company implementation status and the accepted matching/answer-reuse policy:
 [Integration workflow](docs/company-integration-workflow.md), starting with
 [Cato Networks](docs/integrations/cato-networks.md).
+
+Camunda form delivery and its verification boundary: [Camunda / Ashby](docs/integrations/camunda.md).

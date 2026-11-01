@@ -1,0 +1,1198 @@
+{
+  "id": "5d366525-a519-4ca9-8c13-7e461a31a1d4",
+  "isListed": true,
+  "applicationLimitCalloutHtml": "<p>Please Note: we have set up limits for applications for this role. The following limits apply to applications for all jobs:</p><ul><li><p>Candidates may not apply more than 2 times in any 30 day span for any job</p></li><li><p>Candidates may not re-apply to the same role within 60 days if not presented with an offer</p></li></ul>",
+  "shouldAskForTextingConsent": true,
+  "shouldAskForWhatsAppConsent": false,
+  "candidateTextingPrivacyPolicyUrl": "https://legal.camunda.com/privacy-and-data-protection",
+  "candidateTextingTermsAndConditionsUrl": "https://legal.camunda.com/privacy-and-data-protection#applicant-privacy-policy",
+  "automatedProcessingLegalNotice": {
+    "automatedProcessingLegalNoticeHtml": null
+  },
+  "applicationForm": {
+    "id": "c94724ca-6a39-4a8d-919c-e7e05bcb82fe",
+    "sourceFormDefinitionId": "{\"kind\":\"CompositeFormDefinitionId-JobPostingApplicationFormV2\",\"formDefinitionId\":\"91f803b9-24a1-453e-8548-4efb81039d9e\",\"jobPostingId\":\"5d366525-a519-4ca9-8c13-7e461a31a1d4\",\"jobBoardSuperType\":\"External\"}",
+    "sections": [
+      {
+        "title": null,
+        "descriptionHtml": null,
+        "isHidden": null,
+        "fieldEntries": [
+          {
+            "id": "c94724ca-6a39-4a8d-919c-e7e05bcb82fe__systemfield_name",
+            "field": {
+              "id": "18616edc-d441-46ea-b982-51664de19164",
+              "path": "_systemfield_name",
+              "humanReadablePath": "Name",
+              "title": "What is your preferred name?",
+              "isNullable": false,
+              "isPrivate": false,
+              "isDeactivated": false,
+              "isMany": false,
+              "metadata": {},
+              "type": "String",
+              "__autoSerializationID": "StringField"
+            },
+            "isRequired": true,
+            "descriptionHtml": "<p>What should we call you?</p>",
+            "isHidden": null
+          },
+          {
+            "id": "c94724ca-6a39-4a8d-919c-e7e05bcb82fe__systemfield_email",
+            "field": {
+              "id": "e22eea7f-5671-4207-94de-f7dc08bea39e",
+              "path": "_systemfield_email",
+              "humanReadablePath": "Email",
+              "title": "Email",
+              "isNullable": false,
+              "isPrivate": false,
+              "isDeactivated": false,
+              "isMany": false,
+              "metadata": {},
+              "type": "Email",
+              "__autoSerializationID": "EmailField"
+            },
+            "isRequired": true,
+            "descriptionHtml": null,
+            "isHidden": null
+          },
+          {
+            "id": "c94724ca-6a39-4a8d-919c-e7e05bcb82fe__systemfield_resume",
+            "field": {
+              "id": "639f6c3d-8b14-4804-8357-d73c78990879",
+              "path": "_systemfield_resume",
+              "humanReadablePath": "Resume",
+              "title": "Resume",
+              "isNullable": false,
+              "isPrivate": false,
+              "isDeactivated": false,
+              "isMany": false,
+              "metadata": {},
+              "type": "File",
+              "__autoSerializationID": "FileField"
+            },
+            "isRequired": true,
+            "descriptionHtml": null,
+            "isHidden": null
+          },
+          {
+            "id": "c94724ca-6a39-4a8d-919c-e7e05bcb82fe__systemfield_location",
+            "field": {
+              "id": "ab7bad5e-610d-4c84-bd5f-6df57cdcad33",
+              "path": "_systemfield_location",
+              "humanReadablePath": "Location",
+              "title": "Location",
+              "isNullable": false,
+              "isPrivate": false,
+              "isDeactivated": false,
+              "isMany": false,
+              "metadata": {},
+              "type": "Location",
+              "locationTypes": [
+                "Region",
+                "City",
+                "Country"
+              ],
+              "__autoSerializationID": "LocationField"
+            },
+            "isRequired": true,
+            "descriptionHtml": "<p>If your town/village does not show up, please select the nearest city</p>",
+            "isHidden": null
+          }
+        ]
+      },
+      {
+        "title": null,
+        "descriptionHtml": null,
+        "isHidden": null,
+        "fieldEntries": [
+          {
+            "id": "c94724ca-6a39-4a8d-919c-e7e05bcb82fe_3ffa0699-59b9-4d85-8f98-565bfcc78730",
+            "field": {
+              "id": "5a2d1fb3-f5c5-4bd6-97e1-b82c36ada363",
+              "path": "3ffa0699-59b9-4d85-8f98-565bfcc78730",
+              "humanReadablePath": "",
+              "title": "Are you legally eligible to work in the country where you\u2019re planning to work from?",
+              "isNullable": false,
+              "isPrivate": false,
+              "isDeactivated": false,
+              "isMany": false,
+              "metadata": {},
+              "type": "Boolean",
+              "__autoSerializationID": "BooleanField"
+            },
+            "isRequired": true,
+            "descriptionHtml": null,
+            "isHidden": null
+          },
+          {
+            "id": "c94724ca-6a39-4a8d-919c-e7e05bcb82fe_eea98482-b1e3-4582-b526-6a554d368e5a",
+            "field": {
+              "id": "4d8c04da-b610-4f2d-bfbf-47920ce65a0b",
+              "path": "eea98482-b1e3-4582-b526-6a554d368e5a",
+              "humanReadablePath": "",
+              "title": "If you are eligible, please select the status that allows you to work and live in that Country",
+              "isNullable": false,
+              "isPrivate": false,
+              "isDeactivated": false,
+              "isMany": false,
+              "metadata": {},
+              "type": "ValueSelect",
+              "selectableValues": [
+                {
+                  "label": "I am a citizen / permanent resident of the country where I plan to live & work from.",
+                  "value": "I am a citizen / permanent resident of the country where I plan to live & work from."
+                },
+                {
+                  "label": "I have a work visa in the country where I plan to live & work from.",
+                  "value": "I have a work visa in the country where I plan to live & work from."
+                },
+                {
+                  "label": "I require sponsorship / employer support from Camunda in the country where I plan to live & work from.",
+                  "value": "I require sponsorship / employer support from Camunda in the country where I plan to live & work from."
+                }
+              ],
+              "__autoSerializationID": "ValueSelectField"
+            },
+            "isRequired": true,
+            "descriptionHtml": null,
+            "isHidden": null
+          },
+          {
+            "id": "c94724ca-6a39-4a8d-919c-e7e05bcb82fe_5aa27471-a517-4da8-881a-b8228ebcc5dc",
+            "field": {
+              "id": "47298cbe-6ce3-4d72-8464-c07ed28db9b8",
+              "path": "5aa27471-a517-4da8-881a-b8228ebcc5dc",
+              "humanReadablePath": "",
+              "title": "What is your Legal first and last name?",
+              "isNullable": false,
+              "isPrivate": false,
+              "isDeactivated": false,
+              "isMany": false,
+              "metadata": {},
+              "type": "String",
+              "__autoSerializationID": "StringField"
+            },
+            "isRequired": true,
+            "descriptionHtml": null,
+            "isHidden": null
+          },
+          {
+            "id": "c94724ca-6a39-4a8d-919c-e7e05bcb82fe_1937450c-cfe6-40e4-aec0-5f0faf27a358",
+            "field": {
+              "id": "e8d70312-ea06-4b8b-8769-9e6e05a3ad25",
+              "path": "1937450c-cfe6-40e4-aec0-5f0faf27a358",
+              "humanReadablePath": "",
+              "title": "What is your phone number",
+              "isNullable": false,
+              "isPrivate": false,
+              "isDeactivated": false,
+              "isMany": false,
+              "metadata": {},
+              "type": "Phone",
+              "__autoSerializationID": "PhoneField"
+            },
+            "isRequired": false,
+            "descriptionHtml": "<p>Please include a country code </p>",
+            "isHidden": null
+          },
+          {
+            "id": "c94724ca-6a39-4a8d-919c-e7e05bcb82fe_7019eb0a-2336-461c-b444-5256112ea236",
+            "field": {
+              "id": "49094234-5108-469b-95c8-c9bbc72af55f",
+              "path": "7019eb0a-2336-461c-b444-5256112ea236",
+              "humanReadablePath": "",
+              "title": "What are your pronouns for others to use when referring to you?",
+              "isNullable": false,
+              "isPrivate": false,
+              "isDeactivated": false,
+              "isMany": false,
+              "metadata": {},
+              "type": "ValueSelect",
+              "selectableValues": [
+                {
+                  "label": "He/Him",
+                  "value": "He/Him"
+                },
+                {
+                  "label": "She/Her",
+                  "value": "She/Her"
+                },
+                {
+                  "label": "They/Them",
+                  "value": "They/Them"
+                },
+                {
+                  "label": "They/He",
+                  "value": "They/He"
+                },
+                {
+                  "label": "They/She",
+                  "value": "They/She"
+                },
+                {
+                  "label": "Ey/Em",
+                  "value": "Ey/Em"
+                },
+                {
+                  "label": "Ze/Hir",
+                  "value": "Ze/Hir"
+                },
+                {
+                  "label": "Ze/Zir",
+                  "value": "Ze/Zir"
+                },
+                {
+                  "label": "Zie/Hir",
+                  "value": "Zie/Hir"
+                },
+                {
+                  "label": "Zie/Zir",
+                  "value": "Zie/Zir"
+                },
+                {
+                  "label": "Xe/Xem",
+                  "value": "Xe/Xem"
+                },
+                {
+                  "label": "Other",
+                  "value": "Other"
+                }
+              ],
+              "__autoSerializationID": "ValueSelectField"
+            },
+            "isRequired": false,
+            "descriptionHtml": null,
+            "isHidden": null
+          },
+          {
+            "id": "c94724ca-6a39-4a8d-919c-e7e05bcb82fe_17971f65-bfc8-4087-8664-78c86196daa3",
+            "field": {
+              "id": "8994f23c-5755-4500-99f2-3ea68ed73627",
+              "path": "17971f65-bfc8-4087-8664-78c86196daa3",
+              "humanReadablePath": "",
+              "title": "Are you able and willing to work remotely?",
+              "isNullable": false,
+              "isPrivate": false,
+              "isDeactivated": false,
+              "isMany": false,
+              "metadata": {},
+              "type": "Boolean",
+              "__autoSerializationID": "BooleanField"
+            },
+            "isRequired": true,
+            "descriptionHtml": null,
+            "isHidden": null
+          },
+          {
+            "id": "c94724ca-6a39-4a8d-919c-e7e05bcb82fe_b037746d-04ee-42f2-8e70-7f4c2999b596",
+            "field": {
+              "id": "175a0a62-1e96-4137-ba97-54444e1f2d71",
+              "path": "b037746d-04ee-42f2-8e70-7f4c2999b596",
+              "humanReadablePath": "",
+              "title": "What are your salary expectations?",
+              "isNullable": false,
+              "isPrivate": false,
+              "isDeactivated": false,
+              "isMany": false,
+              "metadata": {},
+              "type": "String",
+              "__autoSerializationID": "StringField"
+            },
+            "isRequired": true,
+            "descriptionHtml": "<p>Please include your local <strong>currency</strong>, and a range of <strong>minimum to maximum</strong></p>",
+            "isHidden": null
+          },
+          {
+            "id": "c94724ca-6a39-4a8d-919c-e7e05bcb82fe_ad7d5f36-6172-46f4-9558-7ef8abdb42fd",
+            "field": {
+              "id": "e48de411-7b84-4266-93a2-6ffd81fe12d0",
+              "path": "ad7d5f36-6172-46f4-9558-7ef8abdb42fd",
+              "humanReadablePath": "",
+              "title": "LinkedIn Profile",
+              "isNullable": false,
+              "isPrivate": false,
+              "isDeactivated": false,
+              "isMany": false,
+              "metadata": {},
+              "type": "String",
+              "__autoSerializationID": "StringField"
+            },
+            "isRequired": true,
+            "descriptionHtml": null,
+            "isHidden": null
+          },
+          {
+            "id": "c94724ca-6a39-4a8d-919c-e7e05bcb82fe_e735d6df-f832-4a75-bd32-f4634bca2b21",
+            "field": {
+              "id": "100a7d44-1be9-4cfe-b4d2-19b2ac20bfb0",
+              "path": "e735d6df-f832-4a75-bd32-f4634bca2b21",
+              "humanReadablePath": "",
+              "title": "If you have discussed this role with a current Camunda employee, please enter their full name here",
+              "isNullable": false,
+              "isPrivate": false,
+              "isDeactivated": false,
+              "isMany": false,
+              "metadata": {},
+              "type": "String",
+              "__autoSerializationID": "StringField"
+            },
+            "isRequired": false,
+            "descriptionHtml": "<p>If you have not spoken to anyone at Camunda, <strong>please leave this field blank</strong></p>",
+            "isHidden": null
+          },
+          {
+            "id": "c94724ca-6a39-4a8d-919c-e7e05bcb82fe_342d14a0-238e-4bc7-bd24-5cc6b4b41f02",
+            "field": {
+              "id": "9bdb3c77-392d-492d-a687-7d247576ef30",
+              "path": "342d14a0-238e-4bc7-bd24-5cc6b4b41f02",
+              "humanReadablePath": "",
+              "title": "Are you related to any current employees?",
+              "isNullable": false,
+              "isPrivate": false,
+              "isDeactivated": false,
+              "isMany": false,
+              "metadata": {},
+              "type": "Boolean",
+              "__autoSerializationID": "BooleanField"
+            },
+            "isRequired": false,
+            "descriptionHtml": null,
+            "isHidden": null
+          },
+          {
+            "id": "c94724ca-6a39-4a8d-919c-e7e05bcb82fe_39bb1a95-2aad-4ec8-b134-6c7b1afec6e1",
+            "field": {
+              "id": "c61772d1-b6e4-4f36-aa1f-92fb16a12b28",
+              "path": "39bb1a95-2aad-4ec8-b134-6c7b1afec6e1",
+              "humanReadablePath": "",
+              "title": "What is the first line of your address?",
+              "isNullable": false,
+              "isPrivate": false,
+              "isDeactivated": false,
+              "isMany": false,
+              "metadata": {},
+              "type": "String",
+              "__autoSerializationID": "StringField"
+            },
+            "isRequired": true,
+            "descriptionHtml": null,
+            "isHidden": null
+          },
+          {
+            "id": "c94724ca-6a39-4a8d-919c-e7e05bcb82fe_101f0105-5726-4b81-a0cb-314b1685d98d",
+            "field": {
+              "id": "6a52cbb8-3afe-4489-924a-f2160f88b34e",
+              "path": "101f0105-5726-4b81-a0cb-314b1685d98d",
+              "humanReadablePath": "",
+              "title": "What is the second line of your address (if relevant)?",
+              "isNullable": false,
+              "isPrivate": false,
+              "isDeactivated": false,
+              "isMany": false,
+              "metadata": {},
+              "type": "String",
+              "__autoSerializationID": "StringField"
+            },
+            "isRequired": false,
+            "descriptionHtml": null,
+            "isHidden": null
+          },
+          {
+            "id": "c94724ca-6a39-4a8d-919c-e7e05bcb82fe_9cf771db-79c2-4bc3-adde-750e266829c6",
+            "field": {
+              "id": "afca1fc6-ab63-4ea1-803e-59a122db6038",
+              "path": "9cf771db-79c2-4bc3-adde-750e266829c6",
+              "humanReadablePath": "",
+              "title": "City",
+              "isNullable": false,
+              "isPrivate": false,
+              "isDeactivated": false,
+              "isMany": false,
+              "metadata": {},
+              "type": "String",
+              "__autoSerializationID": "StringField"
+            },
+            "isRequired": true,
+            "descriptionHtml": null,
+            "isHidden": null
+          },
+          {
+            "id": "c94724ca-6a39-4a8d-919c-e7e05bcb82fe_a3d9ae81-72e0-4666-b2d9-bc50584b99a4",
+            "field": {
+              "id": "f69a95c7-7e50-41c4-943d-d300b924d314",
+              "path": "a3d9ae81-72e0-4666-b2d9-bc50584b99a4",
+              "humanReadablePath": "",
+              "title": "State/Region",
+              "isNullable": false,
+              "isPrivate": false,
+              "isDeactivated": false,
+              "isMany": false,
+              "metadata": {},
+              "type": "String",
+              "__autoSerializationID": "StringField"
+            },
+            "isRequired": false,
+            "descriptionHtml": null,
+            "isHidden": null
+          },
+          {
+            "id": "c94724ca-6a39-4a8d-919c-e7e05bcb82fe_dc8cd514-762c-42d7-a014-970993ad95c4",
+            "field": {
+              "id": "54688bf2-8821-4663-aa01-8b49607546ba",
+              "path": "dc8cd514-762c-42d7-a014-970993ad95c4",
+              "humanReadablePath": "",
+              "title": "Post Code",
+              "isNullable": false,
+              "isPrivate": false,
+              "isDeactivated": false,
+              "isMany": false,
+              "metadata": {},
+              "type": "String",
+              "__autoSerializationID": "StringField"
+            },
+            "isRequired": true,
+            "descriptionHtml": null,
+            "isHidden": null
+          },
+          {
+            "id": "c94724ca-6a39-4a8d-919c-e7e05bcb82fe_c5cc3c3e-bf31-48ba-a239-6671f01f1466",
+            "field": {
+              "id": "728848c9-ba20-484e-82ae-e7da6acbd669",
+              "path": "c5cc3c3e-bf31-48ba-a239-6671f01f1466",
+              "humanReadablePath": "",
+              "title": "Country",
+              "isNullable": false,
+              "isPrivate": false,
+              "isDeactivated": false,
+              "isMany": false,
+              "metadata": {},
+              "type": "ValueSelect",
+              "selectableValues": [
+                {
+                  "label": "Albania",
+                  "value": "Albania"
+                },
+                {
+                  "label": "Algeria",
+                  "value": "Algeria"
+                },
+                {
+                  "label": "Andorra",
+                  "value": "Andorra"
+                },
+                {
+                  "label": "Angola",
+                  "value": "Angola"
+                },
+                {
+                  "label": "Antigua and Barbuda",
+                  "value": "Antigua and Barbuda"
+                },
+                {
+                  "label": "Argentina",
+                  "value": "Argentina"
+                },
+                {
+                  "label": "Armenia",
+                  "value": "Armenia"
+                },
+                {
+                  "label": "Aruba",
+                  "value": "Aruba"
+                },
+                {
+                  "label": "Australia",
+                  "value": "Australia"
+                },
+                {
+                  "label": "Austria",
+                  "value": "Austria"
+                },
+                {
+                  "label": "Azerbaijan",
+                  "value": "Azerbaijan"
+                },
+                {
+                  "label": "Bahamas",
+                  "value": "Bahamas"
+                },
+                {
+                  "label": "Bahrain",
+                  "value": "Bahrain"
+                },
+                {
+                  "label": "Bangladesh",
+                  "value": "Bangladesh"
+                },
+                {
+                  "label": "Belarus",
+                  "value": "Belarus"
+                },
+                {
+                  "label": "Belgium",
+                  "value": "Belgium"
+                },
+                {
+                  "label": "Benin",
+                  "value": "Benin"
+                },
+                {
+                  "label": "Bhutan",
+                  "value": "Bhutan"
+                },
+                {
+                  "label": "Bolivia",
+                  "value": "Bolivia"
+                },
+                {
+                  "label": "Bosnia and Herzegovina",
+                  "value": "Bosnia and Herzegovina"
+                },
+                {
+                  "label": "Botswana",
+                  "value": "Botswana"
+                },
+                {
+                  "label": "Brazil",
+                  "value": "Brazil"
+                },
+                {
+                  "label": "Brunei",
+                  "value": "Brunei"
+                },
+                {
+                  "label": "Bulgaria",
+                  "value": "Bulgaria"
+                },
+                {
+                  "label": "Burkina Faso",
+                  "value": "Burkina Faso"
+                },
+                {
+                  "label": "Cambodia",
+                  "value": "Cambodia"
+                },
+                {
+                  "label": "Canada",
+                  "value": "Canada"
+                },
+                {
+                  "label": "Chile",
+                  "value": "Chile"
+                },
+                {
+                  "label": "China",
+                  "value": "China"
+                },
+                {
+                  "label": "Colombia",
+                  "value": "Colombia"
+                },
+                {
+                  "label": "Costa Rica",
+                  "value": "Costa Rica"
+                },
+                {
+                  "label": "C\u00f4te d'Ivoire",
+                  "value": "C\u00f4te d'Ivoire"
+                },
+                {
+                  "label": "Croatia",
+                  "value": "Croatia"
+                },
+                {
+                  "label": "Cyprus",
+                  "value": "Cyprus"
+                },
+                {
+                  "label": "Czech Republic",
+                  "value": "Czech Republic"
+                },
+                {
+                  "label": "Denmark",
+                  "value": "Denmark"
+                },
+                {
+                  "label": "Dominica",
+                  "value": "Dominica"
+                },
+                {
+                  "label": "Dominican Republic",
+                  "value": "Dominican Republic"
+                },
+                {
+                  "label": "Ecuador",
+                  "value": "Ecuador"
+                },
+                {
+                  "label": "Egypt",
+                  "value": "Egypt"
+                },
+                {
+                  "label": "El Salvador",
+                  "value": "El Salvador"
+                },
+                {
+                  "label": "Estonia",
+                  "value": "Estonia"
+                },
+                {
+                  "label": "Fiji",
+                  "value": "Fiji"
+                },
+                {
+                  "label": "Finland",
+                  "value": "Finland"
+                },
+                {
+                  "label": "France",
+                  "value": "France"
+                },
+                {
+                  "label": "Gabon",
+                  "value": "Gabon"
+                },
+                {
+                  "label": "Gambia",
+                  "value": "Gambia"
+                },
+                {
+                  "label": "Georgia",
+                  "value": "Georgia"
+                },
+                {
+                  "label": "Germany",
+                  "value": "Germany"
+                },
+                {
+                  "label": "Ghana",
+                  "value": "Ghana"
+                },
+                {
+                  "label": "Greece",
+                  "value": "Greece"
+                },
+                {
+                  "label": "Grenada",
+                  "value": "Grenada"
+                },
+                {
+                  "label": "Guatemala",
+                  "value": "Guatemala"
+                },
+                {
+                  "label": "Guinea",
+                  "value": "Guinea"
+                },
+                {
+                  "label": "Guinea-Bissau",
+                  "value": "Guinea-Bissau"
+                },
+                {
+                  "label": "Guyana",
+                  "value": "Guyana"
+                },
+                {
+                  "label": "Haiti",
+                  "value": "Haiti"
+                },
+                {
+                  "label": "Honduras",
+                  "value": "Honduras"
+                },
+                {
+                  "label": "Hong Kong",
+                  "value": "Hong Kong"
+                },
+                {
+                  "label": "Hungary",
+                  "value": "Hungary"
+                },
+                {
+                  "label": "Iceland",
+                  "value": "Iceland"
+                },
+                {
+                  "label": "India",
+                  "value": "India"
+                },
+                {
+                  "label": "Indonesia",
+                  "value": "Indonesia"
+                },
+                {
+                  "label": "Ireland",
+                  "value": "Ireland"
+                },
+                {
+                  "label": "Israel",
+                  "value": "Israel"
+                },
+                {
+                  "label": "Italy",
+                  "value": "Italy"
+                },
+                {
+                  "label": "Jamaica",
+                  "value": "Jamaica"
+                },
+                {
+                  "label": "Japan",
+                  "value": "Japan"
+                },
+                {
+                  "label": "Kazakhstan",
+                  "value": "Kazakhstan"
+                },
+                {
+                  "label": "Kenya",
+                  "value": "Kenya"
+                },
+                {
+                  "label": "Kiribati",
+                  "value": "Kiribati"
+                },
+                {
+                  "label": "Kosovo",
+                  "value": "Kosovo"
+                },
+                {
+                  "label": "Kuwait",
+                  "value": "Kuwait"
+                },
+                {
+                  "label": "Kyrgyzstan",
+                  "value": "Kyrgyzstan"
+                },
+                {
+                  "label": "Laos",
+                  "value": "Laos"
+                },
+                {
+                  "label": "Latvia",
+                  "value": "Latvia"
+                },
+                {
+                  "label": "Lebanon",
+                  "value": "Lebanon"
+                },
+                {
+                  "label": "Lesotho",
+                  "value": "Lesotho"
+                },
+                {
+                  "label": "Liberia",
+                  "value": "Liberia"
+                },
+                {
+                  "label": "Liechtenstein",
+                  "value": "Liechtenstein"
+                },
+                {
+                  "label": "Lithuania",
+                  "value": "Lithuania"
+                },
+                {
+                  "label": "Luxembourg",
+                  "value": "Luxembourg"
+                },
+                {
+                  "label": "Malawi",
+                  "value": "Malawi"
+                },
+                {
+                  "label": "Malaysia",
+                  "value": "Malaysia"
+                },
+                {
+                  "label": "Maldives",
+                  "value": "Maldives"
+                },
+                {
+                  "label": "Mali",
+                  "value": "Mali"
+                },
+                {
+                  "label": "Malta",
+                  "value": "Malta"
+                },
+                {
+                  "label": "Marshall Islands",
+                  "value": "Marshall Islands"
+                },
+                {
+                  "label": "Mauritania",
+                  "value": "Mauritania"
+                },
+                {
+                  "label": "Mauritius",
+                  "value": "Mauritius"
+                },
+                {
+                  "label": "Mexico",
+                  "value": "Mexico"
+                },
+                {
+                  "label": "Micronesia",
+                  "value": "Micronesia"
+                },
+                {
+                  "label": "Moldova",
+                  "value": "Moldova"
+                },
+                {
+                  "label": "Monaco",
+                  "value": "Monaco"
+                },
+                {
+                  "label": "Mongolia",
+                  "value": "Mongolia"
+                },
+                {
+                  "label": "Montenegro",
+                  "value": "Montenegro"
+                },
+                {
+                  "label": "Morocco",
+                  "value": "Morocco"
+                },
+                {
+                  "label": "Mozambique",
+                  "value": "Mozambique"
+                },
+                {
+                  "label": "Namibia",
+                  "value": "Namibia"
+                },
+                {
+                  "label": "Nauru",
+                  "value": "Nauru"
+                },
+                {
+                  "label": "Nepal",
+                  "value": "Nepal"
+                },
+                {
+                  "label": "Netherlands",
+                  "value": "Netherlands"
+                },
+                {
+                  "label": "New Zealand",
+                  "value": "New Zealand"
+                },
+                {
+                  "label": "Nicaragua",
+                  "value": "Nicaragua"
+                },
+                {
+                  "label": "Niger",
+                  "value": "Niger"
+                },
+                {
+                  "label": "Nigeria",
+                  "value": "Nigeria"
+                },
+                {
+                  "label": "North Macedonia",
+                  "value": "North Macedonia"
+                },
+                {
+                  "label": "Norway",
+                  "value": "Norway"
+                },
+                {
+                  "label": "Oman",
+                  "value": "Oman"
+                },
+                {
+                  "label": "Pakistan",
+                  "value": "Pakistan"
+                },
+                {
+                  "label": "Palau",
+                  "value": "Palau"
+                },
+                {
+                  "label": "Panama",
+                  "value": "Panama"
+                },
+                {
+                  "label": "Papua New Guinea",
+                  "value": "Papua New Guinea"
+                },
+                {
+                  "label": "Paraguay",
+                  "value": "Paraguay"
+                },
+                {
+                  "label": "Peru",
+                  "value": "Peru"
+                },
+                {
+                  "label": "Philippines",
+                  "value": "Philippines"
+                },
+                {
+                  "label": "Poland",
+                  "value": "Poland"
+                },
+                {
+                  "label": "Portugal",
+                  "value": "Portugal"
+                },
+                {
+                  "label": "Puerto Rico",
+                  "value": "Puerto Rico"
+                },
+                {
+                  "label": "Qatar",
+                  "value": "Qatar"
+                },
+                {
+                  "label": "Romania",
+                  "value": "Romania"
+                },
+                {
+                  "label": "Rwanda",
+                  "value": "Rwanda"
+                },
+                {
+                  "label": "Saint Kitts and Nevis",
+                  "value": "Saint Kitts and Nevis"
+                },
+                {
+                  "label": "Saint Lucia",
+                  "value": "Saint Lucia"
+                },
+                {
+                  "label": "Saint Vincent and the Grenadines",
+                  "value": "Saint Vincent and the Grenadines"
+                },
+                {
+                  "label": "Samoa",
+                  "value": "Samoa"
+                },
+                {
+                  "label": "San Marino",
+                  "value": "San Marino"
+                },
+                {
+                  "label": "Sao Tome and Principe",
+                  "value": "Sao Tome and Principe"
+                },
+                {
+                  "label": "Saudi Arabia",
+                  "value": "Saudi Arabia"
+                },
+                {
+                  "label": "Senegal",
+                  "value": "Senegal"
+                },
+                {
+                  "label": "Serbia",
+                  "value": "Serbia"
+                },
+                {
+                  "label": "Seychelles",
+                  "value": "Seychelles"
+                },
+                {
+                  "label": "Sierra Leone",
+                  "value": "Sierra Leone"
+                },
+                {
+                  "label": "Singapore",
+                  "value": "Singapore"
+                },
+                {
+                  "label": "Slovakia",
+                  "value": "Slovakia"
+                },
+                {
+                  "label": "Slovenia",
+                  "value": "Slovenia"
+                },
+                {
+                  "label": "Solomon Islands",
+                  "value": "Solomon Islands"
+                },
+                {
+                  "label": "South Africa",
+                  "value": "South Africa"
+                },
+                {
+                  "label": "South Korea",
+                  "value": "South Korea"
+                },
+                {
+                  "label": "Spain",
+                  "value": "Spain"
+                },
+                {
+                  "label": "Sri Lanka",
+                  "value": "Sri Lanka"
+                },
+                {
+                  "label": "Suriname",
+                  "value": "Suriname"
+                },
+                {
+                  "label": "Sweden",
+                  "value": "Sweden"
+                },
+                {
+                  "label": "Switzerland",
+                  "value": "Switzerland"
+                },
+                {
+                  "label": "Taiwan",
+                  "value": "Taiwan"
+                },
+                {
+                  "label": "Tajikistan",
+                  "value": "Tajikistan"
+                },
+                {
+                  "label": "Tanzania",
+                  "value": "Tanzania"
+                },
+                {
+                  "label": "Thailand",
+                  "value": "Thailand"
+                },
+                {
+                  "label": "Timor-Leste",
+                  "value": "Timor-Leste"
+                },
+                {
+                  "label": "Tonga",
+                  "value": "Tonga"
+                },
+                {
+                  "label": "Tunisia",
+                  "value": "Tunisia"
+                },
+                {
+                  "label": "Turkey",
+                  "value": "Turkey"
+                },
+                {
+                  "label": "Tuvalu",
+                  "value": "Tuvalu"
+                },
+                {
+                  "label": "Uganda",
+                  "value": "Uganda"
+                },
+                {
+                  "label": "Ukraine",
+                  "value": "Ukraine"
+                },
+                {
+                  "label": "United Arab Emirates",
+                  "value": "United Arab Emirates"
+                },
+                {
+                  "label": "United Kingdom",
+                  "value": "United Kingdom"
+                },
+                {
+                  "label": "United States",
+                  "value": "United States"
+                },
+                {
+                  "label": "Uruguay",
+                  "value": "Uruguay"
+                },
+                {
+                  "label": "Uzbekistan",
+                  "value": "Uzbekistan"
+                },
+                {
+                  "label": "Vietnam",
+                  "value": "Vietnam"
+                },
+                {
+                  "label": "Zambia",
+                  "value": "Zambia"
+                },
+                {
+                  "label": "Zimbabwe",
+                  "value": "Zimbabwe"
+                },
+                {
+                  "label": "My Country is not listed here",
+                  "value": "My Country is not listed here"
+                }
+              ],
+              "__autoSerializationID": "ValueSelectField"
+            },
+            "isRequired": false,
+            "descriptionHtml": null,
+            "isHidden": null
+          },
+          {
+            "id": "c94724ca-6a39-4a8d-919c-e7e05bcb82fe_bd212fd6-50cf-4299-b507-58aca80390f6",
+            "field": {
+              "id": "30e32306-1ca0-468e-8449-0fcc87792016",
+              "path": "bd212fd6-50cf-4299-b507-58aca80390f6",
+              "humanReadablePath": "",
+              "title": "Do you consent to BrightHire's Interview Integrity feature analyzing your interview for potential fraud signals\u2014including deepfake detection, device consistency, and location checks\u2014to help our team review interview authenticity? (This is separate from interview recording consent.)?",
+              "isNullable": false,
+              "isPrivate": false,
+              "isDeactivated": false,
+              "isMany": false,
+              "metadata": {},
+              "type": "Boolean",
+              "__autoSerializationID": "BooleanField"
+            },
+            "isRequired": true,
+            "descriptionHtml": null,
+            "isHidden": null
+          }
+        ]
+      }
+    ]
+  },
+  "surveyForms": [
+    {
+      "id": "208b782d-3628-43fb-8e02-509431c08aa5",
+      "sourceFormDefinitionId": "020ae455-5380-446e-ac2e-6a891fea7aee",
+      "sections": [
+        {
+          "title": null,
+          "descriptionHtml": null,
+          "isHidden": null,
+          "fieldEntries": [
+            {
+              "id": "208b782d-3628-43fb-8e02-509431c08aa5__systemfield_data_consent_ack",
+              "field": {
+                "id": "1512faba-b0ad-4560-8436-12149b9724a7",
+                "path": "_systemfield_data_consent_ack",
+                "humanReadablePath": "Future Contact Consent",
+                "title": "",
+                "isNullable": false,
+                "isPrivate": false,
+                "isDeactivated": false,
+                "isMany": false,
+                "metadata": {},
+                "type": "MultiValueSelect",
+                "selectableValues": [
+                  {
+                    "label": "I agree",
+                    "value": "data_consent_ack"
+                  }
+                ],
+                "__autoSerializationID": "MultiValueSelectField"
+              },
+              "isRequired": false,
+              "descriptionHtml": "<p>I understand and consent that Camunda may transfer my application data to Ashby who will store my application data on Camunda\u2019s behalf in the US (consent in accord with Art. 49 I a GDPR). The US data protection laws and standards differ from the EU laws. Camunda has therefore established mechanisms to protect personal data in agreements with Ashby such as the standard contractual clauses of the EU Commission. Camunda\u2019s <a target=\"_blank\" rel=\"noopener noreferrer nofollow\" href=\"https://legal.camunda.com/privacy-and-data-protection#applicant-privacy-policy\">Applicant Privacy Policy</a> is available for more information, as well as Ashby\u2019s <a target=\"_blank\" rel=\"noopener noreferrer nofollow\" href=\"https://www.ashbyhq.com/resources/terms\">Privacy Policy</a> and <a target=\"_blank\" rel=\"noopener noreferrer nofollow\" href=\"https://www.ashbyhq.com/resources/terms-ai-features\">Terms for AI Features</a>.</p><p></p><p>The Applicant can withdraw the application, the consent to store their personal data or ask to update their data at any time by contacting Camunda via our Applicant Privacy Rights webform: <a target=\"_blank\" rel=\"noopener noreferrer nofollow\" href=\"https://legal.camunda.com/privacy-and-data-protection#applicant-privacy-policy\"><u>https://legal.camunda.com/privacy-and-data-protection#applicant-privacy-policy</u></a></p><p></p><p>Applicants may also learn more about and opt out of AI usage in their application process by navigating to this webform:</p><p><a target=\"_blank\" rel=\"noopener noreferrer nofollow\" href=\"https://jobs.ashbyhq.com/camunda/automation-notice\"><u>https://jobs.ashbyhq.com/camunda/automation-notice</u></a></p><p><em>Note: The consent period lasts for 6 months </em></p>",
+              "isHidden": null
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -151,6 +151,14 @@ def application_create(request, pk):
             draft.channel = "portal"
         except ValueError:
             pass
+    from .services.camunda_ashby import job_url as camunda_url
+
+    if not job.apply_email:
+        try:
+            draft.portal_url = camunda_url(job)
+            draft.channel = "portal"
+        except ValueError:
+            pass
     form = ApplicationForm(
         request.POST or None,
         owner=request.user,
@@ -183,9 +191,29 @@ def application_create(request, pk):
 @login_required
 def application_detail(request, pk):
     application = owned_application(request.user, pk)
+    from .services.camunda_ashby import PortalRejected, inspect_schema
+    from .services.camunda_ashby import supported as camunda_supported
     from .services.cato_greenhouse import supported as cato_supported
     from .services.secret_telaviv import supported
 
+    camunda_review = []
+    if camunda_supported(application):
+        try:
+            schema = inspect_schema(
+                application.portal_answers.get("_schema", {}),
+                application.job.provider_key.rsplit(":", 1)[-1],
+            )
+            for entry in schema.entries:
+                field = entry["field"]
+                if field["type"] != "File":
+                    camunda_review.append(
+                        (
+                            field["title"] or "Application data consent",
+                            application.portal_answers.get(field["path"], "Unanswered"),
+                        )
+                    )
+        except PortalRejected:
+            pass
     return render(
         request,
         "jobs/application.html",
@@ -198,10 +226,13 @@ def application_detail(request, pk):
             "can_edit": application.status in {"draft", "approved", "failed"},
             "secret_portal": supported(application),
             "cato_portal": cato_supported(application),
+            "camunda_portal": camunda_supported(application),
+            "camunda_review": camunda_review,
             "can_approve": (
                 application.channel == "email"
                 or supported(application)
                 or cato_supported(application)
+                or camunda_supported(application)
             )
             and application.status in {"draft", "failed"},
         },

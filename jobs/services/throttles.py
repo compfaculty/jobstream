@@ -12,8 +12,12 @@ from jobs.models import DeliveryThrottle
 
 def scopes(connection, application):
     if application.channel == "portal":
+        from .camunda_ashby import supported as camunda_supported
         from .cato_greenhouse import supported
 
+        if camunda_supported(application):
+            key = hashlib.sha256(b"provider:camunda_ashby").hexdigest()
+            return [(key, getattr(settings, "CAMUNDA_APPLY_INTERVAL", 30.0))]
         if supported(application):
             key = hashlib.sha256(b"provider:cato_greenhouse").hexdigest()
             return [(key, getattr(settings, "CATO_APPLY_INTERVAL", 30.0))]
@@ -65,9 +69,17 @@ def defer_account(owner_id, until):
 def defer_delivery(application, until):
     if application.channel == "email":
         return defer_account(application.owner_id, until)
+    from .camunda_ashby import supported as camunda_supported
     from .cato_greenhouse import supported
 
-    defer_portal(until, "cato_greenhouse" if supported(application) else "secret_telaviv")
+    provider = (
+        "camunda_ashby"
+        if camunda_supported(application)
+        else "cato_greenhouse"
+        if supported(application)
+        else "secret_telaviv"
+    )
+    defer_portal(until, provider)
 
 
 def portal_pause_seconds(provider="secret_telaviv"):

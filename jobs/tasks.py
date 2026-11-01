@@ -70,9 +70,9 @@ def dispatch_submissions():
             application.next_dispatch_at = now + timedelta(minutes=5)
             application.save(update_fields=["next_dispatch_at"])
     for application in applications:
-        from jobs.services.cato_greenhouse import supported
+        from jobs.services.portal_delivery import browser_supported
 
-        task = send_browser_application if supported(application) else send_application
+        task = send_browser_application if browser_supported(application) else send_application
         task.delay(application.pk)
 
 

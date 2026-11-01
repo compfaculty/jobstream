@@ -175,6 +175,7 @@ def prepare(item_id):
     error = ""
     portal_fingerprint = ""
     cato_portal = False
+    camunda_portal = False
     applicant_answers = item.batch.portal_answers
     retry_delay = 60
     body = (
@@ -195,9 +196,19 @@ def prepare(item_id):
             portal_url = secret_url(job.get("apply_url") or item.job.canonical_url)
         except ValueError:
             portal_url = ""
-        from . import cato_greenhouse
+        from . import camunda_ashby, cato_greenhouse
 
         if not job.get("recipient"):
+            try:
+                camunda_url = camunda_ashby.job_url(item.job)
+            except ValueError:
+                camunda_url = ""
+            if camunda_url:
+                camunda_portal = True
+                portal_url = camunda_url
+                schema = camunda_ashby.read_schema(item.job)
+                portal_fingerprint = schema.fingerprint
+                applicant_answers = {"_schema": schema.payload}
             try:
                 cato_url = cato_greenhouse.job_url(item.job)
             except ValueError:
@@ -214,7 +225,7 @@ def prepare(item_id):
                     for key, value in saved.items()
                     if reuse and key in cato_greenhouse.FIELDS
                 }
-        if not job.get("recipient") and portal_url and not cato_portal:
+        if not job.get("recipient") and portal_url and not cato_portal and not camunda_portal:
             from .throttles import portal_pause_seconds
 
             pause = portal_pause_seconds()
@@ -230,7 +241,11 @@ def prepare(item_id):
 
             defer_portal(
                 timezone.now() + timedelta(seconds=retry_delay),
-                "cato_greenhouse" if cato_portal else "secret_telaviv",
+                "camunda_ashby"
+                if camunda_portal
+                else "cato_greenhouse"
+                if cato_portal
+                else "secret_telaviv",
             )
         except RetryWindowTooLong:
             error = "portal_pause_requires_review"
@@ -259,7 +274,7 @@ def prepare(item_id):
             elif error:
                 current.state = (
                     "needs_action"
-                    if error.startswith("cato_")
+                    if error.startswith(("cato_", "camunda_"))
                     or error
                     in {
                         "cv_validation_failed",
@@ -317,7 +332,9 @@ def prepare(item_id):
                             provider.validate_answers(current.application.portal_answers)
                         except ValidationError:
                             current.error_code = (
-                                "cato_details_required"
+                                "camunda_details_required"
+                                if camunda_portal
+                                else "cato_details_required"
                                 if cato_portal
                                 else "secret_telaviv_details_required"
                             )

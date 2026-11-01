@@ -309,3 +309,49 @@ retries only that harmless readiness operation, and reports pre-submit failures 
 stage. The read-only diagnostic checks interactivity too. A real Chromium regression
 fixture delays event-handler attachment. No application was resent during debugging;
 a fresh user review/approval and employer confirmation remain required.
+
+## Camunda Ashby adapter — 2026-11-01
+
+- Confirmed the official careers page links to Camunda's Ashby board. Existing source
+  56 already collects the selected Senior Manager, QA Engineering posting as job 20370.
+- Added dynamic draft questions from the public read-only job schema, reviewed public
+  schema snapshots, owner/CV approval integrity and browser-queue routing. New shared
+  Preferences fields remain deferred; production answers/consents have no fake defaults.
+- Added isolated normal-browser answer saves, pinned upload-handle/file transport,
+  successful resume-binding checks and exactly one final Submit. This posting uses
+  `ApiSubmitMultipleFormsAction`; both application and consent-survey results must be
+  explicit successes. Partial/unknown results never automatically replay.
+- Tests cover semantic fingerprints across regenerated render IDs, changed consent,
+  escaped provider help text, explicit yes/no choices, queued/uncertain/manual quota
+  history, concurrent quota admission, upload origins, 429 pauses during answer saves
+  and submission, malformed responses, provider blocks and partial survey failures.
+- Thirty targeted schema/approval/browser checks passed after the final combined-form
+  protocol correction. Prior full-suite checks passed 311 tests before that correction;
+  final full-suite results are checked again for rollout.
+- Live read-only browser check confirmed all 22 fields and city autocomplete, including
+  `Tel Aviv, Tel Aviv District, Israel`, with schema agreement across HTTP/browser reads.
+  All form writes, CV uploads and submissions were blocked during that check.
+- Ruff, trust-boundary mypy, Django checks, OpenAPI validation and source secret scan
+  passed. No live application was sent. User-selected CV/answers and explicit approval
+  followed by an employer receipt remain the end-to-end validation boundary.
+
+Camunda final verification: **313 full-suite tests passed** in 61.73 seconds with
+17 existing warnings; statement/branch coverage gates passed. After adding clearing
+of old answers/consent on schema changes, **43 focused adapter/browser/preferences
+checks passed**. Lint/format, mypy, Django/OpenAPI checks and diff validation passed.
+Live application submission remains untested; synthetic answers are confined to tests.
+
+The final 43 focused checks also passed with regenerated survey storage IDs excluded
+from semantic fingerprints; question paths/text/choices and consent remain bound.
+
+### Authorized live verification — 2026-11-01
+
+The owner authorized real submissions for applications 3 and 4. Camunda application
+4 is now confirmed/applied: Ashby returned explicit application and consent-survey
+success after human verification in visible local Chromium. It must not be resent.
+Live fixes cover short-city matching, nested phone/SMS controls, and upload-handle
+timing/canonicalization before final submission.
+
+The final full suite passed **321 tests** with 17 existing warnings; coverage gates,
+Ruff, trust-boundary mypy and source secret scanning passed. Hosted human-verification handoff remains
+unimplemented; today's visible-browser hook is for local assisted debugging.

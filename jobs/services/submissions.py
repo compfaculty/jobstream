@@ -80,6 +80,11 @@ def validate_content(application: Application, *, for_send: bool = True) -> None
                 "Complete this application on the employer portal and update tracking."
             )
         provider.validate_answers(application.portal_answers)
+        from .camunda_ashby import supported as camunda_supported
+        from .camunda_ashby import validate_limits
+
+        if camunda_supported(application):
+            validate_limits(application)
         if not application.document_id:
             raise ValidationError("Choose a CV for this application.")
     if application.channel == "email":
@@ -136,7 +141,12 @@ def edit(user, pk: int, values: dict) -> Application:
             Application.Status.UNKNOWN,
         }:
             raise InvalidTransition("Submission content is locked; update tracking separately.")
-        for field in ("recipient", "subject", "body", "document", "portal_answers"):
+        fields = ["recipient", "subject", "body", "document", "portal_answers"]
+        from .camunda_ashby import supported as camunda_supported
+
+        if camunda_supported(application):
+            fields.append("portal_fingerprint")
+        for field in fields:
             if field in values:
                 setattr(application, field, values[field])
         validate_content(application, for_send=False)
@@ -166,6 +176,17 @@ def attachment_bytes(application: Application) -> bytes | None:
 
 def submit(pk: int) -> None:
     with transaction.atomic():
+        from django.contrib.auth import get_user_model
+
+        quota_owner = (
+            Application.objects.filter(
+                pk=pk, channel="portal", job__provider_key__startswith="ashby:camunda:"
+            )
+            .values_list("owner_id", flat=True)
+            .first()
+        )
+        if quota_owner is not None:
+            get_user_model().objects.select_for_update().get(pk=quota_owner)
         application = (
             Application.objects.select_for_update(of=("self",))
             .select_related("document")
@@ -272,9 +293,9 @@ def reconcile(pk: int) -> None:
     if application.status != Application.Status.UNKNOWN:
         return
     if application.channel == "portal":
-        from .cato_greenhouse import supported as cato_supported
+        from .portal_delivery import browser_supported
 
-        if cato_supported(application):
+        if browser_supported(application):
             # No authenticated read-only receipt lookup exists. Never replay the form.
             return
         if application.portal_receipt_url:

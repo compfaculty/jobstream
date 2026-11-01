@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
+from django.utils.html import conditional_escape
 
 from .models import Application, Document
 
@@ -67,6 +68,91 @@ class ApplicationForm(forms.ModelForm):
                 self.initial[f"cato_{name}"] = self.instance.portal_answers.get(
                     name, defaults.get(name, "")
                 )
+        from .services import camunda_ashby
+
+        self.camunda_portal = bool(self.instance.job_id and camunda_ashby.supported(self.instance))
+        self.camunda_schema = None
+        if self.camunda_portal:
+            self.fields["document"].required = True
+            self.fields["body"].required = False
+            self.fields["body"].label = "Private note (not sent to Camunda)"
+            try:
+                self.camunda_schema = camunda_ashby.read_schema(self.instance.job)
+            except camunda_ashby.PortalRejected, camunda_ashby.PortalRateLimited:
+                self.fields["camunda_unavailable"] = forms.CharField(
+                    required=False,
+                    disabled=True,
+                    initial="Camunda form is unavailable; try again later.",
+                )
+            else:
+                reuse_answers = self.instance.portal_fingerprint == self.camunda_schema.fingerprint
+                if self.instance.pk and not reuse_answers:
+                    self.fields["schema_notice"] = forms.CharField(
+                        required=False,
+                        disabled=True,
+                        initial="Camunda's questions or notices changed. Re-enter and review "
+                        "answers; previous consent choices were cleared.",
+                    )
+                self.fields["camunda_schema"] = forms.CharField(widget=forms.HiddenInput)
+                self.initial["camunda_schema"] = self.camunda_schema.fingerprint
+                for entry in self.camunda_schema.entries:
+                    field = entry["field"]
+                    path, kind = field["path"], field["type"]
+                    if kind == "File":
+                        continue
+                    options = [(v["value"], v["label"]) for v in field.get("selectableValues", [])]
+                    if kind == "Boolean":
+                        form_field = forms.ChoiceField(
+                            choices=[("", "Choose…"), ("yes", "Yes"), ("no", "No")]
+                        )
+                    elif kind == "MultiValueSelect":
+                        form_field = forms.MultipleChoiceField(
+                            choices=options, widget=forms.CheckboxSelectMultiple
+                        )
+                    elif kind == "ValueSelect":
+                        form_field = forms.ChoiceField(choices=[("", "Leave unanswered"), *options])
+                    elif kind == "Email":
+                        form_field = forms.EmailField()
+                    else:
+                        form_field = forms.CharField(max_length=2000)
+                    form_field.label = field["title"] or "Application data consent"
+                    form_field.required = entry["isRequired"]
+                    form_field.help_text = camunda_ashby.plain(entry.get("descriptionHtml"))
+                    if kind == "Location":
+                        form_field.help_text += (
+                            " Enter the exact city/country suggestion shown on the employer form."
+                        )
+                    form_field.help_text = conditional_escape(form_field.help_text)
+                    self.fields[f"camunda_{path}"] = form_field
+                    default = [] if kind == "MultiValueSelect" else ""
+                    self.initial[f"camunda_{path}"] = (
+                        self.instance.portal_answers.get(path, default)
+                        if reuse_answers
+                        else default
+                    )
+                if self.camunda_schema.payload.get("shouldAskForTextingConsent"):
+                    self.fields["camunda_sms_consent"] = forms.ChoiceField(
+                        required=False,
+                        label="Receive application updates by SMS",
+                        choices=[
+                            ("", "Leave unanswered"),
+                            ("yes", "Yes — I consent"),
+                            ("no", "No — I do not consent"),
+                        ],
+                        help_text="Camunda Inc. may send recruiting texts; frequency varies "
+                        "and message/data rates may apply. Reply STOP to opt out. "
+                        + self.camunda_schema.payload.get("candidateTextingPrivacyPolicyUrl", "")
+                        + " "
+                        + self.camunda_schema.payload.get(
+                            "candidateTextingTermsAndConditionsUrl", ""
+                        ),
+                    )
+                    self.initial["camunda_sms_consent"] = (
+                        self.instance.portal_answers.get("sms_consent", "") if reuse_answers else ""
+                    )
+                    self.fields["camunda_sms_consent"].help_text = conditional_escape(
+                        self.fields["camunda_sms_consent"].help_text
+                    )
 
     def clean(self):
         values = super().clean()
@@ -93,6 +179,30 @@ class ApplicationForm(forms.ModelForm):
             if not self.errors:
                 validate_answers(answers)
                 self.instance.portal_answers = values["portal_answers"] = answers
+        if self.camunda_portal:
+            from .services.camunda_ashby import validate_schema_answers
+
+            if self.camunda_schema is None:
+                raise forms.ValidationError(
+                    "Camunda form unavailable; no application can be approved."
+                )
+            if values.get("camunda_schema") != self.camunda_schema.fingerprint:
+                raise forms.ValidationError(
+                    "Camunda questions changed; reload and review them again."
+                )
+            values["body"] = values.get("body") or "Camunda application."
+            answers = {
+                name.removeprefix("camunda_"): value
+                for name, value in values.items()
+                if name.startswith("camunda_") and name != "camunda_schema"
+            }
+            answers["_schema"] = self.camunda_schema.payload
+            if not self.errors:
+                validate_schema_answers(self.camunda_schema, answers)
+                self.instance.portal_answers = values["portal_answers"] = answers
+                self.instance.portal_fingerprint = values["portal_fingerprint"] = (
+                    self.camunda_schema.fingerprint
+                )
         return values
 
 
