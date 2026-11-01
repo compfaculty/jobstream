@@ -125,3 +125,56 @@ document.addEventListener('htmx:afterSwap', event => {
     if (input.value === batchFocus) input.focus({ preventScroll: true });
   }
 });
+
+// Preserve the drawer DOM during result swaps so navigation never flashes or loses focus.
+const categoryPanel = document.getElementById('category-panel');
+const categoryToggle = document.getElementById('category-toggle');
+if (categoryPanel && categoryToggle) {
+  const closeButton = document.getElementById('category-close');
+  const backdrop = document.querySelector('.category-backdrop');
+  document.body.classList.add('category-enhanced');
+  categoryToggle.hidden = false;
+  closeButton.hidden = false;
+  categoryPanel.inert = true;
+  const setOpen = open => {
+    document.body.classList.toggle('category-open', open);
+    categoryToggle.setAttribute('aria-expanded', String(open));
+    categoryPanel.inert = !open;
+    backdrop.hidden = !open;
+    if (open) closeButton.focus({ preventScroll: true });
+    else categoryToggle.focus({ preventScroll: true });
+  };
+  categoryToggle.addEventListener('click', () => setOpen(true));
+  closeButton.addEventListener('click', () => setOpen(false));
+  backdrop.addEventListener('click', () => setOpen(false));
+  document.addEventListener('keydown', event => {
+    if (!document.body.classList.contains('category-open')) return;
+    if (event.key === 'Escape') { event.preventDefault(); setOpen(false); }
+    if (event.key !== 'Tab') return;
+    const controls = Array.from(categoryPanel.querySelectorAll('button, a[href]'));
+    const first = controls[0];
+    const last = controls[controls.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault(); last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault(); first.focus();
+    }
+  });
+  document.addEventListener('htmx:afterSwap', event => {
+    if (event.detail.target?.id !== 'results') return;
+    const selected = document.querySelector('input[name="category"][form="job-search"]').value;
+    for (const link of categoryPanel.querySelectorAll('a')) {
+      const slug = new URL(link.href).searchParams.get('category');
+      const url = new URL(location.href);
+      url.searchParams.set('category', slug);
+      url.searchParams.delete('page');
+      const href = `${url.pathname}${url.search}`;
+      link.setAttribute('href', href);
+      link.setAttribute('hx-get', href);
+      if (slug === selected) link.setAttribute('aria-current', 'page');
+      else link.removeAttribute('aria-current');
+    }
+    // Reprocess changed HTMX URLs on the preserved links.
+    htmx.process(categoryPanel);
+  });
+}

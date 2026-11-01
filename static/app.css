@@ -172,3 +172,32 @@ img.bg-white[alt="QR Code"] { display: block; background: #fff; padding: 16px; b
 .preference-panel .helptext { display: block; color: var(--muted); font-size: 13px; }
 @media (max-width: 850px) { .preferences-layout { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 500px) { .preference-panel { padding: 18px; } }
+
+
+/* The job browser uses the viewport; other pages keep their reading width. */
+html { scrollbar-gutter: stable; }
+.jobs-page main { max-width: none; margin: 0; padding: 32px clamp(20px, 3vw, 56px) 64px; }
+.jobs-page .site-header { padding-inline: clamp(20px, 3vw, 56px); }
+.jobs-page footer { max-width: none; margin-inline: clamp(20px, 3vw, 56px); }
+.jobs-toolbar { margin-top: 20px; }
+.jobs-page #loading { display: block; visibility: hidden; height: 24px; margin: 8px 0; font-size: 14px; color: var(--muted); }
+.jobs-page #loading.htmx-request { visibility: visible; }
+.job-browser { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 28px; align-items: start; }
+.category-sidebar { padding: 20px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); }
+.category-panel-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.category-panel-heading h2 { font-size: 17px; margin: 0; }
+.category-menu { display: flex; flex-direction: column; align-items: stretch; gap: 4px; margin-top: 16px; }
+.category-menu a { padding: 10px 12px; border-radius: 9px; color: var(--muted); text-decoration: none; font-size: 14px; overflow-wrap: anywhere; transition: color var(--ease), background var(--ease); }
+.category-menu a:hover { color: var(--text); background: #29312f; }
+.category-menu a[aria-current="page"] { color: var(--accent); background: #b9e8891c; font-weight: 650; }
+.category-results { min-width: 0; min-height: 65vh; }
+.category-results .results-heading { margin-top: 0; }
+.category-enhanced .job-browser { display: block; }
+.category-enhanced .category-sidebar { position: fixed; inset: 0 auto 0 0; width: min(300px, 86vw); z-index: 101; border-radius: 0 18px 18px 0; overflow-y: auto; overscroll-behavior: contain; transform: translateX(-105%); visibility: hidden; transition: transform 240ms ease, visibility 240ms; box-shadow: var(--shadow); }
+.category-enhanced.category-open .category-sidebar { transform: translateX(0); visibility: visible; }
+.category-backdrop { position: fixed; inset: 0; width: 100%; height: 100%; border: 0; border-radius: 0; background: #0008; z-index: 100; cursor: default; }
+.category-open { overflow: hidden; }
+@media (max-width: 760px) {
+  .job-browser { grid-template-columns: minmax(0, 1fr); }
+}
+.category-backdrop:hover, .category-backdrop:focus-visible { background: #0008; transform: none; box-shadow: none; }

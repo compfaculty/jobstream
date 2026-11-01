@@ -1,3 +1,15 @@
+<input type="hidden" name="category" value="{{ selected_category }}" form="job-search">
+<div class="job-browser">
+  <aside class="category-sidebar" id="category-panel" hx-preserve>
+    <div class="category-panel-heading"><h2>Categories</h2><button type="button" class="quiet" id="category-close" aria-label="Close category panel" hidden>✕</button></div>
+    <nav class="category-menu" aria-label="Job categories">
+      {% for category in categories %}
+      {% querystring category=category.slug page=None as category_url %}
+      <a href="{{ category_url }}" hx-get="{{ category_url }}" hx-target="#results" hx-push-url="true" hx-indicator="#loading" hx-sync="#job-search:replace"{% if selected_category == category.slug %} aria-current="page"{% endif %}>{{ category.label }}</a>
+      {% endfor %}
+    </nav>
+  </aside>
+  <section class="category-results" aria-label="Job results">
 <form method="post" action="{% url 'batch-create' %}">{% csrf_token %}
 <div class="results-heading"><h2>{% if request.GET.saved == '1' %}Saved opportunities{% else %}Explore opportunities{% endif %}</h2><span class="count">{{ page.paginator.count }} job{{ page.paginator.count|pluralize }}</span></div>
 <div class="job-list">
@@ -9,9 +21,12 @@
   <span class="card-arrow" aria-hidden="true">↗</span>
 </article>
 {% empty %}
-<div class="empty-state"><span class="empty-symbol" aria-hidden="true">⌕</span><h2>No matching jobs yet</h2><p class="muted">Try a different keyword or a broader location.</p>{% if q or location or request.GET.saved or request.GET.company %}<a class="button secondary" href="/">Clear filters</a>{% endif %}<p class="helptext">Sources are managed by the operator.</p></div>
+<div class="empty-state"><span class="empty-symbol" aria-hidden="true">⌕</span><h2>No matching jobs yet</h2><p class="muted">Try a different keyword or a broader location.</p>{% if q or location or request.GET.saved or request.GET.company or selected_category != 'all' %}<a class="button secondary" href="/">Clear filters</a>{% endif %}<p class="helptext">Sources are managed by the operator.</p></div>
 {% endfor %}
 </div>
 <button>Apply to selected jobs</button>
 </form>
 {% include 'jobs/pagination.html' %}
+
+  </section>
+</div>

@@ -1,3 +1,5 @@
+import re
+
 import pytest
 from django.contrib.auth.models import User
 from playwright.sync_api import expect
@@ -419,3 +421,80 @@ def test_my_preferences_and_common_answers(page, live_server, settings, client, 
     page.get_by_role("button", name="Delete saved answers", exact=True).click()
     assert not SavedApplicationAnswers.objects.filter(owner=user).exists()
     expect(page.get_by_label("Application email", exact=False)).to_have_value("")
+
+
+def test_job_category_sidebar(page, live_server, settings, client, user):
+    settings.STORAGES = {
+        **settings.STORAGES,
+        "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
+    }
+    for title in ("Backend Security Engineer", "Frontend Developer"):
+        Job.objects.create(
+            canonical_url=f"https://example.com/{title.replace(' ', '-')}",
+            title=title,
+            description="Python",
+        )
+    client.force_login(user)
+    page.context.add_cookies(
+        [
+            {
+                "name": settings.SESSION_COOKIE_NAME,
+                "value": client.cookies[settings.SESSION_COOKIE_NAME].value,
+                "url": live_server.url,
+            }
+        ]
+    )
+    page.goto(live_server.url)
+    page.get_by_role("button", name="☰ Categories", exact=True).click()
+    menu = page.get_by_role("navigation", name="Job categories")
+    expect(menu.get_by_role("link", name="All", exact=True)).to_have_attribute(
+        "aria-current", "page"
+    )
+    page.locator("#category-panel").evaluate("element => element.dataset.preserved = 'yes'")
+    before_top = page.locator(".results-heading").bounding_box()["y"]
+    menu.get_by_role("link", name="Backend", exact=True).click()
+    expect(menu.get_by_role("link", name="Backend", exact=True)).to_have_attribute(
+        "aria-current", "page"
+    )
+    expect(page.locator("#category-panel")).to_have_attribute("data-preserved", "yes")
+    assert page.locator(".results-heading").bounding_box()["y"] == before_top
+    expect(page.get_by_role("link", name="Frontend Developer", exact=True)).to_have_count(0)
+    page.get_by_role("button", name="Close category panel").click()
+    page.get_by_label("Keywords").fill("Python")
+    page.get_by_role("button", name="Search", exact=True).click()
+    expect(page).to_have_url(re.compile(r"category=backend"))
+    expect(page.get_by_role("link", name="Backend Security Engineer", exact=True)).to_be_visible()
+    page.get_by_role("button", name="☰ Categories", exact=True).click()
+    menu.get_by_role("link", name="Security", exact=True).click()
+    expect(menu.get_by_role("link", name="Security", exact=True)).to_have_attribute(
+        "aria-current", "page"
+    )
+    expect(page.locator('input[name="category"]')).to_have_value("security")
+    page.go_back()
+    page.get_by_role("button", name="☰ Categories", exact=True).click()
+    expect(menu.get_by_role("link", name="Backend", exact=True)).to_have_attribute(
+        "aria-current", "page"
+    )
+    page.go_forward()
+    page.get_by_role("button", name="☰ Categories", exact=True).click()
+    expect(menu.get_by_role("link", name="Security", exact=True)).to_have_attribute(
+        "aria-current", "page"
+    )
+    expect(page.locator("#category-panel")).to_have_css("transform", "matrix(1, 0, 0, 1, 0, 0)")
+    page.screenshot(path="/tmp/jobstream-categories-desktop.png", full_page=True)
+    page.set_viewport_size({"width": 390, "height": 844})
+    expect(menu).to_be_visible()
+    assert page.evaluate("document.documentElement.scrollWidth <= window.innerWidth")
+    expect(page.locator("#category-panel")).to_have_css("transform", "matrix(1, 0, 0, 1, 0, 0)")
+    page.keyboard.press("Escape")
+    expect(page.get_by_role("button", name="☰ Categories", exact=True)).to_be_focused()
+    expect(page.locator("#category-panel")).to_have_css("visibility", "hidden")
+    page.screenshot(path="/tmp/jobstream-categories-mobile.png", full_page=True)
+    # The category links also navigate using ordinary GET requests.
+    page.route("**/htmx.min.js", lambda route: route.abort())
+    page.reload()
+    page.get_by_role("button", name="☰ Categories", exact=True).click()
+    page.get_by_role("navigation", name="Job categories").get_by_role(
+        "link", name="All", exact=True
+    ).click()
+    expect(page.get_by_role("link", name="Frontend Developer", exact=True)).to_be_visible()

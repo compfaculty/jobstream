@@ -19,6 +19,7 @@ from .forms import ApplicationForm, RegistrationForm, TrackingForm, UploadForm
 from .models import Application, AuditEvent, Company, GmailConnection, Invitation, Job, SavedJob
 from .services import submissions
 from .services.authorization import owned_application, owned_document
+from .services.categories import CATEGORIES, category_filter, resolve_category
 from .services.documents import upload_document
 from .services.gmail import encrypt_credentials, gmail_client
 from .services.search import search_jobs
@@ -54,7 +55,8 @@ def job_list(request):
     query = request.GET.get("q", "")[:200]
     location = request.GET.get("location", "")[:100]
     company = request.GET.get("company", "")[:40]
-    jobs = search_jobs(query, location, company)
+    category = resolve_category(request.GET.get("category", "all"))
+    jobs = search_jobs(query, location, company).filter(category_filter(category))
     if request.GET.get("saved") == "1":
         jobs = jobs.filter(savedjob__owner=request.user)
     page = Paginator(jobs, 25).get_page(request.GET.get("page"))
@@ -75,6 +77,8 @@ def job_list(request):
             "location": location,
             "companies": companies,
             "selected_company": company,
+            "categories": CATEGORIES,
+            "selected_category": category,
         },
     )
 
