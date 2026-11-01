@@ -1,7 +1,11 @@
 """Isolated Chromium UI transport. No API credentials, persisted session, or CAPTCHA bypass."""
 
+import json
+import logging
 import re
+import time
 from contextlib import suppress
+from dataclasses import dataclass, field
 from urllib.parse import parse_qs, urlsplit
 
 from playwright.sync_api import Error, TimeoutError, sync_playwright
@@ -24,6 +28,94 @@ HOSTS = frozenset(
     }
 )
 UPLOAD_HOST = "grnhse-prod-jben-us-east-1.s3.amazonaws.com"
+
+
+@dataclass
+class VerificationGate:
+    """A follow-up POST is safe only after a recognized, explicit verification rejection."""
+
+    email: str
+    posts: int = 0
+    uncertain: bool = False
+    pending: bool = False
+    original_application: dict | None = None
+    error: str = ""
+    changed_fields: list[str] = field(default_factory=list)
+
+    @staticmethod
+    def reviewed_content(application):
+        # Provider-owned attribution/time-zone metadata is not applicant content.
+        content = {
+            k: v
+            for k, v in application.items()
+            if k not in {"mapped_url_token", "appcast_click_id", "time_zone"}
+        }
+        for key in ("first_name", "last_name", "email"):
+            if isinstance(content.get(key), str):
+                content[key] = content[key].strip()
+        if isinstance(content.get("email"), str):
+            content["email"] = content["email"].casefold()
+        if isinstance(content.get("phone"), str):
+            content["phone"] = re.sub(r"[\s()-]", "", content["phone"])
+        return content
+
+    def permit(self, payload) -> bool:
+        if self.error or self.uncertain or not isinstance(payload, dict):
+            return False
+        application = payload.get("job_application")
+        if not isinstance(application, dict):
+            self.error = "cato_submission_payload_changed"
+            return False
+        content = self.reviewed_content(application)
+        if self.posts:
+            original = self.original_application
+            if original is None:
+                self.error = "cato_submission_payload_changed"
+                return False
+            if not self.pending:
+                return False
+            if self.posts >= 4:
+                self.error = "cato_verification_attempts_exhausted"
+                return False
+            code = payload.get("security_code")
+            if not isinstance(code, str) or not re.fullmatch(r"[A-Za-z0-9-]{8}", code):
+                self.error = "cato_verification_code_required"
+                return False
+            if content != original:
+                self.changed_fields = sorted(
+                    k for k in content.keys() | original.keys() if content.get(k) != original.get(k)
+                )
+                self.error = "cato_reviewed_content_changed"
+                return False
+        else:
+            self.original_application = json.loads(json.dumps(content))
+        self.posts += 1
+        self.uncertain = True
+        self.pending = False
+        return True
+
+    def observe(self, status, payload):
+        if status not in {400, 403, 422, 428} or not isinstance(payload, dict):
+            return
+        code = payload.get("code")
+        if code == "captcha-failed":
+            self.uncertain = False
+            recipient = payload.get("security_code_recipient")
+            if not isinstance(recipient, str):
+                self.error = "cato_human_verification_required"
+            elif recipient.strip().casefold() != self.email.strip().casefold():
+                self.error = "cato_verification_recipient_changed"
+            else:
+                self.pending = True
+        elif code == "invalid-security-code" and self.posts > 1:
+            self.uncertain = False
+            if self.posts < 4:
+                self.pending = True
+            else:
+                self.error = "cato_verification_attempts_exhausted"
+        elif code in {"expired-security-code", "security-code-error"}:
+            self.uncertain = False
+            self.error = "cato_verification_code_expired_or_locked"
 
 
 def resolver_rules() -> str:
@@ -92,7 +184,11 @@ def fill_form(page, answers, linkedin_field):
         page.locator(f"#{name}").fill(answers[name])
     page.locator("#phone").fill(answers["phone"])
     location = page.locator("#candidate-location")
-    location.fill(answers["city"])
+    # React-select filters against the full display label (including region).
+    # A comma triggers lookup for short names without filtering out the region.
+    city = answers["city"].strip()
+    location.fill("")
+    location.press_sequentially(city + "," if len(city) < 4 else city, delay=50)
     page.get_by_role("option").first.wait_for(state="visible")
     # Match city and country explicitly. Never take the first autocomplete suggestion.
     labels = page.get_by_role("option").all_text_contents()
@@ -189,18 +285,26 @@ def probe(identity: str) -> dict:
             browser.close()
 
 
-def run(context, identity, answers, attachment, linkedin_field="", *, outcome_timeout=45000):
+def run(
+    context,
+    identity,
+    answers,
+    attachment,
+    linkedin_field="",
+    *,
+    outcome_timeout=45000,
+    on_human_verification=None,
+):
     """One context per attempt. Exposed separately for fully intercepted browser fixtures."""
     submit_url = f"https://boards.greenhouse.io/embed/catonetworks/jobs/{identity}"
     target = f"https://job-boards.greenhouse.io/embed/job_app?for=catonetworks&token={identity}"
-    attempted = False
+    gate = VerificationGate(answers["email"])
     posting = False
     response_status = None
     retry_after = ""
     stage = "navigation"
 
     def guard(route):
-        nonlocal attempted
         request = route.request
         parts = urlsplit(request.url)
         allowed = (
@@ -212,12 +316,16 @@ def run(context, identity, answers, attachment, linkedin_field="", *, outcome_ti
         )
         if request.method not in {"GET", "HEAD", "OPTIONS"}:
             allowed = allowed and (
-                (request.url == submit_url and posting and not attempted)
+                (request.url == submit_url and posting and not gate.uncertain)
                 or parts.hostname == UPLOAD_HOST
                 or parts.hostname in {"www.recaptcha.net", "www.google.com"}
             )
         if request.method == "POST" and request.url == submit_url and allowed:
-            attempted = True
+            try:
+                payload = json.loads(request.post_data or "{}")
+            except ValueError:
+                payload = None
+            allowed = gate.permit(payload)
         if not allowed:
             route.abort()
         else:
@@ -228,6 +336,11 @@ def run(context, identity, answers, attachment, linkedin_field="", *, outcome_ti
         if response.url == submit_url and response.request.method == "POST":
             response_status = response.status
             retry_after = response.headers.get("retry-after", "")
+            if response.status in {400, 403, 422, 428}:
+                try:
+                    gate.observe(response.status, response.json())
+                except ValueError, Error:
+                    pass
 
     context.route("**/*", guard)
     page = context.new_page()
@@ -238,7 +351,8 @@ def run(context, identity, answers, attachment, linkedin_field="", *, outcome_ti
         if navigation and navigation.status == 429:
             raise PortalRateLimited(navigation.headers.get("retry-after", ""))
         if not navigation or navigation.status != 200:
-            raise PortalRejected("cato_form_unavailable")
+            status = navigation.status if navigation is not None else "missing_response"
+            raise PortalRejected(f"cato_form_http_{status}")
         page.locator("#first_name").wait_for(state="visible")
         if challenge(page):
             raise PortalRejected("cato_human_verification_required")
@@ -278,28 +392,51 @@ def run(context, identity, answers, attachment, linkedin_field="", *, outcome_ti
         posting = True
         stage = "submit"
         button.click(timeout=30000)
-        try:
-            page.wait_for_url(lambda url: confirmation(str(url), identity), timeout=outcome_timeout)
-        except TimeoutError:
+        deadline = time.monotonic() + outcome_timeout / 1000
+        notified = None
+        while not confirmation(page.url, identity):
+            if gate.error:
+                raise PortalRejected(gate.error)
             if response_status == 429:
-                raise PortalRateLimited(retry_after) from None
-            if response_status in {400, 401, 403, 404, 413, 422}:
-                raise PortalRejected("cato_application_rejected") from None
-            if not attempted:
-                code = (
-                    "cato_human_verification_required"
-                    if challenge(page)
-                    else "cato_form_needs_review"
+                raise PortalRateLimited(retry_after)
+            needs_human = gate.pending or (not gate.uncertain and challenge(page))
+            if needs_human:
+                stage = "verification"
+                if on_human_verification is None:
+                    raise PortalRejected("cato_human_verification_required")
+                if notified != gate.posts:
+                    on_human_verification(page)
+                    notified = gate.posts
+            elif response_status in {400, 401, 403, 404, 413, 422, 428}:
+                raise PortalRejected("cato_application_rejected")
+            if time.monotonic() >= deadline:
+                if gate.uncertain:
+                    raise PortalUnknown("cato_submission_outcome_unknown")
+                raise PortalRejected(
+                    "cato_human_verification_required" if needs_human else "cato_form_needs_review"
                 )
-                raise PortalRejected(code) from None
-            raise PortalUnknown("cato_submission_outcome_unknown") from None
+            page.wait_for_timeout(100)
         if response_status is None or not 200 <= response_status < 300:
             raise PortalUnknown("cato_confirmation_unverified")
         return f"cato_greenhouse:{identity}"
-    except (Error, OSError) as exc:
-        if attempted:
+    except PortalRejected, PortalUnknown, PortalRateLimited:
+        raise
+    except Exception as exc:
+        if gate.uncertain:
             raise PortalUnknown("cato_submission_outcome_unknown") from exc
         raise PortalRejected(f"cato_{stage}_unavailable") from exc
     finally:
+        logging.getLogger(__name__).info(
+            "Cato delivery diagnostics",
+            extra={
+                "stage": stage,
+                "submission_attempted": gate.posts > 0,
+                "submission_uncertain": gate.uncertain,
+                "verification_pending": gate.pending,
+                "post_count": gate.posts,
+                "changed_field_names": gate.changed_fields,
+                "submission_http_status": response_status,
+            },
+        )
         with suppress(Error):
             context.close()

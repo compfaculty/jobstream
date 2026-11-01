@@ -30,7 +30,7 @@ Review the draft, attachment and answers, then approve. Approval binds their dig
 the live public question schema. The dispatcher sends Cato applications to the dedicated
 `browser-delivery` queue. The Python Playwright worker drives the normal hosted UI,
 resolves a unique city/country suggestion, waits for successful PDF upload, clicks Submit
-once, and requires both a successful application response and the matching official
+once initially, and requires both a successful application response and the matching official
 confirmation route. It does not use the employer-authenticated API POST.
 
 Changed schemas, additional required questions/consents, ambiguous cities and visible
@@ -39,6 +39,13 @@ shared Cato cooldowns; Secret Tel Aviv has an independent provider bucket. A tim
 or interruption after a possible application POST is UNKNOWN and never replayed.
 Cato has no implemented authenticated read-only receipt lookup; check employer email
 or the employer portal before deciding what to do with UNKNOWN applications.
+
+Greenhouse can explicitly reject the initial POST with HTTP 428 and request an email
+security code. The local assisted-browser hook permits up to three code continuations
+only after a recognized rejection for the approved recipient and with unchanged
+application content. Codes are entered in the provider UI and never logged. An
+uncertain response cannot authorize a continuation. The headless worker stops for
+human verification; a cloud browser handoff is not implemented.
 
 ## Runtime and diagnostics
 
@@ -64,9 +71,10 @@ fixtures, upload/confirmation, 429, rejection, uncertain POST outcomes, city amb
 and challenges. The live read-only check on 2026-11-01 confirmed the selected vacancy's
 schema and browser controls, with no interactive challenge at inspection time.
 
-**No live CV upload or Cato application was sent by the agent.** The remaining check is
-the user's real selected CV/answers and explicit approval, followed by employer receipt
-verification. Leave the company tranche pending validation before moving to the next.
+An owner-authorized live CV upload and initial application POST on 2026-11-01 reached
+the email-code verification rejection. No successful Cato receipt has been established.
+Leave the company tranche pending validation until a successful response and matching
+official confirmation route are observed.
 
 Primary references: https://docs.greenhouse.io/job-board.html and
 https://playwright.dev/python/docs/docker#crawling-and-scraping.
@@ -75,3 +83,26 @@ The first user-triggered attempt failed before an application POST because the S
 form was visible before JavaScript handlers were attached. The corrected transport
 checks dropdown interactivity before filling contact details. Read-only live testing
 confirmed the corrected control responds; a new user-approved send is still pending.
+
+## Deferred follow-up — 2026-11-01
+
+Paused at the owner’s request; do not resume live sends as part of another company.
+Application 3 is FAILED with `cato_human_verification_required`: the last attempt
+ended after an explicit HTTP 428 email-code rejection, without a confirmed receipt.
+The local browser session has expired. Camunda application 4 is confirmed and must
+not be resent.
+
+When returning to Cato, validate the real email-code continuation with the same
+reviewed CV/answers in a fresh assisted session. Investigate any
+`cato_reviewed_content_changed` field-name diagnostics without logging values or codes;
+do not loosen the content/attachment guard blindly. Require a successful provider
+response and matching official confirmation route before marking the integration
+complete. Secure cloud human-verification handoff remains separate unfinished work.
+
+Cato application 3 reached an explicit HTTP 428 email-verification rejection.
+The transport now permits bounded code continuations only after a recognized rejection
+for the approved email, while retaining the same application content. Unknown outcomes
+never permit another POST. Equivalent phone punctuation/email casing and provider-owned
+attribution metadata do not count as content changes. Diagnostics retain only changed
+field names, not answer values or verification codes. A provider receipt remains the
+criterion for completion; an email-code prompt alone is not a successful application.
