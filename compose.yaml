@@ -23,7 +23,7 @@ x-app: &app
 services:
   web:
     <<: *app
-    command: ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "2", "--timeout", "60"]
+    command: ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "2", "--timeout", "60", "--no-control-socket"]
     ports: ["127.0.0.1:8000:8000"]
   worker:
     <<: *app
@@ -37,6 +37,16 @@ services:
   delivery-worker:
     <<: *app
     command: ["celery", "-A", "config", "worker", "--loglevel=INFO", "--queues=delivery", "--concurrency=1"]
+  browser-worker:
+    <<: *app
+    image: jobstream-browser:local
+    build: {context: ., target: browser}
+    command: ["celery", "-A", "config", "worker", "--loglevel=INFO", "--queues=browser-delivery", "--concurrency=1"]
+    tmpfs: ["/tmp:size=512m,mode=1777"]
+    shm_size: 256m
+    mem_limit: 1536m
+    pids_limit: 512
+    security_opt: ["no-new-privileges:true", "seccomp=./deploy/chromium-seccomp.json"]
   beat:
     <<: *app
     command: ["celery", "-A", "config", "beat", "--loglevel=INFO", "--schedule=/tmp/celerybeat-schedule"]

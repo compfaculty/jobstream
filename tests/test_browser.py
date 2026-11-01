@@ -184,6 +184,14 @@ def test_batch_select_profile_and_review(page, live_server, user, job, settings,
     page.get_by_label("Username").fill("alice")
     page.get_by_label("Password").fill("a-long-test-password-123")
     page.get_by_role("button", name="Next").click()
+    page.goto(f"{live_server.url}/preferences/")
+    exclusions = page.get_by_role(
+        "group", name="Do not apply when these technologies are mandatory"
+    )
+    exclusions.get_by_label("Java", exact=True).check()
+    exclusions.get_by_label("Node.js", exact=True).check()
+    page.get_by_role("button", name="Save preferences").click()
+    expect(exclusions.get_by_label("Node.js", exact=True)).to_be_checked()
     page.goto(f"{live_server.url}/documents/{document.pk}/profile/")
     page.get_by_label("Full name").fill("Alice")
     page.locator("#id_skills").fill("Python, Linux")
@@ -352,3 +360,62 @@ def test_jazzmin_admin_filters(page, live_server, settings, client):
     page.get_by_role("link", name="Python Engineer", exact=True).click()
     expect(page.locator("#id_title")).to_have_value("Python Engineer")
     assert not errors and not violations
+
+
+def test_my_preferences_and_common_answers(page, live_server, settings, client, user):
+    from cryptography.fernet import Fernet
+
+    from jobs.models import ApplicationPreferences, SavedApplicationAnswers
+
+    settings.TOKEN_ENCRYPTION_KEY = Fernet.generate_key().decode()
+    settings.STORAGES = {
+        **settings.STORAGES,
+        "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
+    }
+    client.force_login(user)
+    page.context.add_cookies(
+        [
+            {
+                "name": settings.SESSION_COOKIE_NAME,
+                "value": client.cookies[settings.SESSION_COOKIE_NAME].value,
+                "url": live_server.url,
+            }
+        ]
+    )
+    page.goto(live_server.url + "/preferences/")
+    expect(page.get_by_role("link", name="My preferences", exact=True)).to_have_attribute(
+        "aria-current", "page"
+    )
+    expect(page.locator('nav[aria-label="Main"] [aria-current="page"]')).to_have_count(1)
+    page.get_by_label("Preferred locations", exact=False).fill("Israel\nTel Aviv")
+    page.get_by_label("Preferred job titles", exact=False).fill("Backend\nSecurity")
+    page.get_by_role("group", name="Technologies I want to work with", exact=True).get_by_label(
+        "Python", exact=True
+    ).check()
+    page.get_by_role(
+        "group", name="Do not apply when these technologies are mandatory", exact=True
+    ).get_by_label("Java", exact=True).check()
+    page.get_by_role("button", name="Save preferences", exact=True).click()
+    pref = ApplicationPreferences.objects.get(owner=user)
+    assert pref.wanted_technologies == ["Python"] and pref.preferred_locations == [
+        "Israel",
+        "Tel Aviv",
+    ]
+    page.get_by_label("First name", exact=False).fill("Alice")
+    page.get_by_label("Family name", exact=False).fill("Example")
+    page.get_by_label("Application email", exact=False).fill("alice@example.test")
+    page.get_by_label("Gender identity (optional)", exact=False).select_option(
+        "prefer_not_to_answer"
+    )
+    page.get_by_label("Allow these saved answers", exact=False).check()
+    page.get_by_role("button", name="Save common answers", exact=True).click()
+    record = SavedApplicationAnswers.objects.get(owner=user)
+    assert "alice@example.test" not in record.encrypted_answers and record.reuse_enabled
+    expect(page.get_by_label("Application email", exact=False)).to_have_value("alice@example.test")
+    page.screenshot(path="/tmp/jobstream-my-preferences-desktop.png", full_page=True)
+    page.set_viewport_size({"width": 390, "height": 844})
+    assert page.evaluate("document.documentElement.scrollWidth <= window.innerWidth")
+    page.screenshot(path="/tmp/jobstream-my-preferences-mobile.png", full_page=True)
+    page.get_by_role("button", name="Delete saved answers", exact=True).click()
+    assert not SavedApplicationAnswers.objects.filter(owner=user).exists()
+    expect(page.get_by_label("Application email", exact=False)).to_have_value("")

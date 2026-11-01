@@ -467,7 +467,63 @@ class AuditEvent(models.Model):
         }.get(self.event, "Activity recorded")
 
 
+class ApplicationPreferences(models.Model):
+    owner = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    excluded_technologies = models.JSONField(default=list, blank=True)
+    wanted_technologies = models.JSONField(default=list, blank=True)
+    preferred_locations = models.JSONField(default=list, blank=True)
+    preferred_titles = models.JSONField(default=list, blank=True)
+    location_required = models.BooleanField(default=False)
+    title_required = models.BooleanField(default=False)
+    technology_required = models.BooleanField(default=False)
+    remote_only = models.BooleanField(default=False)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def clean(self):
+        super().clean()
+        from .services.normalization import TECHNOLOGIES
+
+        for field in ("excluded_technologies", "wanted_technologies"):
+            values = getattr(self, field)
+            if (
+                not isinstance(values, list)
+                or any(not isinstance(value, str) or value not in TECHNOLOGIES for value in values)
+                or len(set(values)) != len(values)
+            ):
+                raise ValidationError({field: "Select supported unique technologies."})
+        if set(self.excluded_technologies) & set(self.wanted_technologies):
+            raise ValidationError("A technology cannot be both wanted and excluded.")
+        for field in ("preferred_locations", "preferred_titles"):
+            values = getattr(self, field)
+            if (
+                not isinstance(values, list)
+                or len(values) > 30
+                or any(
+                    not isinstance(value, str) or not value.strip() or len(value) > 150
+                    for value in values
+                )
+            ):
+                raise ValidationError(
+                    {field: "Enter at most 30 nonempty values, up to 150 characters each."}
+                )
+        for flag, field in (
+            ("location_required", "preferred_locations"),
+            ("title_required", "preferred_titles"),
+            ("technology_required", "wanted_technologies"),
+        ):
+            if getattr(self, flag) and not getattr(self, field):
+                raise ValidationError({field: "Add at least one value before enabling this limit."})
+
+
+class SavedApplicationAnswers(models.Model):
+    owner = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    encrypted_answers = models.TextField()
+    reuse_enabled = models.BooleanField(default=False)
+    updated_at = models.DateTimeField(auto_now=True)
+
+
 class ApplicationBatch(models.Model):
+    check_fit = models.BooleanField(default=False)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     document = models.ForeignKey(Document, on_delete=models.PROTECT)
     profile = models.ForeignKey("ResumeProfile", null=True, blank=True, on_delete=models.PROTECT)
@@ -505,6 +561,7 @@ class BatchItem(models.Model):
     @property
     def state_label(self):
         return {
+            "skipped": "Skipped",
             "queued": "Queued",
             "preparing": "Preparing",
             "ready": "Ready for review",
@@ -520,6 +577,17 @@ class BatchItem(models.Model):
         if not self.error_code:
             return ""
         return {
+            "fit_location_unknown": "Review the job location before applying.",
+            "fit_location_excluded": "Skipped: the location is outside your allowed locations.",
+            "fit_title_excluded": "The job title does not match your allowed titles.",
+            "fit_wanted_technology_missing": "The job does not list a wanted technology.",
+            "fit_remote_required": "Skipped: your preferences require remote work.",
+            "fit_workplace_unknown": "Review whether the job supports remote work.",
+            "fit_excluded_technology": "Skipped: an explicitly excluded technology is mandatory.",
+            "fit_no_technology_overlap": "Skipped: no CV technology overlaps the job requirements.",
+            "fit_requirements_unknown": "Review the requirements or provide a readable CV/profile.",
+            "fit_ambiguous_requirement": "Review whether an excluded technology is mandatory.",
+            "fit_cv_needs_review": "Choose a reviewed CV profile or a readable PDF to check fit.",
             "secret_telaviv_details_required": "Add applicant details and review terms.",
             "portal_rate_limited": "Secret Tel Aviv requested a pause; retry scheduled.",
             "portal_form_changed": "The employer form changed; review it before applying.",

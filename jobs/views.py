@@ -143,6 +143,14 @@ def application_create(request, pk):
             draft.channel = "portal"
     except ValueError:
         pass
+    from .services.cato_greenhouse import job_url
+
+    if not job.apply_email:
+        try:
+            draft.portal_url = job_url(job)
+            draft.channel = "portal"
+        except ValueError:
+            pass
     form = ApplicationForm(
         request.POST or None,
         owner=request.user,
@@ -175,6 +183,7 @@ def application_create(request, pk):
 @login_required
 def application_detail(request, pk):
     application = owned_application(request.user, pk)
+    from .services.cato_greenhouse import supported as cato_supported
     from .services.secret_telaviv import supported
 
     return render(
@@ -188,7 +197,12 @@ def application_detail(request, pk):
             ),
             "can_edit": application.status in {"draft", "approved", "failed"},
             "secret_portal": supported(application),
-            "can_approve": (application.channel == "email" or supported(application))
+            "cato_portal": cato_supported(application),
+            "can_approve": (
+                application.channel == "email"
+                or supported(application)
+                or cato_supported(application)
+            )
             and application.status in {"draft", "failed"},
         },
     )
@@ -417,12 +431,33 @@ def batch_create(request):
     from .services.batches import create
 
     ids = request.POST.getlist("jobs")
-    applicant_form = SecretApplicantForm(request.POST or None, prefix="secret")
-    for field in applicant_form.fields.values():
-        field.required = False
-    supplied_applicant = any(
+    selected_ids = [value for value in ids if value.isdecimal()]
+    has_secret = (
+        Job.objects.filter(pk__in=selected_ids)
+        .filter(
+            Q(canonical_url__startswith="https://jobs.secrettelaviv.com/job/")
+            | Q(apply_url__startswith="https://jobs.secrettelaviv.com/job/")
+        )
+        .exists()
+    )
+    supplied_applicant = has_secret and any(
         request.POST.get(f"secret-{key}") for key in ("first_name", "last_name", "email", "phone")
     )
+    initial_answers = {}
+    if has_secret:
+        from .services.saved_answers import prefill_contact
+
+        try:
+            initial_answers = prefill_contact(request.user.pk)
+        except ValidationError:
+            messages.warning(request, "Saved contact answers are unavailable; enter them below.")
+    applicant_form = SecretApplicantForm(
+        request.POST if supplied_applicant or request.POST.get("document") else None,
+        initial=initial_answers,
+        prefix="secret",
+    )
+    for field in applicant_form.fields.values():
+        field.required = False
     if request.method == "POST" and request.POST.get("document"):
         try:
             if supplied_applicant and not applicant_form.is_valid():
@@ -434,6 +469,7 @@ def batch_create(request):
                 uuid.UUID(request.POST["request_key"]),
                 profile_id=request.POST.get("profile") or None,
                 use_ai=request.POST.get("use_ai") == "1",
+                check_fit=request.POST.get("check_fit") == "1",
                 portal_answers=applicant_form.answers() if supplied_applicant else {},
             )
         except (ValidationError, ValueError, KeyError) as exc:
@@ -458,12 +494,14 @@ def batch_create(request):
 @login_required
 def batch_detail(request, pk):
     from .models import ApplicationBatch
-    from .services.batches import approve_items, cancel
+    from .services.batches import approve_items, cancel, recheck_fit
 
     batch = get_object_or_404(ApplicationBatch, pk=pk, owner=request.user)
     if request.method == "POST":
         try:
-            if request.POST.get("action") == "cancel":
+            if request.POST.get("action") == "recheck_fit":
+                recheck_fit(request.user, batch.pk)
+            elif request.POST.get("action") == "cancel":
                 cancel(request.user, batch.pk)
             else:
                 approve_items(
@@ -556,4 +594,63 @@ def activity(request):
         request,
         "jobs/activity.html",
         {"page": Paginator(events, 50).get_page(request.GET.get("page"))},
+    )
+
+
+@login_required
+def application_preferences(request):
+    from .forms import ApplicationPreferencesForm, CommonAnswersForm
+    from .models import ApplicationPreferences, SavedApplicationAnswers
+    from .services.saved_answers import read_answers, save_answers
+
+    preferences = ApplicationPreferences.objects.filter(owner=request.user).first()
+    initial = {}
+    if preferences:
+        for name in ApplicationPreferencesForm.base_fields:
+            value = getattr(preferences, name)
+            initial[name] = (
+                "\n".join(value) if name in {"preferred_locations", "preferred_titles"} else value
+            )
+    answer_initial = {}
+    has_saved_answers = SavedApplicationAnswers.objects.filter(owner=request.user).exists()
+    try:
+        answers, reuse = read_answers(request.user.pk)
+        answer_initial = {**answers, "reuse_enabled": reuse}
+    except ValidationError as exc:
+        messages.warning(request, "; ".join(exc.messages))
+    action = request.POST.get("action", "save_preferences") if request.method == "POST" else None
+    form = ApplicationPreferencesForm(
+        request.POST if action == "save_preferences" else None, initial=initial
+    )
+    answer_form = CommonAnswersForm(
+        request.POST if action == "save_answers" else None, initial=answer_initial, prefix="answers"
+    )
+    if action == "delete_answers":
+        SavedApplicationAnswers.objects.filter(owner=request.user).delete()
+        messages.success(request, "Saved application answers deleted.")
+        return redirect("application-preferences")
+    if action == "save_preferences" and form.is_valid():
+        ApplicationPreferences.objects.update_or_create(
+            owner=request.user, defaults=form.cleaned_data
+        )
+        messages.success(request, "Application preferences saved.")
+        return redirect("application-preferences")
+    if action == "save_answers" and answer_form.is_valid():
+        data = dict(answer_form.cleaned_data)
+        reuse = data.pop("reuse_enabled")
+        try:
+            save_answers(request.user.pk, data, reuse_enabled=reuse)
+        except ValidationError as exc:
+            answer_form.add_error(None, exc)
+        else:
+            messages.success(request, "Common application answers saved.")
+            return redirect("application-preferences")
+    return render(
+        request,
+        "jobs/preferences.html",
+        {
+            "form": form,
+            "answer_form": answer_form,
+            "has_saved_answers": has_saved_answers,
+        },
     )

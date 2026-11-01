@@ -12,6 +12,11 @@ from jobs.models import DeliveryThrottle
 
 def scopes(connection, application):
     if application.channel == "portal":
+        from .cato_greenhouse import supported
+
+        if supported(application):
+            key = hashlib.sha256(b"provider:cato_greenhouse").hexdigest()
+            return [(key, getattr(settings, "CATO_APPLY_INTERVAL", 30.0))]
         key = hashlib.sha256(b"provider:secret_telaviv").hexdigest()
         return [(key, getattr(settings, "SECRET_TLV_APPLY_INTERVAL", 10.0))]
     values = [
@@ -60,20 +65,22 @@ def defer_account(owner_id, until):
 def defer_delivery(application, until):
     if application.channel == "email":
         return defer_account(application.owner_id, until)
-    defer_portal(until)
+    from .cato_greenhouse import supported
+
+    defer_portal(until, "cato_greenhouse" if supported(application) else "secret_telaviv")
 
 
-def portal_pause_seconds():
-    key = hashlib.sha256(b"cooldown:secret_telaviv").hexdigest()
+def portal_pause_seconds(provider="secret_telaviv"):
+    key = hashlib.sha256(f"cooldown:{provider}".encode()).hexdigest()
     bucket = DeliveryThrottle.objects.filter(key=key).first()
     return max(0, (bucket.available_at - timezone.now()).total_seconds()) if bucket else 0
 
 
 @transaction.atomic
-def defer_portal(until):
+def defer_portal(until, provider="secret_telaviv"):
     keys = sorted(
-        hashlib.sha256(value).hexdigest()
-        for value in (b"provider:secret_telaviv", b"cooldown:secret_telaviv")
+        hashlib.sha256(value.encode()).hexdigest()
+        for value in (f"provider:{provider}", f"cooldown:{provider}")
     )
     for key in keys:
         DeliveryThrottle.objects.get_or_create(key=key)

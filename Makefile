@@ -1,4 +1,4 @@
-.PHONY: setup services migrate run worker beat test check
+.PHONY: setup services migrate run worker browser-worker beat test check
 setup:
 	uv sync --frozen
 services:
@@ -9,6 +9,8 @@ run:
 	uv run python manage.py runserver
 worker:
 	uv run celery -A config worker --loglevel=INFO --queues=celery,ingestion,preparation,delivery --concurrency=2
+browser-worker:
+	docker compose up -d browser-worker
 beat:
 	uv run celery -A config beat --loglevel=INFO --schedule=/tmp/jobstream-celerybeat
 check:

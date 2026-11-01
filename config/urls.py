@@ -28,6 +28,7 @@ urlpatterns = [
     path("applications/<int:pk>/edit/", views.application_edit, name="application-edit"),
     path("applications/<int:pk>/approve/", views.application_approve, name="application-approve"),
     path("applications/<int:pk>/tracking/", views.tracking, name="tracking"),
+    path("preferences/", views.application_preferences, name="application-preferences"),
     path("documents/", views.documents, name="documents"),
     path("documents/<int:pk>/profile/", views.resume_profile, name="resume-profile"),
     path("documents/<int:pk>/", views.document_download, name="document-download"),

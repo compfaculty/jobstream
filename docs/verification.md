@@ -238,3 +238,74 @@ sites remain for review. Closure must be enabled explicitly after shadow validat
 - Rebuilt and restarted the local containers, applied migrations 0032–0033, and
   refreshed technology tags on **640 existing jobs** without AI calls. A private
   pre-rollout backup is at `/tmp/jobstream-admin-refresh-rollout-20261031.dump`.
+
+## Matching and My preferences — 2026-11-01
+
+- Checkpoint commit **05fccbf** recorded the preceding company-first/admin work
+  after 226 passing tests. Cato's verified Greenhouse source then imported **106
+  postings**, including **32 Israeli locations**, with no rejections. Application
+  browser execution remains in progress; no Cato application or CV was submitted.
+- Added per-user mandatory technology exclusions with explicit OR alternatives,
+  preferred-only handling, one-overlap CV eligibility and explainable skips/pauses.
+  Matching uses confirmed profile facts or extracted PDF text without inventing facts.
+  New HTML batches enable fit checks by default; API clients opt in with `check_fit`.
+- Expanded `/preferences/` into **My preferences**: locations, titles, wanted/excluded
+  technologies, explicit-only limits, remote-only selection and saved application
+  answers. Defaults are soft. Unknown remote eligibility pauses. Preference limits
+  are rechecked during approval and queued-send preflight.
+- Common answers use owner-bound Fernet encryption with the existing configured
+  private-data key. Saving and reuse are explicit separate choices; records can be
+  edited/deleted. Tests cover cross-owner ciphertext copying, missing keys, owner
+  isolation and contact prefill without accepting terms or headhunter forwarding.
+  Gender answers are optional, never inferred and not used for job matching or AI.
+- Contact prefill currently targets Secret Tel Aviv. Notice-period, location,
+  LinkedIn, authorization notes and demographic values await compatible per-portal
+  mappings. Saved answers are not a blanket permission to submit applications.
+- Final full suite: **258 passed** in **46.98 seconds**, including Chromium saving
+  preferences, editing/deleting encrypted answers and checking the mobile layout.
+  Existing Django/pytest deprecation warnings remain. Desktop/mobile screenshots:
+  `/tmp/jobstream-my-preferences-desktop.png`, `/tmp/jobstream-my-preferences-mobile.png`.
+  Ruff, formatting, mypy, Django/OpenAPI checks, migration drift and existing
+  statement/branch coverage gates passed.
+- Local application image rebuilt. Migrations 0034 and 0035 add matching preferences
+  and encrypted saved answers. Private pre-rollout backups were taken in `/tmp` with
+  mode 0600. No encryption key values or actual applicant data were printed.
+
+The Cato tranche remains uncommitted until its application integration is complete;
+accepted workflow and current gaps are recorded in `company-integration-workflow.md`
+and `integrations/cato-networks.md`.
+
+## Cato Networks hosted application delivery — 2026-11-01
+
+- Added strict verified-Cato dispatch, public question-schema fingerprinting, contact/
+  location validation, owner-bound draft review and approval, and opt-in equivalent
+  saved-answer prefill. Unknown required questions/consents require review.
+- Added Python Playwright UI delivery on its own queue/container, sandboxed Chromium,
+  pinned public origins, default-deny requests, unique city matching, confirmed CV
+  upload and one application POST. A successful response plus the matching official
+  confirmation route is required; uncertain outcomes never replay automatically.
+- Separate Cato provider spacing/cooldown preserves Secret Tel Aviv behavior.
+- **282 tests passed** in 49.98 seconds, with 17 existing warnings. This includes
+  intercepted Chromium success/429/rejection/uncertainty/challenge/city fixtures,
+  approval drift, batch contact prefill and dedicated task routing.
+- Ruff lint/format, trust-boundary mypy, Django system checks, OpenAPI validation,
+  >=90% statement/branch coverage gates and source secret scanning passed.
+- The read-only diagnostic for posting `4937879101` returned supported schema,
+  expected controls and Submit button, and no visible interactive challenge. Chromium
+  launched with its sandbox inside the non-root, read-only browser container.
+- No live application or CV upload was made by the agent. User CV selection, answer
+  review, explicit approval and employer receipt verification remain the live test.
+
+### Cato first user-triggered attempt: hydration correction
+
+The user's first approval did not yield a confirmed application: application 3 was
+FAILED with `cato_network_or_form_changed`. The user confirmed no employer email was
+received. Read-only reproduction found the country dropdown's first click occurred
+before React attached its handlers; a later harmless click worked. The original
+static-controls diagnostic did not test interactivity and missed this condition.
+
+The transport now proves dropdown interactivity before entering contact details,
+retries only that harmless readiness operation, and reports pre-submit failures by
+stage. The read-only diagnostic checks interactivity too. A real Chromium regression
+fixture delays event-handler attachment. No application was resent during debugging;
+a fresh user review/approval and employer confirmation remain required.

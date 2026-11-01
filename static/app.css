@@ -157,3 +157,18 @@ img.bg-white[alt="QR Code"] { display: block; background: #fff; padding: 16px; b
 /* Keep batch selection above the card's stretched detail link. */
 .job-card .job-selection { position: relative; z-index: 1; flex: 0 0 auto; }
 .job-selection input { width: 18px; height: 18px; accent-color: var(--accent); }
+
+.preference-sections { display: flex; flex-wrap: wrap; gap: 20px; margin: 0 0 24px; }
+.preferences-layout { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; align-items: start; }
+.preference-panel { min-width: 0; padding: 24px; background: var(--panel); border: 1px solid #414b48; border-radius: var(--radius); }
+.preference-panel form { margin: 24px 0 0; }
+.preference-panel label { margin-bottom: 8px; }
+.preference-panel .preference-check, .preference-panel p:has(input[type="checkbox"]) { display: flex; align-items: start; gap: 10px; }
+.preference-panel input[type="checkbox"] { width: 18px; height: 18px; flex: 0 0 18px; margin-top: 4px; accent-color: var(--accent); }
+.technology-choices { min-width: 0; margin: 24px 0; padding: 16px; border: 1px solid #4b5664; border-radius: 9px; }
+.technology-choices > div { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 16px; }
+.technology-choices label { display: flex; align-items: start; gap: 8px; font-weight: 500; overflow-wrap: anywhere; }
+.technology-choices legend { padding: 0 6px; font-weight: 650; }
+.preference-panel .helptext { display: block; color: var(--muted); font-size: 13px; }
+@media (max-width: 850px) { .preferences-layout { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 500px) { .preference-panel { padding: 18px; } }

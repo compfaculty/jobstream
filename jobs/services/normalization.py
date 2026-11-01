@@ -31,6 +31,7 @@ TECHNOLOGIES = {
     "Rust": r"\brust\b",
     "C++": r"(?<!\w)c\+\+(?!\w)",
     "Java": r"\bjava\b",
+    "PHP": r"\bphp\b",
     "JavaScript": r"\bjavascript\b",
     "Node.js": r"\bnode(?:\.js|js)\b",
     "TypeScript": r"\btypescript\b",

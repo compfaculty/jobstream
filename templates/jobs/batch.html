@@ -5,4 +5,5 @@
 <form method="post" id="batch-review-form">{% csrf_token %}
 {% include 'jobs/batch_items.html' %}
 {% if not batch.cancelled_at %}<button name="action" value="approve">Approve and send selected</button><button name="action" value="cancel" class="secondary">Cancel pending items</button>{% endif %}
-</form><p><a href="{% url 'batch' batch.pk %}">Refresh progress</a></p>{% endblock %}
+</form><p><a href="{% url 'batch' batch.pk %}">Refresh progress</a></p>{% if not batch.cancelled_at %}<form method="post">{% csrf_token %}<input type="hidden" name="action" value="recheck_fit"><button>Recheck skipped fit decisions</button></form>{% endif %}
+{% endblock %}

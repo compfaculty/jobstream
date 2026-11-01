@@ -226,6 +226,7 @@ CELERY_TASK_ROUTES = {
     "jobs.tasks.ingest_source": {"queue": "ingestion"},
     "jobs.tasks.prepare_batch_item": {"queue": "preparation"},
     "jobs.tasks.send_application": {"queue": "delivery"},
+    "jobs.tasks.send_browser_application": {"queue": "browser-delivery"},
     "jobs.tasks.reconcile_submissions": {"queue": "delivery"},
 }
 

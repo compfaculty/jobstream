@@ -2,6 +2,9 @@
 {% for item in items %}
 <article class="job-card"><div>
 {% if item.state == 'ready' and not batch.cancelled_at %}<label><input type="checkbox" name="items" value="{{ item.pk }}"> Approve {{ item.job.title }}</label>{% else %}<h2>{{ item.job.title }}</h2>{% endif %}
+{% if item.provenance.fit.preferred_matches %}<p>Preferences matched: {{ item.provenance.fit.preferred_matches|join:", " }}</p>{% endif %}
+{% if item.provenance.fit.matched %}<p>CV technology overlap: {{ item.provenance.fit.matched|join:", " }}</p>{% endif %}
+{% if item.provenance.fit.excluded %}<p>Excluded technology: {{ item.provenance.fit.excluded|join:", " }}</p>{% endif %}
 <p>{{ item.state_label }} {% if item.error_code %}— {{ item.error_message }}{% endif %}</p>
 {% if item.application_id %}<a href="{% url 'application' item.application_id %}">Review application</a>{% if item.application.channel == 'portal' and not item.application.portal_fingerprint %}<p>Employer portal: complete the form, sign-in, or registration there, then update your tracking.</p>{% endif %}<p>{% if item.provenance.profile_id %}CV tailored from your reviewed profile.{% else %}Original CV unchanged.{% endif %}</p><ul>{% for gap in item.provenance.ai_selection.unmatched_requirements %}<li>Experience to review: {{ gap }}</li>{% endfor %}</ul><p>Delivery: {{ item.application.get_status_display }}</p>{% else %}<a href="{{ item.job.apply_url }}" target="_blank" rel="noopener noreferrer">Employer application page</a>{% endif %}
 </div></article>

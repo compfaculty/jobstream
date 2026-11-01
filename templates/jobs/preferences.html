@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block title %}My preferences · Jobstream{% endblock %}
+{% block content %}
+<div class="page-intro"><div><p class="eyebrow">YOUR SEARCH, YOUR RULES</p><h1>My preferences</h1><p class="intro-copy">Choose the jobs you want and remember the answers you want to reuse.</p></div></div>
+<nav aria-label="Preference sections" class="preference-sections"><a href="#job-preferences">Job preferences</a><a href="#common-answers">Common application answers</a></nav>
+<div class="preferences-layout">
+<section id="job-preferences" class="preference-panel">
+<h2>Job preferences</h2>
+<p class="muted">Preferred values are soft by default. “Only apply” switches make them hard limits. One allowed CV technology overlap is enough to consider a job.</p>
+<form method="post">{% csrf_token %}<input type="hidden" name="action" value="save_preferences">
+{{ form.non_field_errors }}
+<p>{{ form.preferred_locations.label_tag }}{{ form.preferred_locations }}{{ form.preferred_locations.errors }}<span class="muted">{{ form.preferred_locations.help_text }}</span></p>
+<p class="preference-check">{{ form.location_required }}{{ form.location_required.label_tag }}{{ form.location_required.errors }}</p>
+<p class="preference-check">{{ form.remote_only }}{{ form.remote_only.label_tag }}{{ form.remote_only.errors }}</p>
+<p>{{ form.preferred_titles.label_tag }}{{ form.preferred_titles }}{{ form.preferred_titles.errors }}<span class="muted">{{ form.preferred_titles.help_text }}</span></p>
+<p class="preference-check">{{ form.title_required }}{{ form.title_required.label_tag }}{{ form.title_required.errors }}</p>
+<fieldset class="technology-choices"><legend>{{ form.wanted_technologies.label }}</legend>{{ form.wanted_technologies }}{{ form.wanted_technologies.errors }}</fieldset>
+<p class="preference-check">{{ form.technology_required }}{{ form.technology_required.label_tag }}{{ form.technology_required.errors }}</p>
+<fieldset class="technology-choices"><legend>{{ form.excluded_technologies.label }}</legend>{{ form.excluded_technologies }}{{ form.excluded_technologies.errors }}</fieldset>
+<p class="muted">“Python, Node.js, or Go” remains eligible when an allowed alternative exists. Preferred-only technologies do not block applications. Ambiguous requirements pause for review.</p>
+<button>Save preferences</button>
+</form>
+</section>
+<section id="common-answers" class="preference-panel">
+<h2>Common application answers</h2>
+<p class="muted">Optional and encrypted in storage. Save only what you want remembered. Enable reuse to prefill compatible questions; answers are never guessed.</p>
+<form method="post">{% csrf_token %}<input type="hidden" name="action" value="save_answers">
+{{ answer_form.non_field_errors }}
+{% for field in answer_form %}{% if field.name != 'reuse_enabled' %}<p>{{ field.label_tag }}{{ field }}{{ field.errors }}{% if field.help_text %}<span class="helptext" id="{{ field.auto_id }}_helptext">{{ field.help_text }}</span>{% endif %}</p>{% endif %}{% endfor %}
+<p class="preference-check">{{ answer_form.reuse_enabled }}{{ answer_form.reuse_enabled.label_tag }}{{ answer_form.reuse_enabled.errors }}</p>
+<p class="muted">Contact reuse currently fills Secret Tel Aviv contact fields. Other portals will be connected individually. Terms, data-sharing consent and security challenges always need separate handling.</p>
+<button>Save common answers</button>
+</form>
+{% if has_saved_answers %}<form method="post">{% csrf_token %}<input type="hidden" name="action" value="delete_answers"><button class="secondary">Delete saved answers</button><p class="muted">Removes future defaults. Existing application records are retained.</p></form>{% endif %}
+</section>
+</div>
+{% endblock %}

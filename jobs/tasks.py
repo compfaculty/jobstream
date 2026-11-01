@@ -53,6 +53,11 @@ def send_application(pk):
 
 
 @shared_task
+def send_browser_application(pk):
+    submit(pk)
+
+
+@shared_task
 def dispatch_submissions():
     now = timezone.now()
     with transaction.atomic():
@@ -65,7 +70,10 @@ def dispatch_submissions():
             application.next_dispatch_at = now + timedelta(minutes=5)
             application.save(update_fields=["next_dispatch_at"])
     for application in applications:
-        send_application.delay(application.pk)
+        from jobs.services.cato_greenhouse import supported
+
+        task = send_browser_application if supported(application) else send_application
+        task.delay(application.pk)
 
 
 @shared_task

@@ -45,18 +45,43 @@ def digest(application: Application, sender: str) -> str:
 
 
 def validate_content(application: Application, *, for_send: bool = True) -> None:
+    if for_send:
+        from .preference_matching import evaluate, preferences_for
+
+        policy = preferences_for(application.owner_id)
+        if (
+            policy.excluded_technologies
+            or policy.location_required
+            or policy.title_required
+            or policy.technology_required
+            or policy.remote_only
+        ):
+            fit = evaluate(
+                {
+                    "description": application.job.description,
+                    "normalized": application.job.normalized,
+                    "title": application.job.title,
+                    "location": application.job.location,
+                },
+                policy,
+            )
+            if fit.state != "eligible":
+                raise ValidationError(
+                    "Current application preferences require skipping or reviewing this job."
+                )
     if not application.job.active:
         raise ValidationError("This vacancy is no longer active.")
     if for_send and application.channel != "email":
-        from .secret_telaviv import supported, validate_answers
+        from .portal_delivery import adapter
 
-        if not supported(application):
+        provider = adapter(application)
+        if provider is None:
             raise ValidationError(
                 "Complete this application on the employer portal and update tracking."
             )
-        validate_answers(application.portal_answers)
+        provider.validate_answers(application.portal_answers)
         if not application.document_id:
-            raise ValidationError("Choose a CV for the Secret Tel Aviv application.")
+            raise ValidationError("Choose a CV for this application.")
     if application.channel == "email":
         validate_email(application.recipient)
     if any(c in application.recipient + application.subject for c in "\r\n"):
@@ -68,10 +93,14 @@ def validate_content(application: Application, *, for_send: bool = True) -> None
 
 
 def approve(user, pk: int) -> Application:
-    if Application.objects.get(pk=pk, owner=user).channel == "portal":
-        from .secret_telaviv import approve_portal
+    candidate = Application.objects.get(pk=pk, owner=user)
+    if candidate.channel == "portal":
+        from .portal_delivery import adapter
 
-        return approve_portal(user, pk)
+        provider = adapter(candidate)
+        if provider is None:
+            raise ValidationError("Complete this application on the employer portal.")
+        return provider.approve_portal(user, pk)
     with transaction.atomic():
         application = (
             Application.objects.select_for_update(of=("self",))
@@ -179,9 +208,12 @@ def submit(pk: int) -> None:
         )
     try:
         if application.channel == "portal":
-            from .secret_telaviv import send
+            from .portal_delivery import adapter
 
-            provider_id = send(application, attachment)
+            provider = adapter(application)
+            if provider is None:
+                raise PortalRejected("unsupported_portal")
+            provider_id = provider.send(application, attachment)
         else:
             provider_id = gmail.send(connection, application, attachment)
     except PortalRateLimited as exc:
@@ -240,6 +272,11 @@ def reconcile(pk: int) -> None:
     if application.status != Application.Status.UNKNOWN:
         return
     if application.channel == "portal":
+        from .cato_greenhouse import supported as cato_supported
+
+        if cato_supported(application):
+            # No authenticated read-only receipt lookup exists. Never replay the form.
+            return
         if application.portal_receipt_url:
             from .secret_telaviv import reconcile as reconcile_portal
 

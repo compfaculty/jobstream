@@ -5,6 +5,8 @@
 <form method="post">{% csrf_token %}
 <input type="hidden" name="request_key" value="{{ request_key }}">
 {% for job in jobs %}<input type="hidden" name="jobs" value="{{ job.pk }}"><p>{{ job.title }} — {{ job.company }}</p>{% endfor %}
+<label><input type="checkbox" name="check_fit" value="1" checked> Check CV technology overlap before preparing</label>
+<p>Saved exclusions always apply. With fit checking enabled, one allowed technology overlap is enough; zero overlap skips the job. <a href="{% url 'application-preferences' %}">Edit preferences</a>.</p>
 <label>Base CV <select name="document" required>{% for document in documents %}<option value="{{ document.pk }}">{{ document.name }}</option>{% endfor %}</select></label>
 <label>Reviewed profile <select name="profile"><option value="">Use original PDF unchanged</option>{% for profile in profiles %}<option value="{{ profile.pk }}">{{ profile.name }} — {{ profile.document.name }} — {{ profile.confirmed_at }}</option>{% endfor %}</select></label>
 <label><input type="checkbox" name="use_ai" value="1"> Use OpenAI to prioritize confirmed experience and identify gaps</label><p>This optional step sends confirmed career facts and job descriptions to the configured OpenAI API. Your name, contact details, and original PDF are not included as separate fields. Facts may contain personal details you entered.</p>

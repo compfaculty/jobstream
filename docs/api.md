@@ -56,3 +56,14 @@ Job responses additionally expose `active`, `lifecycle`, `status_override`, and
 The public search still returns active jobs; Django admin exposes the full inventory
 and CRUD. The company catalogue and CSV import are administrative interfaces, not
 new public writable APIs.
+
+
+## Matching preferences
+
+The owner-private `/preferences/` HTML page stores application preferences and
+optional encrypted common answers. New HTML batches enable CV-fit screening by
+default; API clients opt in with `check_fit: true`. Saved hard exclusions and hard
+location/title/technology/remote limits apply even when an API client uses the older
+manual-review flow. Batch items expose `fit` evidence and may be `skipped` or
+`needs_action`; an eligible item remains subject to approval and portal support.
+Common answers are not returned by the job/batch APIs or sent to the AI provider.

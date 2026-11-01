@@ -37,7 +37,7 @@ To run the application itself in containers:
 docker compose build
 docker compose run --rm web python manage.py migrate
 docker compose run --rm web python manage.py createsuperuser
-docker compose up -d web worker beat
+docker compose up -d web worker ingestion-worker preparation-worker delivery-worker browser-worker beat
 ```
 
 Local PostgreSQL, Redis, and S3 emulator bind to loopback only. Their example
@@ -63,6 +63,9 @@ storage unless S3 variables are configured. Never expose this Compose stack publ
 - Session-authenticated read APIs and approval action, OpenAPI at `/api/v1/schema/`.
 
 Browser form submission is intentionally gated. External employer links are available.
+Supported Cato Networks applications use the official hosted Greenhouse form after
+review and approval. Run the dedicated `browser-worker` for these applications;
+other delivery workers do not need Chromium. See the [Cato integration](docs/integrations/cato-networks.md).
 Production hosting and Terraform follow the budget/provider decision; this repository
 has not provisioned cloud infrastructure or claimed production capacity.
 
@@ -133,3 +136,7 @@ limits input to 4 million pixels, and re-encodes a maximum 256×256 PNG without
 remote metadata. SVG is deliberately unsupported. Logos use the configured private
 file storage and authenticated same-origin image URLs; no browser hotlinking.
 Profiles without a validated logo have no avatar placeholder.
+
+Company-by-company implementation status and the accepted matching/answer-reuse policy:
+[Integration workflow](docs/company-integration-workflow.md), starting with
+[Cato Networks](docs/integrations/cato-networks.md).

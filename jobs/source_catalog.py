@@ -125,6 +125,22 @@ def definitions() -> list[SourceDefinition]:
         "Audiocodes": "audiocodes",
     }
     for name, url in COMPANY_REFERENCES:
+        if name == "Cato Networks":
+            values.append(
+                SourceDefinition(
+                    name,
+                    "greenhouse",
+                    "https://boards-api.greenhouse.io/v1/boards/catonetworks/jobs?content=true",
+                    "Verified official careers page links to catonetworks Greenhouse board. "
+                    "Collection uses the public API; hosted application "
+                    "requires browser JavaScript.",
+                    max_items=100000,
+                    employer_name=name,
+                    authoritative=True,
+                    max_response_bytes=16 * 1024 * 1024,
+                )
+            )
+            continue
         adapter = specialized.get(name, "jsonld")
         notes = (
             "Dedicated static parser ported from JF; live compatibility needs review."

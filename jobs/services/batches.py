@@ -24,7 +24,14 @@ from .submissions import approve
 
 @transaction.atomic
 def create(
-    owner, document_id, job_ids, request_key, profile_id=None, use_ai=False, portal_answers=None
+    owner,
+    document_id,
+    job_ids,
+    request_key,
+    profile_id=None,
+    use_ai=False,
+    portal_answers=None,
+    check_fit=False,
 ):
     get_user_model().objects.select_for_update().get(pk=owner.pk)
     existing = ApplicationBatch.objects.filter(owner=owner, request_key=request_key).first()
@@ -59,6 +66,7 @@ def create(
         request_key=request_key,
         profile=profile,
         use_ai=use_ai,
+        check_fit=check_fit,
         portal_answers=portal_answers or {},
         document_sha256=document.sha256,
     )
@@ -71,6 +79,8 @@ def create(
                     "title": job.title,
                     "company": job.company,
                     "description": job.description,
+                    "normalized": job.normalized,
+                    "location": job.location,
                     "recipient": job.apply_email,
                     "apply_url": job.apply_url,
                     "portal_access": job.portal_access,
@@ -134,8 +144,38 @@ def prepare(item_id):
         "description": item.job.description,
         "recipient": item.job.apply_email,
     }
+    from .matching import FitResult
+    from .preference_matching import evaluate, preferences_for
+
+    policy = preferences_for(item.batch.owner_id)
+    fit = evaluate(job, policy)
+    if fit.state == "eligible" and item.batch.check_fit:
+        from .resumes import extract
+
+        try:
+            cv_text = (
+                "\n".join(fact["text"] for fact in item.batch.profile.facts)
+                if item.batch.profile_id
+                else extract(item.batch.document)
+            )
+            fit = evaluate(job, policy, cv_text)
+        except ValidationError, OSError:
+            fit = FitResult("needs_action", "fit_cv_needs_review")
+    provenance["fit"] = fit.as_dict()
+    if fit.state != "eligible":
+        with transaction.atomic():
+            current = BatchItem.objects.select_for_update().select_related("batch").get(pk=item_id)
+            if current.lease_token == token and current.state == "preparing":
+                current.state = "cancelled" if current.batch.cancelled_at else fit.state
+                current.error_code = fit.reason
+                current.provenance = provenance
+                current.lease_until = None
+                current.save()
+        return
     error = ""
     portal_fingerprint = ""
+    cato_portal = False
+    applicant_answers = item.batch.portal_answers
     retry_delay = 60
     body = (
         f"Hello,\n\nPlease consider my application for {job['title']}. "
@@ -147,14 +187,34 @@ def prepare(item_id):
         if digest != (item.batch.document_sha256 or item.batch.document.sha256):
             raise ValidationError("Base CV changed; upload and review again.")
         if item.batch.profile_id:
-            generated, provenance, body = tailor(item.batch.profile, job, use_ai=item.batch.use_ai)
+            generated, tailoring, body = tailor(item.batch.profile, job, use_ai=item.batch.use_ai)
+            provenance.update(tailoring)
         from .secret_telaviv import secret_url
 
         try:
             portal_url = secret_url(job.get("apply_url") or item.job.canonical_url)
         except ValueError:
             portal_url = ""
-        if not job.get("recipient") and portal_url:
+        from . import cato_greenhouse
+
+        if not job.get("recipient"):
+            try:
+                cato_url = cato_greenhouse.job_url(item.job)
+            except ValueError:
+                cato_url = ""
+            if cato_url:
+                cato_portal = True
+                portal_url = cato_url
+                portal_fingerprint = cato_greenhouse.read_schema(item.job).fingerprint
+                from .saved_answers import read_answers
+
+                saved, reuse = read_answers(item.batch.owner_id)
+                applicant_answers = {
+                    key: value
+                    for key, value in saved.items()
+                    if reuse and key in cato_greenhouse.FIELDS
+                }
+        if not job.get("recipient") and portal_url and not cato_portal:
             from .throttles import portal_pause_seconds
 
             pause = portal_pause_seconds()
@@ -168,7 +228,10 @@ def prepare(item_id):
             retry_delay = retry_after_seconds(exc.retry_after, 60)
             from .throttles import defer_portal
 
-            defer_portal(timezone.now() + timedelta(seconds=retry_delay))
+            defer_portal(
+                timezone.now() + timedelta(seconds=retry_delay),
+                "cato_greenhouse" if cato_portal else "secret_telaviv",
+            )
         except RetryWindowTooLong:
             error = "portal_pause_requires_review"
     except PortalRejected as exc:
@@ -196,7 +259,8 @@ def prepare(item_id):
             elif error:
                 current.state = (
                     "needs_action"
-                    if error
+                    if error.startswith("cato_")
+                    or error
                     in {
                         "cv_validation_failed",
                         "portal_pause_requires_review",
@@ -238,20 +302,25 @@ def prepare(item_id):
                         portal_access=job.get("portal_access", "unknown"),
                         portal_url=portal_url or job.get("apply_url", ""),
                         portal_fingerprint=portal_fingerprint,
-                        portal_answers=item.batch.portal_answers,
+                        portal_answers=applicant_answers,
                         subject=f"Application: {job['title']}"[:250],
                         body=body,
                     )
                     current.provenance = provenance
                     current.state = "ready" if job.get("recipient") else "needs_action"
                     current.error_code = "" if job.get("recipient") else "manual_portal_required"
-                    from .secret_telaviv import supported, validate_answers
+                    from .portal_delivery import adapter
 
-                    if supported(current.application):
+                    provider = adapter(current.application)
+                    if provider is not None:
                         try:
-                            validate_answers(current.application.portal_answers)
+                            provider.validate_answers(current.application.portal_answers)
                         except ValidationError:
-                            current.error_code = "secret_telaviv_details_required"
+                            current.error_code = (
+                                "cato_details_required"
+                                if cato_portal
+                                else "secret_telaviv_details_required"
+                            )
                         else:
                             current.state = "ready"
                             current.error_code = ""
@@ -312,15 +381,35 @@ def cancel(owner, batch_id):
 
 
 def refresh_ready(application_id):
-    from .secret_telaviv import supported, validate_answers
+    from .portal_delivery import adapter
 
     application = Application.objects.select_related("job").get(pk=application_id)
-    if application.status != "draft" or not supported(application):
+    provider = adapter(application)
+    if application.status != "draft" or provider is None:
         return
     try:
-        validate_answers(application.portal_answers)
+        provider.validate_answers(application.portal_answers)
     except ValidationError:
         return
     BatchItem.objects.filter(
         application=application, state="needs_action", batch__cancelled_at__isnull=True
     ).update(state="ready", error_code="")
+
+
+@transaction.atomic
+def recheck_fit(owner, batch_id):
+    batch = ApplicationBatch.objects.select_for_update().get(pk=batch_id, owner=owner)
+    if batch.cancelled_at:
+        raise ValidationError("This batch is cancelled.")
+    batch.items.filter(
+        state__in=["skipped", "needs_action"],
+        error_code__startswith="fit_",
+        application__isnull=True,
+    ).update(
+        state="queued",
+        error_code="",
+        attempts=0,
+        lease_until=None,
+        next_dispatch_at=timezone.now(),
+        next_attempt_at=timezone.now(),
+    )

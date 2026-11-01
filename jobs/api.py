@@ -106,6 +106,7 @@ class BatchRequestSerializer(serializers.Serializer):
     request_key = serializers.UUIDField()
     profile = serializers.IntegerField(min_value=1, required=False)
     use_ai = serializers.BooleanField(default=False)
+    check_fit = serializers.BooleanField(default=False)
     portal_answers = serializers.JSONField(required=False)
 
 
@@ -119,6 +120,7 @@ class BatchSerializer(serializers.ModelSerializer):
             "document",
             "profile",
             "use_ai",
+            "check_fit",
             "request_key",
             "cancelled_at",
             "created_at",
@@ -133,6 +135,7 @@ class BatchSelectionSerializer(serializers.Serializer):
 
 
 class BatchItemSerializer(serializers.ModelSerializer):
+    fit = serializers.JSONField(source="provenance.fit", read_only=True, default=None)
     delivery_status = serializers.CharField(
         source="application.status", read_only=True, default=None, allow_null=True
     )
@@ -144,6 +147,7 @@ class BatchItemSerializer(serializers.ModelSerializer):
             "job_id",
             "application_id",
             "state",
+            "fit",
             "error_code",
             "next_attempt_at",
             "attempts",
@@ -177,6 +181,7 @@ class BatchViewSet(viewsets.ReadOnlyModelViewSet):
                 data["request_key"],
                 profile_id=data.get("profile"),
                 use_ai=data["use_ai"],
+                check_fit=data["check_fit"],
                 portal_answers=data.get("portal_answers"),
             )
         except ValidationError as exc:
