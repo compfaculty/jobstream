@@ -86,11 +86,16 @@ def job_list(request):
 @login_required
 def job_detail(request, pk):
     job = get_object_or_404(Job.objects.select_related("company_profile"), pk=pk)
+    executions = list(request.user.agentexecution_set.filter(job=job).order_by("-created_at")[:10])
     return render(
         request,
         "jobs/detail.html",
         {
             "job": job,
+            "evaluation_enabled": settings.AGENT_BACKEND == "infinity",
+            "evaluation_profiles": request.user.resumeprofile_set.all(),
+            "evaluations": executions,
+            "evaluation_poll": any(item.status in {"queued", "running"} for item in executions),
             "saved": SavedJob.objects.filter(owner=request.user, job=job).exists(),
             "application": Application.objects.filter(owner=request.user, job=job).first(),
         },

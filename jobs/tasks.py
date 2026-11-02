@@ -178,3 +178,40 @@ def schedule_company_discovery():
             company.save(update_fields=["next_discovery_at"])
     for company in companies:
         discover_company_careers.delay(company.pk)
+
+
+@shared_task
+def evaluate_vacancy(pk):
+    from jobs.services.evaluations import process
+
+    process(pk)
+
+
+@shared_task
+def dispatch_evaluations():
+    from jobs.models import AgentExecution
+    from jobs.services.evaluations import enabled
+
+    if not enabled():
+        return
+    now = timezone.now()
+    # Reservations throttle publication; process uses its own execution lease.
+    with transaction.atomic():
+        records = list(
+            AgentExecution.objects.select_for_update(skip_locked=True)
+            .filter(
+                next_dispatch_at__lte=now,
+            )
+            .filter(
+                Q(status__in=["queued", "running"])
+                | Q(status="cancelled", cancellation_delivered=False)
+            )
+            .filter(Q(lease_until__isnull=True) | Q(lease_until__lte=now))
+            .order_by("created_at")[:20]
+        )
+        for record in records:
+            record.next_dispatch_at = now + timedelta(seconds=20)
+        AgentExecution.objects.bulk_update(records, ["next_dispatch_at"])
+    for record in records:
+        # Let the task claim now; lost publication recovers after the reservation.
+        evaluate_vacancy.delay(str(record.pk))

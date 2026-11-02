@@ -17,3 +17,4 @@ test-results/
 *.tfvars
 .terraform/
 coverage.json
+services/infinity-agent/target/

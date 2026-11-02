@@ -1,0 +1,12 @@
+<section id="evaluations" hx-get="{% url 'evaluation-panel' job.pk %}" {% if evaluation_poll %}hx-trigger="every 5s"{% else %}hx-trigger="none"{% endif %} hx-swap="outerHTML">
+{% for evaluation in evaluations %}<article><h3>Vacancy evaluation — {{ evaluation.status }}</h3>
+{% if evaluation.error_code %}<p>{{ evaluation.error_code }}</p>{% endif %}
+{% if evaluation.status == 'completed' %}<p>{{ evaluation.result.fit.state }}: {{ evaluation.result.fit.reason }}</p>
+<p>Matched technologies: {{ evaluation.result.fit.matched|join:", " }}</p>
+<p>Preferences matched: {{ evaluation.result.fit.preferred_matches|join:", " }}</p>
+<ul>{% for fact in evaluation.result.highlight_facts %}<li>{{ fact }}</li>{% endfor %}</ul>
+<ul>{% for gap in evaluation.result.ai_selection.unmatched_requirements %}<li>Experience to review: {{ gap }}</li>{% endfor %}</ul>
+{% endif %}
+{% if evaluation.status == 'queued' or evaluation.status == 'running' %}<form method="post" action="{% url 'evaluation-action' evaluation.pk 'cancel' %}">{% csrf_token %}<button class="secondary">Cancel evaluation</button></form>{% endif %}
+{% if evaluation.status == 'failed' and evaluation.retryable and evaluation.attempt < 3 %}<form method="post" action="{% url 'evaluation-action' evaluation.pk 'retry' %}">{% csrf_token %}<button>Retry evaluation</button></form>{% endif %}
+</article>{% endfor %}</section>

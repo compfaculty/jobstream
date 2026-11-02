@@ -45,7 +45,7 @@ class ExecutionResponse:
     retry_after: int
 
     @classmethod
-    def parse(cls, data: object, execution_id: str, attempt_id: str):
+    def parse(cls, data: object, execution_id: str, attempt_id: str) -> ExecutionResponse:
         expected = {
             "schema_version",
             "execution_id",
@@ -83,7 +83,9 @@ class ExecutionResponse:
 
 
 class AgentGateway:
-    def call(self, method: str, execution_id: str, attempt_id: str, payload=None):
+    def call(
+        self, method: str, execution_id: str, attempt_id: str, payload=None
+    ) -> ExecutionResponse:
         UUID(execution_id)
         UUID(attempt_id)
         url = urlsplit(settings.INFINITY_URL)
@@ -129,13 +131,13 @@ class AgentGateway:
         except (ValueError, TypeError) as exc:
             raise GatewayError("agent_invalid_contract") from exc
 
-    def start(self, request: ExecutionRequest):
+    def start(self, request: ExecutionRequest) -> ExecutionResponse:
         from dataclasses import asdict
 
         return self.call("PUT", request.execution_id, request.attempt_id, asdict(request))
 
-    def status(self, execution_id: str, attempt_id: str):
+    def status(self, execution_id: str, attempt_id: str) -> ExecutionResponse:
         return self.call("GET", execution_id, attempt_id)
 
-    def cancel(self, execution_id: str, attempt_id: str):
+    def cancel(self, execution_id: str, attempt_id: str) -> ExecutionResponse:
         return self.call("DELETE", execution_id, attempt_id)

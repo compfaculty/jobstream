@@ -1,0 +1,23 @@
+[package]
+name = "jobstream-infinity-agent"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+infinity-agent-core = "=0.2.0"
+infinity-provider-protocol = "=0.2.0"
+rap-protocol = "=0.2.0"
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "signal", "net", "time"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+axum = "0.8"
+reqwest = { version = "0.13", default-features = false, features = ["json", "rustls"] }
+async-trait = "0.1"
+futures-util = "0.3"
+tokio-postgres = { version = "0.7", features = ["with-serde_json-1"] }
+uuid = { version = "1", features = ["v4", "serde"] }
+subtle = "2"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+chrono = "0.4"
+httpdate = "1"

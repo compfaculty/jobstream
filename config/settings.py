@@ -263,3 +263,19 @@ JAZZMIN_SETTINGS = {
     "topmenu_links": [{"name": "JobStream", "url": "/", "new_window": False}],
 }
 JAZZMIN_UI_TWEAKS = {"theme": "default", "default_theme_mode": "dark"}
+
+# Experimental vacancy evaluation only; legacy AI paths are independent.
+AGENT_BACKEND = os.getenv("AGENT_BACKEND", "disabled")
+if AGENT_BACKEND not in {"disabled", "infinity"}:
+    raise ImproperlyConfigured("AGENT_BACKEND must be disabled or infinity")
+INFINITY_URL = os.getenv("INFINITY_URL", "http://127.0.0.1:8091")
+INFINITY_SERVICE_TOKEN = os.getenv("INFINITY_SERVICE_TOKEN", "")
+INFINITY_TOOL_SECRET = os.getenv("INFINITY_TOOL_SECRET", "")
+INFINITY_MODEL = os.getenv("INFINITY_MODEL", OPENAI_MODEL)
+INFINITY_INPUT_COST_PER_MILLION = os.getenv("INFINITY_INPUT_COST_PER_MILLION", "")
+INFINITY_OUTPUT_COST_PER_MILLION = os.getenv("INFINITY_OUTPUT_COST_PER_MILLION", "")
+CELERY_BEAT_SCHEDULE["agent-evaluations"] = {
+    "task": "jobs.tasks.dispatch_evaluations",
+    "schedule": 10.0,
+}
+CELERY_TASK_ROUTES["jobs.tasks.evaluate_vacancy"] = {"queue": "preparation"}
