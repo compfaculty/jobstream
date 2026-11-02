@@ -227,9 +227,9 @@ def deliver(identity, answers, attachment, linkedin_field=""):
         raise PortalRejected("cato_browser_unavailable") from exc
 
 
-def launch(runtime, rules):
+def launch(runtime, rules, *, headless=True):
     return runtime.chromium.launch(
-        headless=True,
+        headless=headless,
         chromium_sandbox=True,
         args=[f"--host-resolver-rules={rules}", "--disable-quic", "--no-proxy-server"],
     )

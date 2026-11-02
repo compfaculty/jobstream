@@ -355,3 +355,65 @@ timing/canonicalization before final submission.
 The final full suite passed **321 tests** with 17 existing warnings; coverage gates,
 Ruff, trust-boundary mypy and source secret scanning passed. Hosted human-verification handoff remains
 unimplemented; today's visible-browser hook is for local assisted debugging.
+
+## GitLab Greenhouse adapter — 2026-11-02
+
+- Read-only official-careers inspection confirmed links to GitLab's Greenhouse board.
+  Its public inventory returned 238 postings. The verified company/source relationship
+  already exists locally (company 18, source 54); daily collection is enabled and the
+  last inventory was complete, with no endpoint error. Inferred closure stays disabled.
+- Added reviewed dynamic text/single-choice draft questions, current-schema approval,
+  owner/CV digest integrity and dedicated browser dispatch with independent cooldown.
+  Batch preparation pauses for role-specific factual answers instead of inventing them.
+- The Python backend role `8704363002` (job 20407) passes a write-blocked live check:
+  public/native schemas agree, controls exist and React dropdown handlers respond.
+- Exercised the actual public frontend with synthetic answers, intercepted CV uploads
+  and intercepted final application POST. Mocked upload progress was necessary because
+  interception does not generate native XHR upload progress; the provider UI then bound
+  the CV and reached its official confirmation route after a mocked success response.
+  This is transport validation, not an employer receipt or real application submission.
+- The final POST guard requires the uploaded PDF binding and approved contact values.
+  Only one application POST is allowed. Explicit 429, rejection, CAPTCHA/email-code
+  review and uncertain outcomes remain distinct; uncertain sends never replay.
+- Required new compliance/consent, location questions, extra files and unsupported
+  controls stop for review. Voluntary demographics and optional cover letters are not
+  filled. Secure hosted human-verification handoff remains unimplemented.
+- Cato's deferred task and confirmed Camunda application were not resent or changed.
+
+Final verification: **370 tests passed** in 77.11 seconds with 17 existing warnings.
+Authorization/submission/Gmail statement and branch coverage gates passed. Ruff,
+trust-boundary mypy, Django system checks, migration consistency, OpenAPI validation,
+secret scanning and diff checks passed. Updated web and all worker images were rebuilt
+and deployed locally; infrastructure health checks passed. No real GitLab send was made.
+
+
+## GitLab local assisted verification — 2026-11-02
+
+- Added a persisted, approval-bound assisted-delivery reservation and an owner-scoped
+  local management command. Both scheduler dispatch and already-queued tasks skip
+  reserved applications. The command uses the existing atomic claim, CV integrity,
+  preference checks, throttles, audit events and durable outcome handling.
+- Visible local Chromium retains its ephemeral session for CAPTCHA/email-code entry,
+  with a ten-minute deadline, pinned public origins and no mailbox access or code
+  persistence. Greenhouse's existing explicit verification gate permits at most three
+  code attempts, preserves all initial applicant content and the uploaded CV binding,
+  and prevents replay after an uncertain request. Successful confirmation saves the
+  exact official receipt URL. Stale assisted sessions become UNKNOWN after 15 minutes.
+- Final full suite: **399 passed**, 17 existing warnings, in **92.38 seconds**.
+  Includes assisted UI approval, command ownership/state checks, tampered CV/answers,
+  local-command/worker races, challenges, code failures/expiry, bounded retries,
+  cancellation, browser failures, session deadlines and lost responses.
+- Authorization/Gmail statement and branch coverage remain 100%; submissions coverage
+  is 93.7% statements / 92.9% branches. Required coverage gates, Ruff/format, mypy,
+  Django system checks, migration drift, OpenAPI validation and diff checks passed.
+  The pinned source-only Gitleaks scanner passed after explicit user approval.
+- A write-blocked live desktop probe confirmed schema agreement, required controls,
+  browser interactivity and no visible challenge. No form writes, CV uploads or final
+  application POSTs were permitted. Job 20407 remains active and normalized; its
+  authoritative source is enabled, has a complete inventory and no recorded error.
+- Local web/browser images were rebuilt, migration 0036 applied, and web/workers/Beat
+  restarted. All ten Compose services are running, infrastructure health checks are
+  healthy, `/health/` returned OK, and the deployed browser worker passed the same
+  write-blocked live preflight. Real applicant data, a user-selected CV and explicit UI approval remain
+  required before a real send. No GitLab application draft or real submission was
+  created during this implementation; other company applications were not changed.

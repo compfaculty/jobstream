@@ -98,10 +98,12 @@ partially rejected snapshots cannot close jobs. Board observations do not reacti
 an employer-closed vacancy; a later authoritative observation can reopen it. Provider
 identities deduplicate supported hosted URLs across sources without matching titles.
 
-The GitLab reference remains disabled. Its careers HTML referenced Greenhouse and its
-public endpoint returned 238 jobs (3,731,814 bytes with content) on 2026-10-31. The
-reference allows 500 items and 8 MiB per response. All fetches retain HTTPS/DNS/redirect
-validation and a 16 MiB hard ceiling; other sources retain their 2 MiB default.
+The GitLab seed reference is disabled by default; existing operator settings are
+preserved. The local verified authoritative endpoint is enabled and has collected
+238 jobs. Its 2026-11-02 integration uses the public inventory, a 100,000-item budget
+and 8 MiB response limit. All fetches retain HTTPS/DNS/redirect validation and a
+16 MiB hard ceiling; other sources retain their 2 MiB default. See
+[GitLab integration](integrations/gitlab.md) for application support and limits.
 
 Descriptions retain paragraph/heading boundaries and receive deterministic normalized
 sections. The original text remains available. Technology mentions include evidence;

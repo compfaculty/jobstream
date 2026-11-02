@@ -154,6 +154,64 @@ class ApplicationForm(forms.ModelForm):
                         self.fields["camunda_sms_consent"].help_text
                     )
 
+        from .services import gitlab_greenhouse as gitlab
+
+        self.gitlab_portal = bool(self.instance.job_id and gitlab.supported(self.instance))
+        self.gitlab_schema = None
+        if self.gitlab_portal:
+            self.fields["document"].required = True
+            self.fields["body"].required = False
+            self.fields["body"].label = "Private note (not sent to GitLab)"
+            try:
+                self.gitlab_schema = gitlab.read_schema(self.instance.job)
+            except gitlab.PortalRejected, gitlab.PortalRateLimited:
+                self.fields["gitlab_unavailable"] = forms.CharField(
+                    required=False, disabled=True, initial="GitLab form unavailable; try later."
+                )
+            else:
+                schema = self.gitlab_schema
+                reuse = self.instance.portal_fingerprint == schema.fingerprint
+                if self.instance.pk and not reuse:
+                    self.fields["schema_notice"] = forms.CharField(
+                        required=False,
+                        disabled=True,
+                        initial="GitLab questions changed. Re-enter and review answers.",
+                    )
+                self.fields["gitlab_schema"] = forms.CharField(widget=forms.HiddenInput)
+                self.initial["gitlab_schema"] = schema.fingerprint
+                for q in schema.entries:
+                    f = q["fields"][0]
+                    if f["type"] == "multi_value_single_select":
+                        field = forms.ChoiceField(
+                            choices=[
+                                ("", "Leave unanswered"),
+                                *((v["value"], v["label"]) for v in f["values"]),
+                            ]
+                        )
+                    elif f["name"] == "email":
+                        field = forms.EmailField()
+                    else:
+                        field = forms.CharField(
+                            max_length=4000,
+                            widget=forms.Textarea if f["type"] == "textarea" else forms.TextInput,
+                        )
+                    field.label = q["label"]
+                    field.required = q["required"]
+                    from .services.normalization import text_blocks
+
+                    field.help_text = conditional_escape(text_blocks(q.get("description") or ""))
+                    key = "gitlab_" + f["name"]
+                    self.fields[key] = field
+                    self.initial[key] = (
+                        self.instance.portal_answers.get(f["name"], "") if reuse else ""
+                    )
+                self.fields["gitlab_phone_country"] = forms.CharField(
+                    max_length=2, required=False, label="Phone country (ISO code, e.g. IL)"
+                )
+                self.initial["gitlab_phone_country"] = (
+                    self.instance.portal_answers.get("phone_country", "") if reuse else ""
+                )
+
     def clean(self):
         values = super().clean()
         if any(c in values.get("recipient", "") + values.get("subject", "") for c in "\r\n"):
@@ -202,6 +260,26 @@ class ApplicationForm(forms.ModelForm):
                 self.instance.portal_answers = values["portal_answers"] = answers
                 self.instance.portal_fingerprint = values["portal_fingerprint"] = (
                     self.camunda_schema.fingerprint
+                )
+        if self.gitlab_portal:
+            from .services.gitlab_greenhouse import validate_answers
+
+            if self.gitlab_schema is None:
+                raise forms.ValidationError("GitLab form unavailable; approval is disabled.")
+            if values.get("gitlab_schema") != self.gitlab_schema.fingerprint:
+                raise forms.ValidationError("GitLab questions changed; reload and review again.")
+            values["body"] = values.get("body") or "GitLab application."
+            answers = {
+                k.removeprefix("gitlab_"): v
+                for k, v in values.items()
+                if k.startswith("gitlab_") and k != "gitlab_schema"
+            }
+            answers["_schema"] = self.gitlab_schema.payload
+            if not self.errors:
+                validate_answers(answers)
+                self.instance.portal_answers = values["portal_answers"] = answers
+                self.instance.portal_fingerprint = values["portal_fingerprint"] = (
+                    self.gitlab_schema.fingerprint
                 )
         return values
 

@@ -73,9 +73,10 @@ def definitions() -> list[SourceDefinition]:
             "GitLab careers",
             "greenhouse",
             "https://boards-api.greenhouse.io/v1/boards/gitlab/jobs?content=true",
-            "Public employer Greenhouse feed verified on 2026-10-31: 238 jobs; "
-            "careers page references Greenhouse. Review before enabling.",
-            max_items=500,
+            "Official careers page links to GitLab Greenhouse; public inventory and "
+            "reviewed browser application adapter verified on 2026-11-02. "
+            "New catalogue entries remain disabled until endpoint authority is verified.",
+            max_items=100000,
             employer_name="GitLab",
             authoritative=True,
             max_response_bytes=8 * 1024 * 1024,

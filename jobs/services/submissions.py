@@ -41,6 +41,8 @@ def digest(application: Application, sender: str) -> str:
             portal_answers=application.portal_answers,
             portal_fingerprint=application.portal_fingerprint,
         )
+    if application.assisted_delivery:
+        payload["assisted_delivery"] = True
     return hashlib.sha256(json.dumps(payload, sort_keys=True).encode()).hexdigest()
 
 
@@ -97,7 +99,7 @@ def validate_content(application: Application, *, for_send: bool = True) -> None
         raise ValidationError("Document does not belong to applicant.")
 
 
-def approve(user, pk: int) -> Application:
+def approve(user, pk: int, *, assisted: bool = False) -> Application:
     candidate = Application.objects.get(pk=pk, owner=user)
     if candidate.channel == "portal":
         from .portal_delivery import adapter
@@ -105,7 +107,15 @@ def approve(user, pk: int) -> Application:
         provider = adapter(candidate)
         if provider is None:
             raise ValidationError("Complete this application on the employer portal.")
+        if assisted:
+            from . import gitlab_greenhouse
+
+            if provider is not gitlab_greenhouse:
+                raise ValidationError("Local assisted delivery is supported only for GitLab.")
+            return provider.approve_portal(user, pk, assisted=True)
         return provider.approve_portal(user, pk)
+    if assisted:
+        raise ValidationError("Local assisted delivery is supported only for GitLab.")
     with transaction.atomic():
         application = (
             Application.objects.select_for_update(of=("self",))
@@ -143,13 +153,15 @@ def edit(user, pk: int, values: dict) -> Application:
             raise InvalidTransition("Submission content is locked; update tracking separately.")
         fields = ["recipient", "subject", "body", "document", "portal_answers"]
         from .camunda_ashby import supported as camunda_supported
+        from .gitlab_greenhouse import supported as gitlab_supported
 
-        if camunda_supported(application):
+        if camunda_supported(application) or gitlab_supported(application):
             fields.append("portal_fingerprint")
         for field in fields:
             if field in values:
                 setattr(application, field, values[field])
         validate_content(application, for_send=False)
+        application.assisted_delivery = False
         application.status = Application.Status.DRAFT
         application.approval_digest = ""
         application.approved_at = None
@@ -174,7 +186,7 @@ def attachment_bytes(application: Application) -> bytes | None:
     return content
 
 
-def submit(pk: int) -> None:
+def submit(pk: int, *, assisted_owner_id: int | None = None, on_human_verification=None) -> None:
     with transaction.atomic():
         from django.contrib.auth import get_user_model
 
@@ -192,7 +204,20 @@ def submit(pk: int) -> None:
             .select_related("document")
             .get(pk=pk)
         )
+        if assisted_owner_id is not None:
+            from .gitlab_greenhouse import supported
+
+            if application.owner_id != assisted_owner_id:
+                raise Application.DoesNotExist
+            if not application.assisted_delivery or not supported(application):
+                raise InvalidTransition(
+                    "Approve this GitLab application for local assisted delivery."
+                )
+        elif application.assisted_delivery:
+            return
         if application.status != Application.Status.APPROVED:
+            if assisted_owner_id is not None:
+                raise InvalidTransition("Application must be approved and not already claimed.")
             return
         if application.retry_not_before and application.retry_not_before > timezone.now():
             return
@@ -234,9 +259,17 @@ def submit(pk: int) -> None:
             provider = adapter(application)
             if provider is None:
                 raise PortalRejected("unsupported_portal")
-            provider_id = provider.send(application, attachment)
+            if assisted_owner_id is not None:
+                provider_id = provider.send(
+                    application, attachment, on_human_verification=on_human_verification
+                )
+            else:
+                provider_id = provider.send(application, attachment)
         else:
             provider_id = gmail.send(connection, application, attachment)
+    except KeyboardInterrupt, SystemExit:
+        finish(pk, Application.Status.UNKNOWN, error_code="assisted_delivery_interrupted")
+        raise
     except PortalRateLimited as exc:
         retry_rate_limited(pk, exc.retry_after)
     except PortalUnknown as exc:
@@ -275,6 +308,14 @@ def finish(
         application.provider_id = provider_id
         if receipt_url:
             application.portal_receipt_url = receipt_url
+        elif application.channel == "portal" and provider_id.startswith("gitlab_greenhouse:"):
+            from .gitlab_greenhouse import posting_id
+
+            identity = posting_id(application.job)
+            if provider_id == f"gitlab_greenhouse:{identity}":
+                application.portal_receipt_url = (
+                    f"https://job-boards.greenhouse.io/gitlab/jobs/{identity}/confirmation"
+                )
         elif application.channel == "portal" and provider_id.startswith("secret_telaviv:"):
             receipt_id = provider_id.split(":", 1)[1]
             if receipt_id.isascii() and receipt_id.isdecimal() and application.portal_url:

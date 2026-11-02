@@ -14,7 +14,11 @@ def scopes(connection, application):
     if application.channel == "portal":
         from .camunda_ashby import supported as camunda_supported
         from .cato_greenhouse import supported
+        from .gitlab_greenhouse import supported as gitlab_supported
 
+        if gitlab_supported(application):
+            key = hashlib.sha256(b"provider:gitlab_greenhouse").hexdigest()
+            return [(key, getattr(settings, "GITLAB_APPLY_INTERVAL", 30.0))]
         if camunda_supported(application):
             key = hashlib.sha256(b"provider:camunda_ashby").hexdigest()
             return [(key, getattr(settings, "CAMUNDA_APPLY_INTERVAL", 30.0))]
@@ -71,9 +75,12 @@ def defer_delivery(application, until):
         return defer_account(application.owner_id, until)
     from .camunda_ashby import supported as camunda_supported
     from .cato_greenhouse import supported
+    from .gitlab_greenhouse import supported as gitlab_supported
 
     provider = (
-        "camunda_ashby"
+        "gitlab_greenhouse"
+        if gitlab_supported(application)
+        else "camunda_ashby"
         if camunda_supported(application)
         else "cato_greenhouse"
         if supported(application)

@@ -61,6 +61,7 @@ class ApplicationSerializer(serializers.ModelSerializer):
             "id",
             "job_id",
             "channel",
+            "assisted_delivery",
             "portal_access",
             "portal_url",
             "portal_answers",

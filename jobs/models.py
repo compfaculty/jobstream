@@ -383,6 +383,7 @@ class Application(models.Model):
     channel = models.CharField(
         max_length=20, default="email", choices=[("email", "Email"), ("portal", "Employer portal")]
     )
+    assisted_delivery = models.BooleanField(default=False)
     portal_access = models.CharField(max_length=20, default="unknown")
     portal_url = models.URLField(max_length=2048, blank=True)
     portal_answers = models.JSONField(default=dict, blank=True)

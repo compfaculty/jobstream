@@ -63,7 +63,11 @@ def dispatch_submissions():
     with transaction.atomic():
         applications = list(
             Application.objects.select_for_update(skip_locked=True)
-            .filter(status=Application.Status.APPROVED, next_dispatch_at__lte=now)
+            .filter(
+                status=Application.Status.APPROVED,
+                next_dispatch_at__lte=now,
+                assisted_delivery=False,
+            )
             .order_by("next_dispatch_at")[:20]
         )
         for application in applications:
@@ -79,7 +83,10 @@ def dispatch_submissions():
 @shared_task
 def reconcile_submissions():
     stale = Application.objects.filter(
-        status=Application.Status.SUBMITTING, started_at__lt=timezone.now() - timedelta(minutes=10)
+        status=Application.Status.SUBMITTING,
+    ).filter(
+        Q(assisted_delivery=False, started_at__lt=timezone.now() - timedelta(minutes=10))
+        | Q(assisted_delivery=True, started_at__lt=timezone.now() - timedelta(minutes=15))
     )
     for pk in stale.values_list("pk", flat=True)[:100]:
         finish(pk, Application.Status.UNKNOWN, error_code="worker_interrupted")

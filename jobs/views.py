@@ -163,6 +163,14 @@ def application_create(request, pk):
             draft.channel = "portal"
         except ValueError:
             pass
+    from .services.gitlab_greenhouse import job_url as gitlab_url
+
+    if not job.apply_email:
+        try:
+            draft.portal_url = gitlab_url(job)
+            draft.channel = "portal"
+        except ValueError:
+            pass
     form = ApplicationForm(
         request.POST or None,
         owner=request.user,
@@ -195,11 +203,26 @@ def application_create(request, pk):
 @login_required
 def application_detail(request, pk):
     application = owned_application(request.user, pk)
+    from .services import gitlab_greenhouse as gitlab
     from .services.camunda_ashby import PortalRejected, inspect_schema
     from .services.camunda_ashby import supported as camunda_supported
     from .services.cato_greenhouse import supported as cato_supported
     from .services.secret_telaviv import supported
 
+    gitlab_review = []
+    if gitlab.supported(application):
+        try:
+            schema = gitlab.inspect_schema(
+                application.portal_answers.get("_schema", {}), gitlab.posting_id(application.job)
+            )
+            for q in schema.entries:
+                f = q["fields"][0]
+                value = application.portal_answers.get(f["name"], "")
+                if f["type"] == "multi_value_single_select":
+                    value = next((v["label"] for v in f["values"] if v["value"] == value), "")
+                gitlab_review.append((q["label"], value))
+        except gitlab.PortalRejected:
+            pass
     camunda_review = []
     if camunda_supported(application):
         try:
@@ -232,11 +255,14 @@ def application_detail(request, pk):
             "cato_portal": cato_supported(application),
             "camunda_portal": camunda_supported(application),
             "camunda_review": camunda_review,
+            "gitlab_portal": gitlab.supported(application),
+            "gitlab_review": gitlab_review,
             "can_approve": (
                 application.channel == "email"
                 or supported(application)
                 or cato_supported(application)
                 or camunda_supported(application)
+                or gitlab.supported(application)
             )
             and application.status in {"draft", "failed"},
         },
@@ -270,11 +296,18 @@ def application_edit(request, pk):
 def application_approve(request, pk):
     owned_application(request.user, pk)
     try:
-        submissions.approve(request.user, pk)
+        application = submissions.approve(
+            request.user, pk, assisted=request.POST.get("assisted") == "1"
+        )
     except ValidationError as exc:
         messages.error(request, "; ".join(exc.messages))
     else:
-        messages.success(request, "Approved. The worker will send this exact application.")
+        messages.success(
+            request,
+            "Approved for local assisted delivery. Start the local assisted command."
+            if application.assisted_delivery
+            else "Approved. The worker will send this exact application.",
+        )
     return redirect("application", pk=pk)
 
 

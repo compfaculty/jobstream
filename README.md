@@ -66,6 +66,7 @@ Browser form submission is intentionally gated. External employer links are avai
 Supported Cato Networks applications use the official hosted Greenhouse form after
 review and approval. Run the dedicated `browser-worker` for these applications;
 Camunda applications use the same isolated worker with an Ashby adapter;
+GitLab supports reviewed dynamic Greenhouse questions and reserved local assisted delivery;
 other delivery workers do not need Chromium. See the [Cato integration](docs/integrations/cato-networks.md).
 Production hosting and Terraform follow the budget/provider decision; this repository
 has not provisioned cloud infrastructure or claimed production capacity.
@@ -143,3 +144,6 @@ Company-by-company implementation status and the accepted matching/answer-reuse 
 [Cato Networks](docs/integrations/cato-networks.md).
 
 Camunda form delivery and its verification boundary: [Camunda / Ashby](docs/integrations/camunda.md).
+
+GitLab collection and reviewed form delivery: [GitLab / Greenhouse](docs/integrations/gitlab.md).
+Status: **needs real end-to-end verification**; resume with job 20407 using the checklist in that guide.
