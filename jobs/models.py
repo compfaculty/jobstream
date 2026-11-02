@@ -667,3 +667,30 @@ class PreparedResume(models.Model):
     provenance = models.JSONField(default=dict)
     body = models.TextField(max_length=20000)
     created_at = models.DateTimeField(auto_now_add=True)
+
+
+class AgentExecution(models.Model):
+    """Owner-scoped evaluation ledger; runtime history is stored separately."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    job = models.ForeignKey(Job, on_delete=models.CASCADE)
+    profile = models.ForeignKey(ResumeProfile, on_delete=models.PROTECT)
+    key = models.CharField(max_length=64, unique=True)
+    snapshot = models.JSONField()
+    backend = models.CharField(max_length=20, default="infinity")
+    model = models.CharField(max_length=200)
+    version = models.CharField(max_length=40, default="vacancy-evaluation-v1")
+    status = models.CharField(max_length=20, default="queued", db_index=True)
+    attempt = models.PositiveSmallIntegerField(default=1)
+    attempt_id = models.UUIDField(default=uuid.uuid4)
+    result = models.JSONField(default=dict)
+    usage = models.JSONField(default=dict)
+    error_code = models.CharField(max_length=80, blank=True)
+    retryable = models.BooleanField(default=False)
+    cancellation_delivered = models.BooleanField(default=False)
+    lease_until = models.DateTimeField(null=True, blank=True)
+    next_dispatch_at = models.DateTimeField(default=timezone.now, db_index=True)
+    deadline = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
