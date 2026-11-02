@@ -147,3 +147,7 @@ Camunda form delivery and its verification boundary: [Camunda / Ashby](docs/inte
 
 GitLab collection and reviewed form delivery: [GitLab / Greenhouse](docs/integrations/gitlab.md).
 Status: **needs real end-to-end verification**; resume with job 20407 using the checklist in that guide.
+
+Experimental owner-scoped vacancy evaluation with Rust Infinity is disabled by default.
+See [local setup, tests and rollback](services/infinity-agent/README.md) and the
+[architecture audit](docs/architecture/infinity-migration.md).

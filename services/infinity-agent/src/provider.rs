@@ -327,6 +327,15 @@ impl Provider {
                 _ => return Err(fatal("agent_provider_invalid_output")),
             }
         }
+        if !has_context
+            && chunks
+                .iter()
+                .filter(|chunk| matches!(chunk, Ok(StreamChunk::ToolCall(_))))
+                .count()
+                != 1
+        {
+            return Err(fatal("agent_context_required"));
+        }
         chunks.push(Ok(StreamChunk::Final(FinalResponse {
             usage: Some(Usage {
                 input_tokens: usage["input_tokens"].as_u64().unwrap_or(0),

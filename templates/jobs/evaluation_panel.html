@@ -8,5 +8,5 @@
 <ul>{% for gap in evaluation.result.ai_selection.unmatched_requirements %}<li>Experience to review: {{ gap }}</li>{% endfor %}</ul>
 {% endif %}
 {% if evaluation.status == 'queued' or evaluation.status == 'running' %}<form method="post" action="{% url 'evaluation-action' evaluation.pk 'cancel' %}">{% csrf_token %}<button class="secondary">Cancel evaluation</button></form>{% endif %}
-{% if evaluation.status == 'failed' and evaluation.retryable and evaluation.attempt < 3 %}<form method="post" action="{% url 'evaluation-action' evaluation.pk 'retry' %}">{% csrf_token %}<button>Retry evaluation</button></form>{% endif %}
+{% if evaluation_enabled and evaluation.status == 'failed' and evaluation.retryable and evaluation.attempt < 3 %}<form method="post" action="{% url 'evaluation-action' evaluation.pk 'retry' %}">{% csrf_token %}<button>Retry evaluation</button></form>{% endif %}
 </article>{% endfor %}</section>

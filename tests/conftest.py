@@ -74,3 +74,27 @@ def playwright(django_db_setup):
             os.environ.pop("DJANGO_ALLOW_ASYNC_UNSAFE", None)
         else:
             os.environ["DJANGO_ALLOW_ASYNC_UNSAFE"] = previous
+
+
+@pytest.fixture
+def agent_settings(settings):
+    settings.AGENT_BACKEND = "infinity"
+    settings.INFINITY_SERVICE_TOKEN = "test-service-token-with-at-least-32-chars"
+    settings.INFINITY_TOOL_SECRET = "test-tool-signing-secret-not-real"
+    settings.INFINITY_MODEL = "fake"
+    settings.AI_DAILY_TOKEN_BUDGET = 1000000
+
+
+@pytest.fixture
+def evaluation_profile(user):
+    from jobs.models import Document, ResumeProfile
+
+    document = Document.objects.create(
+        owner=user, name="CV", file="unused.pdf", sha256="a" * 64, size=1
+    )
+    return ResumeProfile.objects.create(
+        owner=user,
+        document=document,
+        name="Confirmed",
+        facts=[{"id": "f1", "text": "Python and Linux"}],
+    )

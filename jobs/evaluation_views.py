@@ -39,7 +39,9 @@ def panel(request, pk):
         {
             "job": job,
             "evaluations": executions,
-            "evaluation_poll": any(item.status in {"queued", "running"} for item in executions),
+            "evaluation_enabled": evaluations.enabled(),
+            "evaluation_poll": evaluations.enabled()
+            and any(item.status in {"queued", "running"} for item in executions),
         },
     )
 

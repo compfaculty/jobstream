@@ -117,3 +117,21 @@ processes, then stop Rust. Existing ingestion, matching, preparation and deliver
 on their original paths. Retain the additive execution table and runtime schema for audit;
 no reverse migration or destructive cleanup is necessary. In-flight evaluations stop gaining
 tool access and cannot trigger application side effects.
+
+## Interface boundary
+
+Rust accepts authenticated `PUT`, `GET` and `DELETE` on
+`/v1/executions/<execution UUID>/<attempt UUID>` for start, status and cancellation.
+The Python gateway owns the version-1 request/response contract. Requests carry model,
+input hash, frozen limits, deadline, correlation ID and a short-lived context capability.
+Responses carry the same IDs, lifecycle status, selection proposal, token counts and a
+bounded error/retry classification. Unknown fields and stale/mismatched IDs are rejected.
+Credentials and capabilities are transport data, never model arguments.
+
+Django's `/internal/agent/v1/context/<execution UUID>/<attempt UUID>/` is a capability-only
+read of one active execution snapshot. User endpoints use existing session/CSRF protection;
+status fragments and cancel/retry actions always filter by the signed-in owner.
+
+Runtime snapshots contain private confirmed facts. Protect the runtime schema, backups,
+and retention with the same care as private application documents. The experiment retains
+history for diagnosis; automatic retention/account-erasure synchronization is not implemented.

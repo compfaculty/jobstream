@@ -95,7 +95,8 @@ def job_detail(request, pk):
             "evaluation_enabled": settings.AGENT_BACKEND == "infinity",
             "evaluation_profiles": request.user.resumeprofile_set.all(),
             "evaluations": executions,
-            "evaluation_poll": any(item.status in {"queued", "running"} for item in executions),
+            "evaluation_poll": settings.AGENT_BACKEND == "infinity"
+            and any(item.status in {"queued", "running"} for item in executions),
             "saved": SavedJob.objects.filter(owner=request.user, job=job).exists(),
             "application": Application.objects.filter(owner=request.user, job=job).first(),
         },

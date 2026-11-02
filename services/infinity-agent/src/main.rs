@@ -668,13 +668,22 @@ async fn main() -> Result<(), Error> {
     if let Some(db) = &app.db {
         for row in db
             .query(
-                "SELECT request,response FROM infinity_runtime.executions WHERE response->>'status'='running'",
+                "SELECT request,response,usage FROM infinity_runtime.executions WHERE response->>'status'='running'",
                 &[],
             )
             .await?
         {
             let request: Request = serde_json::from_value(row.get(0))?;
-            let response: Response = serde_json::from_value(row.get(1))?;
+            let mut response: Response = serde_json::from_value(row.get(1))?;
+            // Publish a committed final turn before accepting HTTP requests, even
+            // when the inference deadline elapsed while this process was down.
+            let stores=Stores::new(app.db.clone());
+            let thread=ThreadId::from_ref(&request.attempt_id.to_string()).to_owned();
+            stores.restore(&thread).await?;
+            if let Some(result)=final_result(&stores.load_history_up_to(&thread,None,None).await?) {
+                response.status="completed".into(); response.result=result; response.usage=row.get(2);
+                persist(&app,&request,&response).await?;
+            }
             if response.status == "running" {
                 recover.push(request.clone());
             }
