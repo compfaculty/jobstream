@@ -9,3 +9,5 @@ private-media
 .coverage*
 htmlcov
 staticfiles
+
+services/infinity-agent/target/

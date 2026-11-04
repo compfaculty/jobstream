@@ -9,6 +9,8 @@ x-app: &app
     S3_BUCKET: jobstream-private
     AWS_ACCESS_KEY_ID: local-storage
     AWS_SECRET_ACCESS_KEY: local-storage-password
+    INFINITY_URL: http://infinity:8091
+    ALLOWED_HOSTS: ${ALLOWED_HOSTS:-localhost,127.0.0.1},web
   depends_on:
     db: {condition: service_healthy}
     redis: {condition: service_healthy}
@@ -21,6 +23,28 @@ x-app: &app
   mem_limit: 768m
   pids_limit: 256
 services:
+  infinity:
+    profiles: ["infinity"]
+    image: jobstream-infinity:local
+    build: services/infinity-agent
+    environment:
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      INFINITY_PROVIDER: ${INFINITY_PROVIDER:-openai}
+      INFINITY_SERVICE_TOKEN: ${INFINITY_SERVICE_TOKEN:-}
+      INFINITY_DATABASE_URL: ${INFINITY_DATABASE_URL:-}
+      INFINITY_DJANGO_URL: http://web:8000
+      INFINITY_BIND: 0.0.0.0:8091
+      RUST_LOG: info
+    depends_on:
+      db: {condition: service_healthy}
+    init: true
+    restart: unless-stopped
+    read_only: true
+    tmpfs: ["/tmp:size=16m,mode=1777"]
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    mem_limit: 256m
+    pids_limit: 128
   web:
     <<: *app
     command: ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "2", "--timeout", "60", "--no-control-socket"]

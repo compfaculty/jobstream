@@ -6,9 +6,37 @@ and boundary map are in [infinity-migration.md](../../docs/architecture/infinity
 
 ## Local startup
 
+### Docker Compose
+
+Set `AGENT_BACKEND=infinity`, `INFINITY_PROVIDER=openai`, `INFINITY_MODEL`,
+`OPENAI_MODEL`, `OPENAI_API_KEY`, and the two independent Infinity secrets in `.env`.
+Set `INFINITY_DATABASE_URL` to
+`postgresql://jobstream_infinity:<random-url-safe-password>@db:5432/jobstream`.
+Compose supplies private service addresses and passes only the runtime's configuration
+to its container. The Rust port is not published to the host.
+
+```sh
+docker compose --profile infinity build
+docker compose run --rm web python manage.py migrate
+docker compose run --rm web python -m scripts.provision_infinity
+docker compose --profile infinity up -d
+```
+
+Provisioning creates the runtime schema and separate login, grants only runtime table
+access, and checks that it cannot read the application execution table. Rerunning it
+updates the login password from `.env`. Start the profile on subsequent Compose updates
+to include the Rust service. Use only the Compose Beat instance.
+
+### Host processes
+
+When switching from Compose to host processes, use loopback URLs for `INFINITY_URL`,
+`INFINITY_DJANGO_URL`, and the database host instead of Compose service names.
+
 Use the existing PostgreSQL/Redis services (`make services`) and install Python dependencies
 with `make setup`. Export your normal development settings (`DEBUG=1`, database URL, etc.).
-The application does not load `.env` automatically: export values in each relevant terminal.
+Docker Compose loads `.env` for Django and workers. `make infinity` also loads `.env`,
+then passes only runtime credentials to Rust. Direct host Django commands still need their
+environment exported.
 
 1. Run `make migrate` to add the application execution ledger.
 2. Generate two independent random secrets, e.g. `openssl rand -hex 32` twice. Export
@@ -17,7 +45,8 @@ The application does not load `.env` automatically: export values in each releva
 3. Export `INFINITY_MODEL` in Django/workers with your chosen tool-capable OpenAI model.
    Export `OPENAI_API_KEY` only in Rust for this workflow. Existing Python AI paths
    still require their own existing configuration if used.
-4. Run `make infinity` in one terminal. The default listener is `127.0.0.1:8091`.
+4. Run `make infinity` in one terminal; it reads `.env` automatically. The default listener
+   is `127.0.0.1:8091`.
 5. Run `make infinity-django`, and run `AGENT_BACKEND=infinity make worker` and
    `AGENT_BACKEND=infinity make beat` in other terminals. Use one Beat process.
 6. On a job detail page, select one of your confirmed CV profiles and choose Evaluate.

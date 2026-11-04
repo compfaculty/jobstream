@@ -26,7 +26,7 @@ test:
 
 .PHONY: infinity infinity-django infinity-smoke infinity-test infinity-check infinity-logs
 infinity:
-	cargo run --locked --manifest-path services/infinity-agent/Cargo.toml
+	uv run --env-file .env --no-project python scripts/run_infinity.py
 infinity-django:
 	AGENT_BACKEND=infinity uv run python manage.py runserver
 infinity-smoke:

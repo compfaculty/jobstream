@@ -1,0 +1,14 @@
+FROM rust:1-bookworm AS builder
+WORKDIR /build
+COPY Cargo.toml Cargo.lock ./
+COPY src ./src
+RUN cargo build --locked --release
+
+FROM debian:bookworm-slim
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates \
+    && rm -rf /var/lib/apt/lists/* \
+    && useradd --uid 10001 --create-home app
+COPY --from=builder /build/target/release/jobstream-infinity-agent /usr/local/bin/
+USER app
+EXPOSE 8091
+CMD ["jobstream-infinity-agent"]
