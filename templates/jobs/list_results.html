@@ -1,3 +1,26 @@
+<input type="hidden" name="mode" value="{{ job_mode }}" form="job-search">
+<nav class="job-modes" aria-label="Job views">
+  {% querystring mode="all" cv=None page=None as all_jobs_url %}
+  <a href="{{ all_jobs_url }}" hx-get="{{ all_jobs_url }}" hx-target="#results" hx-push-url="true" hx-indicator="#loading" hx-sync="#job-search:replace"{% if job_mode == 'all' %} aria-current="page"{% endif %}>All jobs</a>
+  {% querystring mode="recommended" page=None as recommended_jobs_url %}
+  <a href="{{ recommended_jobs_url }}" hx-get="{{ recommended_jobs_url }}" hx-target="#results" hx-push-url="true" hx-indicator="#loading" hx-sync="#job-search:replace"{% if job_mode == 'recommended' %} aria-current="page"{% endif %}>Recommended for you</a>
+</nav>
+{% if job_mode == 'recommended' %}
+  {% if recommendation_documents or recommendation_profiles %}
+  <div class="recommendation-filter">
+    <label for="recommendation-cv">CV for recommendations</label>
+    <select id="recommendation-cv" name="cv" form="job-search" required>
+      {% if not selected_cv %}<option value="" selected>Choose one of your CVs</option>{% endif %}
+      {% if recommendation_documents %}<optgroup label="Uploaded PDFs">{% for document in recommendation_documents %}<option value="{{ document.value }}"{% if selected_cv == document.value %} selected{% endif %}>{{ document.name }}</option>{% endfor %}</optgroup>{% endif %}
+      {% if recommendation_profiles %}<optgroup label="Optional reviewed profiles">{% for profile in recommendation_profiles %}<option value="{{ profile.value }}"{% if selected_cv == profile.value %} selected{% endif %}>{{ profile.name }} · version {{ profile.pk }}</option>{% endfor %}</optgroup>{% endif %}
+    </select>
+    <button type="submit" form="job-search" class="secondary">Update recommendations</button>
+  </div>
+  {% endif %}
+  <p class="muted">Jobs scoring {{ recommendation_minimum }}% or higher with this CV and your preferences, best fit first.</p>
+{% else %}
+  <p class="muted job-view-note">Every stored job, newest added first. Closed and archived jobs are labeled.</p>
+{% endif %}
 <input type="hidden" name="category" value="{{ selected_category }}" form="job-search">
 <div class="job-browser">
   <aside class="category-sidebar" id="category-panel" hx-preserve>
@@ -11,17 +34,24 @@
   </aside>
   <section class="category-results" aria-label="Job results">
 <form method="post" action="{% url 'batch-create' %}">{% csrf_token %}
-<div class="results-heading"><h2>{% if request.GET.saved == '1' %}Saved opportunities{% else %}Explore opportunities{% endif %}</h2><span class="count">{{ page.paginator.count }} job{{ page.paginator.count|pluralize }}</span></div>
+<div class="results-heading"><h2>{% if job_mode == 'recommended' %}Recommended for you{% elif request.GET.saved == '1' %}Saved opportunities{% else %}Explore opportunities{% endif %}</h2><span class="count">{{ page.paginator.count }} job{{ page.paginator.count|pluralize }}</span></div>
 <div class="job-list">
 {% for job in page %}
 <article class="job-card">
-<label class="job-selection"><input type="checkbox" name="jobs" value="{{ job.pk }}" aria-label="Select {{ job.title }}"></label>
+<label class="job-selection"><input type="checkbox" name="jobs" value="{{ job.pk }}" aria-label="Select {{ job.title }}"{% if not job.active %} disabled{% endif %}></label>
   {% if job.company_profile.logo %}<img class="company-logo" src="{% url 'company-logo' job.company_profile_id %}" alt="" width="48" height="48" loading="lazy">{% endif %}
-  <div class="job-card-content"><p class="company-name">{% if job.company_profile_id %}<a class="company-link" href="{% url 'company' job.company_profile_id %}">{{ job.company_profile.name }}</a>{% else %}{{ job.company|default:'Company not specified' }}{% endif %}</p><h2><a href="{% url 'job' job.pk %}">{{ job.title }}</a></h2><p class="job-meta"><span>{{ job.location|default:'Location not specified' }}</span><span>Added {{ job.discovered_at|date:'M j, Y' }}</span></p></div>
+  <div class="job-card-content"><p class="company-name">{% if job.company_profile_id %}<a class="company-link" href="{% url 'company' job.company_profile_id %}">{{ job.company_profile.name }}</a>{% else %}{{ job.company|default:'Company not specified' }}{% endif %}</p><h2><a href="{% url 'job' job.pk %}">{{ job.title }}</a></h2><p class="job-meta"><span>{{ job.location|default:'Location not specified' }}</span><span>Added {{ job.discovered_at|date:'M j, Y' }}</span>{% if not job.active %}<span class="job-unavailable">{% if job.status_override %}{{ job.get_status_override_display }}{% else %}{{ job.get_lifecycle_display }}{% endif %}</span>{% endif %}{% if job_mode == 'recommended' %}<span class="job-fit">{{ job.recommendation_score }}% fit</span>{% endif %}</p></div>
   <span class="card-arrow" aria-hidden="true">↗</span>
 </article>
 {% empty %}
-<div class="empty-state"><span class="empty-symbol" aria-hidden="true">⌕</span><h2>No matching jobs yet</h2><p class="muted">Try a different keyword or a broader location.</p>{% if q or location or request.GET.saved or request.GET.company or selected_category != 'all' %}<a class="button secondary" href="/">Clear filters</a>{% endif %}<p class="helptext">Sources are managed by the operator.</p></div>
+<div class="empty-state"><span class="empty-symbol" aria-hidden="true">⌕</span>
+{% if job_mode == 'recommended' %}
+  {% if recommendation_source_invalid %}<h2>Choose one of your CVs</h2><p class="muted">Select a CV from your account to view its recommendations.</p>
+  {% elif not recommendation_source %}<h2>Upload a CV to get started</h2><p class="muted">Upload your PDF, then evaluate vacancies with it. Jobs scoring at least {{ recommendation_minimum }}% will appear here.</p><a class="button secondary" href="{% url 'documents' %}">Upload a CV</a>
+  {% else %}<h2>No recommended jobs yet</h2><p class="muted">Evaluate jobs with the selected CV. Only current evaluations of {{ recommendation_minimum }}% or higher appear here. If the CV, job, or preferences change, evaluate again.</p>{% endif %}
+{% else %}<h2>No matching jobs yet</h2><p class="muted">Try a different keyword or a broader location.</p>{% endif %}
+{% if q or location or request.GET.saved or request.GET.company or selected_category != 'all' %}{% querystring q=None location=None saved=None company=None category=None page=None as clear_filters_url %}<a class="button secondary" href="{{ clear_filters_url|default:'/' }}">Clear filters</a>{% endif %}
+<p class="helptext">Sources are managed by the operator.</p></div>
 {% endfor %}
 </div>
 <button>Apply to selected jobs</button>

@@ -4,8 +4,12 @@ from django.db.models import F
 from jobs.models import Job
 
 
-def search_jobs(query: str = "", location: str = "", company: str = ""):
-    jobs = Job.objects.filter(active=True).select_related("company_profile")
+def search_jobs(
+    query: str = "", location: str = "", company: str = "", *, include_inactive: bool = False
+):
+    jobs = Job.objects.all().select_related("company_profile")
+    if not include_inactive:
+        jobs = jobs.filter(active=True)
     if company:
         if not company.isascii() or not company.isdecimal() or len(company) > 18:
             return jobs.none()

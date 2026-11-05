@@ -43,10 +43,12 @@ def test_title_categories(job, title, expected):
 
 
 def test_all_fallback_and_closed_jobs(authenticated, job):
-    Job.objects.create(canonical_url="https://example.com/closed", title="Backend", active=False)
+    closed = Job.objects.create(
+        canonical_url="https://example.com/closed", title="Backend", active=False
+    )
     for category in ("", "all", "unknown", "<script>"):
         response = authenticated.get("/", {"category": category})
-        assert list(response.context["page"]) == [job]
+        assert list(response.context["page"]) == [closed, job]
         assert response.context["selected_category"] == "all"
 
 

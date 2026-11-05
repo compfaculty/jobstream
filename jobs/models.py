@@ -718,6 +718,15 @@ class AgentExecution(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        indexes = [
+            models.Index(
+                fields=["owner", "document", "job", "-created_at"],
+                condition=models.Q(status="completed"),
+                name="agent_recommendation_idx",
+            )
+        ]
+
     @property
     def error_message(self):
         return {

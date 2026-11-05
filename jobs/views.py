@@ -22,6 +22,7 @@ from .services.authorization import owned_application, owned_document
 from .services.categories import CATEGORIES, category_filter, resolve_category
 from .services.documents import upload_document
 from .services.gmail import encrypt_credentials, gmail_client
+from .services.recommendations import recommended_jobs, sources_for
 from .services.search import search_jobs
 
 
@@ -56,7 +57,16 @@ def job_list(request):
     location = request.GET.get("location", "")[:100]
     company = request.GET.get("company", "")[:40]
     category = resolve_category(request.GET.get("category", "all"))
-    jobs = search_jobs(query, location, company).filter(category_filter(category))
+    mode = "recommended" if request.GET.get("mode") == "recommended" else "all"
+    recommendation_context = {}
+    jobs = search_jobs(query, location, company, include_inactive=mode == "all").filter(
+        category_filter(category)
+    )
+    if mode == "recommended":
+        recommendation_context = sources_for(request.user, request.GET.get("cv", "")[:80])
+        jobs = recommended_jobs(jobs, request.user, recommendation_context["recommendation_source"])
+    else:
+        jobs = jobs.order_by("-discovered_at", "-pk")
     if request.GET.get("saved") == "1":
         jobs = jobs.filter(savedjob__owner=request.user)
     page = Paginator(jobs, 25).get_page(request.GET.get("page"))
@@ -66,12 +76,14 @@ def job_list(request):
         else "jobs/list.html"
     )
     companies = Company.objects.filter(
-        Exists(Job.objects.filter(company_profile=OuterRef("pk"), active=True))
+        Exists(Job.objects.filter(company_profile=OuterRef("pk")))
     ).select_related("source")
     return render(
         request,
         template,
         {
+            **recommendation_context,
+            "job_mode": mode,
             "page": page,
             "q": query,
             "location": location,

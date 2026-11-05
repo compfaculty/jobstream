@@ -108,3 +108,20 @@ estimates, unsettled reservations and budget-blocked work. Logs exclude bodies a
 
 Full operation at 1,000–5,000 new jobs/day is a separate rollout decision after measured
 cost and quality. Neither the monetary cap nor the daily token guard is raised by reset.
+
+## Job views
+
+The jobs page offers `/?mode=all` (the default) and `/?mode=recommended`.
+All jobs includes stored closed/archived vacancies, newest `discovered_at` first;
+search, categories, company, location and saved filters still apply. Unavailable
+vacancies are labeled and cannot be selected for bulk application from this list.
+Other search/API callers retain their existing active-only default.
+
+Recommendations show active jobs with the latest current completed evaluation of
+at least 70%, highest score first, for a selected uploaded PDF or optional reviewed
+profile. The newest uploaded PDF is selected initially. `cv=document:ID` or
+`cv=profile:ID` preserves selection in navigation; sources and scores are owner-scoped.
+Changed job content, CV hash/reviewed facts, preferences or evaluation policy invalidate
+reuse. A lower latest score replaces an older high score. Unknown or malformed scores,
+incomplete evaluations and hard preference blocks are excluded. Browsing never
+extracts a PDF, starts an evaluation, submits work or consumes AI allowance.
