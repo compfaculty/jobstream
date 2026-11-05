@@ -18,3 +18,5 @@ test-results/
 .terraform/
 coverage.json
 services/infinity-agent/target/
+
+/private-backups/

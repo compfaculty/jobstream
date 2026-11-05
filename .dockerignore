@@ -11,3 +11,5 @@ htmlcov
 staticfiles
 
 services/infinity-agent/target/
+
+private-backups/

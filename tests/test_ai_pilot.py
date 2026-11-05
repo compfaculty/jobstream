@@ -1,13 +1,17 @@
+import io
 import json
 from decimal import Decimal
 
 import pytest
+from django.core.management import call_command
+from django.core.management.base import CommandError
 
 from jobs.models import (
     AICharge,
     AICostMonth,
     AIQuota,
     Job,
+    Source,
     UserComparisonDay,
 )
 from jobs.services import normalization_batch as batches
@@ -43,6 +47,17 @@ def test_user_slots_and_unknown_outcomes(settings, user):
     reserve("staff", "gpt-6-luna", "comparison", 10, 10, owner=user, comparison=True)
     with pytest.raises(BudgetUnavailable, match="price_unknown"):
         reserve("unknown", "unpriced-model", "test", 10, 10)
+
+
+def test_reset_is_read_only_by_default(user, job):
+    user.is_superuser = True
+    user.save()
+    out = io.StringIO()
+    call_command("reset_pilot", admin=user.username, stdout=out)
+    assert Job.objects.filter(pk=job.pk).exists()
+    assert json.loads(out.getvalue())["apply"] is False
+    with pytest.raises(CommandError, match="verified backup"):
+        call_command("reset_pilot", admin=user.username, apply=True, stdout=io.StringIO())
 
 
 def test_profile_grounding_cache_and_owner_isolation(settings, user, document, monkeypatch):  # noqa: F811
@@ -193,6 +208,64 @@ def test_batch_override_and_budget_block(settings, job):
 
 
 from tests.test_batches import document  # noqa: E402,F401
+
+
+@pytest.mark.django_db(transaction=True)
+def test_reset_preserves_auth_sources_and_budget(tmp_path, user, job, settings):
+    import hashlib
+
+    from django.contrib.auth import get_user_model
+    from django_otp.plugins.otp_static.models import StaticDevice, StaticToken
+    from django_otp.plugins.otp_totp.models import TOTPDevice
+
+    user.is_superuser = user.is_staff = True
+    user.save()
+    password = user.password
+    totp = TOTPDevice.objects.create(user=user, name="default", confirmed=True)
+    static = StaticDevice.objects.create(user=user, name="backup")
+    token = StaticToken.objects.create(device=static, token="test-recovery")
+    other = get_user_model().objects.create_user(username="reset-other")
+    source = Source.objects.create(
+        name="retained",
+        url="https://example.com",
+        adapter="rss",
+        enabled=True,
+        inventory_cursor={"page": 5},
+        failure_count=2,
+    )
+    reserve("before-reset", "gpt-6-luna", "test", 100, 100, owner=user)
+    amount = AICostMonth.objects.get().committed_usd
+    dump = tmp_path / "database.dump"
+    dump.write_bytes(b"test-backup-not-a-real-database")
+    manifest = tmp_path / "manifest.json"
+    manifest.write_text(
+        json.dumps(
+            {
+                "restore_verified": True,
+                "admin_id": user.pk,
+                "database_file": dump.name,
+                "database_sha256": hashlib.sha256(dump.read_bytes()).hexdigest(),
+                "files": [],
+            }
+        )
+    )
+    call_command(
+        "reset_pilot",
+        admin=user.username,
+        apply=True,
+        quiesced=True,
+        backup_manifest=str(manifest),
+        stdout=io.StringIO(),
+    )
+    user.refresh_from_db()
+    source.refresh_from_db()
+    assert user.password == password and user.is_superuser
+    assert TOTPDevice.objects.get(pk=totp.pk).key == totp.key
+    assert StaticToken.objects.get(pk=token.pk).token == "test-recovery"
+    assert not get_user_model().objects.filter(pk=other.pk).exists()
+    assert not Job.objects.exists() and not AICharge.objects.exists()
+    assert source.enabled and source.inventory_cursor == {} and source.failure_count == 0
+    assert AICostMonth.objects.get().carried_usd == amount
 
 
 def test_5000_unique_job_events_are_visible_and_batch_preparation_is_bounded(settings):

@@ -1,0 +1,332 @@
+[
+  {
+    "id": "Python-0",
+    "cv": "Five years developing Python services.",
+    "requirements": [
+      "Three years developing Python services."
+    ],
+    "expected": [
+      "met"
+    ],
+    "reviewed": true
+  },
+  {
+    "id": "Python-1",
+    "cv": "Two years developing Python services.",
+    "requirements": [
+      "Five years developing Python services."
+    ],
+    "expected": [
+      "partial"
+    ],
+    "reviewed": true
+  },
+  {
+    "id": "Python-2",
+    "cv": "Five years handling customer support.",
+    "requirements": [
+      "Production Python development experience."
+    ],
+    "expected": [
+      "not_demonstrated"
+    ],
+    "reviewed": true
+  },
+  {
+    "id": "Python-3",
+    "cv": "I have never used Python.",
+    "requirements": [
+      "Python development experience."
+    ],
+    "expected": [
+      "not_demonstrated"
+    ],
+    "reviewed": true
+  },
+  {
+    "id": "Python-4",
+    "cv": "Built Python backend services for six years.",
+    "requirements": [
+      "Three years of Python OR Java."
+    ],
+    "expected": [
+      "met"
+    ],
+    "reviewed": true
+  },
+  {
+    "id": "Python-5",
+    "cv": "Built Python APIs for five years.",
+    "requirements": [
+      "Production CUDA deployment experience."
+    ],
+    "expected": [
+      "not_demonstrated"
+    ],
+    "reviewed": true
+  },
+  {
+    "id": "Python-6",
+    "cv": "Managed Kubernetes applications for five years.",
+    "requirements": [
+      "Specialized GPU inference serving experience."
+    ],
+    "expected": [
+      "partial"
+    ],
+    "reviewed": true
+  },
+  {
+    "id": "Python-7",
+    "cv": "Developed a personal Python prototype.",
+    "requirements": [
+      "Five years of professional Python development."
+    ],
+    "expected": [
+      "partial"
+    ],
+    "reviewed": true
+  },
+  {
+    "id": "Python-8",
+    "cv": "Five years developing Python APIs. No leadership experience.",
+    "requirements": [
+      "Three years leading an engineering team."
+    ],
+    "expected": [
+      "not_demonstrated"
+    ],
+    "reviewed": true
+  },
+  {
+    "id": "Python-9",
+    "cv": "Seven years shipping Python services on Linux.",
+    "requirements": [
+      "Experience building Python services on Linux."
+    ],
+    "expected": [
+      "met"
+    ],
+    "reviewed": true
+  },
+  {
+    "id": "Go-0",
+    "cv": "Five years developing Go services.",
+    "requirements": [
+      "Three years developing Go services."
+    ],
+    "expected": [
+      "met"
+    ],
+    "reviewed": true
+  },
+  {
+    "id": "Go-1",
+    "cv": "Two years developing Go services.",
+    "requirements": [
+      "Five years developing Go services."
+    ],
+    "expected": [
+      "partial"
+    ],
+    "reviewed": true
+  },
+  {
+    "id": "Go-2",
+    "cv": "Five years handling customer support.",
+    "requirements": [
+      "Production Go development experience."
+    ],
+    "expected": [
+      "not_demonstrated"
+    ],
+    "reviewed": true
+  },
+  {
+    "id": "Go-3",
+    "cv": "I have never used Go.",
+    "requirements": [
+      "Go development experience."
+    ],
+    "expected": [
+      "not_demonstrated"
+    ],
+    "reviewed": true
+  },
+  {
+    "id": "Go-4",
+    "cv": "Built Go backend services for six years.",
+    "requirements": [
+      "Three years of Go OR Java."
+    ],
+    "expected": [
+      "met"
+    ],
+    "reviewed": true
+  },
+  {
+    "id": "Go-5",
+    "cv": "Built Go APIs for five years.",
+    "requirements": [
+      "Production CUDA deployment experience."
+    ],
+    "expected": [
+      "not_demonstrated"
+    ],
+    "reviewed": true
+  },
+  {
+    "id": "Go-6",
+    "cv": "Managed Kubernetes applications for five years.",
+    "requirements": [
+      "Specialized GPU inference serving experience."
+    ],
+    "expected": [
+      "partial"
+    ],
+    "reviewed": true
+  },
+  {
+    "id": "Go-7",
+    "cv": "Developed a personal Go prototype.",
+    "requirements": [
+      "Five years of professional Go development."
+    ],
+    "expected": [
+      "partial"
+    ],
+    "reviewed": true
+  },
+  {
+    "id": "Go-8",
+    "cv": "Five years developing Go APIs. No leadership experience.",
+    "requirements": [
+      "Three years leading an engineering team."
+    ],
+    "expected": [
+      "not_demonstrated"
+    ],
+    "reviewed": true
+  },
+  {
+    "id": "Go-9",
+    "cv": "Seven years shipping Go services on Linux.",
+    "requirements": [
+      "Experience building Go services on Linux."
+    ],
+    "expected": [
+      "met"
+    ],
+    "reviewed": true
+  },
+  {
+    "id": "Rust-0",
+    "cv": "Five years developing Rust services.",
+    "requirements": [
+      "Three years developing Rust services."
+    ],
+    "expected": [
+      "met"
+    ],
+    "reviewed": true
+  },
+  {
+    "id": "Rust-1",
+    "cv": "Two years developing Rust services.",
+    "requirements": [
+      "Five years developing Rust services."
+    ],
+    "expected": [
+      "partial"
+    ],
+    "reviewed": true
+  },
+  {
+    "id": "Rust-2",
+    "cv": "Five years handling customer support.",
+    "requirements": [
+      "Production Rust development experience."
+    ],
+    "expected": [
+      "not_demonstrated"
+    ],
+    "reviewed": true
+  },
+  {
+    "id": "Rust-3",
+    "cv": "I have never used Rust.",
+    "requirements": [
+      "Rust development experience."
+    ],
+    "expected": [
+      "not_demonstrated"
+    ],
+    "reviewed": true
+  },
+  {
+    "id": "Rust-4",
+    "cv": "Built Rust backend services for six years.",
+    "requirements": [
+      "Three years of Rust OR Java."
+    ],
+    "expected": [
+      "met"
+    ],
+    "reviewed": true
+  },
+  {
+    "id": "Rust-5",
+    "cv": "Built Rust APIs for five years.",
+    "requirements": [
+      "Production CUDA deployment experience."
+    ],
+    "expected": [
+      "not_demonstrated"
+    ],
+    "reviewed": true
+  },
+  {
+    "id": "Rust-6",
+    "cv": "Managed Kubernetes applications for five years.",
+    "requirements": [
+      "Specialized GPU inference serving experience."
+    ],
+    "expected": [
+      "partial"
+    ],
+    "reviewed": true
+  },
+  {
+    "id": "Rust-7",
+    "cv": "Developed a personal Rust prototype.",
+    "requirements": [
+      "Five years of professional Rust development."
+    ],
+    "expected": [
+      "partial"
+    ],
+    "reviewed": true
+  },
+  {
+    "id": "Rust-8",
+    "cv": "Five years developing Rust APIs. No leadership experience.",
+    "requirements": [
+      "Three years leading an engineering team."
+    ],
+    "expected": [
+      "not_demonstrated"
+    ],
+    "reviewed": true
+  },
+  {
+    "id": "Rust-9",
+    "cv": "Seven years shipping Rust services on Linux.",
+    "requirements": [
+      "Experience building Rust services on Linux."
+    ],
+    "expected": [
+      "met"
+    ],
+    "reviewed": true
+  }
+]
