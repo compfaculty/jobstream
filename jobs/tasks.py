@@ -215,3 +215,66 @@ def dispatch_evaluations():
     for record in records:
         # Let the task claim now; lost publication recovers after the reservation.
         evaluate_vacancy.delay(str(record.pk))
+
+
+@shared_task
+def collect_operations():
+    from jobs.services.operations import collect_snapshot
+
+    collect_snapshot()
+
+
+@shared_task
+def build_cv_profile(pk):
+    from jobs.services.cv_profiles import build
+
+    build(pk)
+
+
+@shared_task
+def dispatch_cv_profiles():
+    from django.conf import settings
+
+    from jobs.models import CVRepresentation
+
+    if not settings.CV_REPRESENTATIONS_ENABLED:
+        return
+    with transaction.atomic():
+        records = list(
+            CVRepresentation.objects.select_for_update(skip_locked=True)
+            .filter(state__in=["pending", "dispatching", "processing"])
+            .filter(Q(lease_until__isnull=True) | Q(lease_until__lte=timezone.now()))
+            .order_by("pk")[:10]
+        )
+        for record in records:
+            record.state = "dispatching"
+            record.lease_until = timezone.now() + timedelta(minutes=5)
+            record.save(update_fields=["state", "lease_until"])
+    for record in records:
+        # Build takes its own processing lease. Expiring dispatch claims recover lost messages.
+        build_cv_profile.delay(record.pk)
+
+
+@shared_task
+def submit_normalization_batch():
+    from django.conf import settings
+
+    from jobs.models import NormalizationBatch
+    from jobs.services.normalization_batch import prepare, submit
+
+    if settings.JOB_NORMALIZATION_BATCH_ENABLED and settings.AI_PILOT_ROLLOUT_APPROVED:
+        pending = NormalizationBatch.objects.filter(state="prepared").first()
+        batch = pending or prepare()
+        if batch:
+            submit(batch)
+
+
+@shared_task
+def poll_normalization_batches():
+    from jobs.models import NormalizationBatch
+    from jobs.services.normalization_batch import TERMINAL, poll
+
+    for batch in NormalizationBatch.objects.exclude(state__in=TERMINAL | {"prepared"}).order_by(
+        "created_at"
+    )[:20]:
+        poll(batch)

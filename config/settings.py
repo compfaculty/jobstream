@@ -1,5 +1,6 @@
 """Environment-driven settings; insecure defaults are confined to explicit local mode."""
 
+import json
 import os
 from pathlib import Path
 from typing import Any
@@ -216,6 +217,13 @@ SEND_DOMAIN_INTERVAL = float(os.getenv("SEND_DOMAIN_INTERVAL", "5"))
 CV_FONT_PATH = os.getenv("CV_FONT_PATH", "")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
 OPENAI_MODEL = os.getenv("OPENAI_MODEL", "")
+OPENAI_REASONING_EFFORT = os.getenv("OPENAI_REASONING_EFFORT", "low")
+JOB_NORMALIZATION_MODEL = os.getenv("JOB_NORMALIZATION_MODEL", OPENAI_MODEL)
+JOB_NORMALIZATION_REASONING_EFFORT = os.getenv("JOB_NORMALIZATION_REASONING_EFFORT", "none")
+JOB_AI_NORMALIZATION_ENABLED = os.getenv("JOB_AI_NORMALIZATION_ENABLED", "0") == "1"
+JOB_NORMALIZATION_MAX_OUTPUT_TOKENS = 800
+JOB_NORMALIZATION_TIMEOUT_SECONDS = 20
+
 AI_MAX_INPUT_CHARACTERS = int(os.getenv("AI_MAX_INPUT_CHARACTERS", "30000"))
 AI_MAX_OUTPUT_TOKENS = int(os.getenv("AI_MAX_OUTPUT_TOKENS", "2000"))
 AI_DAILY_TOKEN_BUDGET = int(os.getenv("AI_DAILY_TOKEN_BUDGET", "200000"))
@@ -272,6 +280,7 @@ INFINITY_URL = os.getenv("INFINITY_URL", "http://127.0.0.1:8091")
 INFINITY_SERVICE_TOKEN = os.getenv("INFINITY_SERVICE_TOKEN", "")
 INFINITY_TOOL_SECRET = os.getenv("INFINITY_TOOL_SECRET", "")
 INFINITY_MODEL = os.getenv("INFINITY_MODEL", OPENAI_MODEL)
+INFINITY_REASONING_EFFORT = os.getenv("INFINITY_REASONING_EFFORT", "low")
 INFINITY_INPUT_COST_PER_MILLION = os.getenv("INFINITY_INPUT_COST_PER_MILLION", "")
 INFINITY_OUTPUT_COST_PER_MILLION = os.getenv("INFINITY_OUTPUT_COST_PER_MILLION", "")
 CELERY_BEAT_SCHEDULE["agent-evaluations"] = {
@@ -279,3 +288,45 @@ CELERY_BEAT_SCHEDULE["agent-evaluations"] = {
     "schedule": 10.0,
 }
 CELERY_TASK_ROUTES["jobs.tasks.evaluate_vacancy"] = {"queue": "preparation"}
+
+CELERY_BEAT_SCHEDULE["operations"] = {
+    "task": "jobs.tasks.collect_operations",
+    "schedule": 30.0,
+    "options": {"expires": 25},
+}
+
+# Pilot application-side budgets; prices are USD per million uncached tokens.
+AI_MONTHLY_BUDGET_USD = os.getenv("AI_MONTHLY_BUDGET_USD", "25")
+AI_USER_DAILY_COMPARISONS = int(os.getenv("AI_USER_DAILY_COMPARISONS", "20"))
+AI_MODEL_PRICES = json.loads(
+    os.getenv(
+        "AI_MODEL_PRICES", '{"gpt-6-luna": ["0.10", "0.50"], "gpt-4.1-mini": ["0.40", "1.60"]}'
+    )
+)
+AI_PRICING_VERSION = "2026-11-05"
+JOB_NORMALIZATION_BATCH_ENABLED = os.getenv("JOB_NORMALIZATION_BATCH_ENABLED", "0") == "1"
+JOB_NORMALIZATION_BATCH_SIZE = min(
+    100, max(1, int(os.getenv("JOB_NORMALIZATION_BATCH_SIZE", "50")))
+)
+CV_REPRESENTATIONS_ENABLED = os.getenv("CV_REPRESENTATIONS_ENABLED", "0") == "1"
+CELERY_BEAT_SCHEDULE.update(
+    {
+        "ai-normalization-submit": {
+            "task": "jobs.tasks.submit_normalization_batch",
+            "schedule": 3600.0,
+        },
+        "ai-normalization-poll": {
+            "task": "jobs.tasks.poll_normalization_batches",
+            "schedule": 60.0,
+        },
+        "cv-profiles": {"task": "jobs.tasks.dispatch_cv_profiles", "schedule": 60.0},
+    }
+)
+AI_PILOT_ROLLOUT_APPROVED = os.getenv("AI_PILOT_ROLLOUT_APPROVED", "0") == "1"
+CELERY_TASK_ROUTES.update(
+    {
+        "jobs.tasks.build_cv_profile": {"queue": "preparation"},
+        "jobs.tasks.submit_normalization_batch": {"queue": "ingestion"},
+        "jobs.tasks.poll_normalization_batches": {"queue": "ingestion"},
+    }
+)

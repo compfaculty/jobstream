@@ -129,7 +129,7 @@ class Source(models.Model):
 
 class IngestionRun(models.Model):
     source = models.ForeignKey(Source, on_delete=models.CASCADE)
-    started_at = models.DateTimeField(auto_now_add=True)
+    started_at = models.DateTimeField(auto_now_add=True, db_index=True)
     finished_at = models.DateTimeField(null=True)
     imported = models.PositiveIntegerField(default=0)
     rejected = models.PositiveIntegerField(default=0)
@@ -360,6 +360,22 @@ class Document(models.Model):
     size = models.PositiveIntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
 
+    @property
+    def processing_status(self):
+        record = self.representations.order_by("-created_at").first()
+        return (
+            {
+                "pending": "Processing queued",
+                "dispatching": "Processing queued",
+                "processing": "Processing CV",
+                "ready": "Ready for comparison",
+                "fallback": "Ready using extracted PDF text",
+                "failed": "Could not read PDF — upload a text-based PDF",
+            }.get(record.state, "")
+            if record
+            else ""
+        )
+
 
 class GmailConnection(models.Model):
     owner = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
@@ -421,7 +437,7 @@ class Application(models.Model):
     provider_id = models.CharField(max_length=200, blank=True)
     error_code = models.CharField(max_length=80, blank=True)
     started_at = models.DateTimeField(null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
@@ -554,7 +570,7 @@ class BatchItem(models.Model):
     error_code = models.CharField(max_length=80, blank=True)
     next_attempt_at = models.DateTimeField(default=timezone.now, db_index=True)
     next_dispatch_at = models.DateTimeField(default=timezone.now, db_index=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
 
     class Meta:
         constraints = [models.UniqueConstraint(fields=["batch", "job"], name="unique_batch_job")]
@@ -626,6 +642,7 @@ class DeliveryThrottle(models.Model):
 
 
 class AIResult(models.Model):
+    cache_hits = models.PositiveIntegerField(default=0)
     key = models.CharField(max_length=64, unique=True)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE)
     result = models.JSONField(default=dict)
@@ -675,9 +692,11 @@ class AgentExecution(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     job = models.ForeignKey(Job, on_delete=models.CASCADE)
-    profile = models.ForeignKey(ResumeProfile, on_delete=models.PROTECT)
+    profile = models.ForeignKey(ResumeProfile, on_delete=models.PROTECT, null=True, blank=True)
+    document = models.ForeignKey(Document, on_delete=models.PROTECT, null=True, blank=True)
     key = models.CharField(max_length=64, unique=True)
     snapshot = models.JSONField()
+    cache_hits = models.PositiveIntegerField(default=0)
     backend = models.CharField(max_length=20, default="infinity")
     model = models.CharField(max_length=200)
     version = models.CharField(max_length=40, default="vacancy-evaluation-v1")
@@ -692,5 +711,117 @@ class AgentExecution(models.Model):
     lease_until = models.DateTimeField(null=True, blank=True)
     next_dispatch_at = models.DateTimeField(default=timezone.now, db_index=True)
     deadline = models.DateTimeField(null=True, blank=True)
+    budget_day = models.DateField(null=True, blank=True)
+    budget_reserved_tokens = models.PositiveIntegerField(default=0)
+    budget_charged_tokens = models.PositiveIntegerField(null=True, blank=True)
+    budget_settled = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    @property
+    def error_message(self):
+        return {
+            "ai_monthly_budget_exceeded": (
+                "The app’s monthly AI budget has been reached. No new request was sent."
+            ),
+            "ai_user_daily_limit": (
+                "You have used today’s paid comparison allowance. Cached results remain available."
+            ),
+            "ai_model_price_unknown": "AI pricing is not configured for this model.",
+            "ai_daily_budget_exceeded": (
+                "The app's daily AI budget has insufficient unreserved capacity. "
+                "No OpenAI request was sent. Retry when capacity becomes available."
+            ),
+            "ai_evaluation_budget_too_small": (
+                "This evaluation's safety allowance exceeds the configured daily AI budget. "
+                "Choose a shorter CV or adjust the app's budget; waiting will not resolve this."
+            ),
+        }.get(self.error_code, self.error_code)
+
+
+class OperationalSnapshot(models.Model):
+    """Latest bounded metadata snapshot; no task arguments or provider content."""
+
+    key = models.CharField(max_length=40, primary_key=True)
+    observed_at = models.DateTimeField(default=timezone.now)
+    payload = models.JSONField(default=dict)
+
+
+class AICostMonth(models.Model):
+    month = models.DateField(unique=True)
+    committed_usd = models.DecimalField(max_digits=18, decimal_places=8, default=0)
+    carried_usd = models.DecimalField(max_digits=18, decimal_places=8, default=0)
+
+
+class AICharge(models.Model):
+    key = models.CharField(max_length=180, unique=True)
+    month = models.ForeignKey(AICostMonth, on_delete=models.PROTECT)
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL)
+    workload = models.CharField(max_length=40, db_index=True)
+    model = models.CharField(max_length=200)
+    pricing = models.JSONField()
+    reserved_usd = models.DecimalField(max_digits=18, decimal_places=8)
+    charged_usd = models.DecimalField(max_digits=18, decimal_places=8, null=True)
+    usage = models.JSONField(default=dict)
+    state = models.CharField(max_length=20, default="reserved", db_index=True)
+    daily_tokens = models.PositiveIntegerField(default=0)
+    day = models.DateField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+class UserComparisonDay(models.Model):
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    day = models.DateField()
+    admitted = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["owner", "day"], name="user_comparison_day")]
+
+
+class CVRepresentation(models.Model):
+    document = models.ForeignKey(Document, on_delete=models.CASCADE, related_name="representations")
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    key = models.CharField(max_length=64, unique=True)
+    version = models.CharField(max_length=100)
+    state = models.CharField(max_length=20, default="pending", db_index=True)
+    text = models.TextField(blank=True)
+    facts = models.JSONField(default=list)
+    skills = models.JSONField(default=list)
+    error_code = models.CharField(max_length=80, blank=True)
+    lease_until = models.DateTimeField(null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+
+class NormalizationBatch(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    provider_id = models.CharField(max_length=200, blank=True)
+    input_file = models.CharField(max_length=200, blank=True)
+    state = models.CharField(max_length=30, default="prepared", db_index=True)
+    error_code = models.CharField(max_length=80, blank=True)
+    lease_until = models.DateTimeField(null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+
+class NormalizationWork(models.Model):
+    request = models.JSONField(default=dict)
+    key = models.CharField(max_length=64, unique=True)
+    description = models.TextField()
+    model = models.CharField(max_length=200)
+    state = models.CharField(max_length=30, default="pending", db_index=True)
+    result = models.JSONField(default=dict)
+    error_code = models.CharField(max_length=80, blank=True)
+    attempts = models.PositiveSmallIntegerField(default=0)
+    batch = models.ForeignKey(NormalizationBatch, null=True, on_delete=models.SET_NULL)
+    charge = models.ForeignKey(AICharge, null=True, on_delete=models.SET_NULL)
+    available_at = models.DateTimeField(default=timezone.now, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+class NormalizationTarget(models.Model):
+    work = models.ForeignKey(NormalizationWork, on_delete=models.CASCADE, related_name="targets")
+    job = models.ForeignKey(Job, on_delete=models.CASCADE)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["work", "job"], name="normalization_target")]

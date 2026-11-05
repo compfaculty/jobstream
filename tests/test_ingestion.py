@@ -121,3 +121,42 @@ def test_company_detail_requests_are_bounded(monkeypatch):
     ingestion.ingest(source.pk)
     assert source.ingestionrun_set.get().imported == 10
     assert metadata.call_count == 10
+
+
+@pytest.mark.parametrize("provider_fails", [False, True])
+def test_global_ai_assists_one_missing_section_and_falls_back(
+    monkeypatch, settings, provider_fails
+):
+    from jobs.services.ai import AIUnavailable
+    from jobs.services.normalization import normalize_description
+
+    settings.JOB_AI_NORMALIZATION_ENABLED = True
+    source = Source.objects.create(
+        name="Weak sections",
+        adapter="rss",
+        url="https://example.com",
+        enabled=True,
+        ai_normalization=False,
+    )
+    description = "Requirements\nPython"
+    listing = Listing(
+        "https://example.com/weak-sections", "Python engineer", description=description
+    )
+    monkeypatch.setattr(ingestion, "fetch_public", lambda url: b"feed")
+    monkeypatch.setitem(ingestion.ADAPTERS, "rss", Mock(discover=Mock(return_value=[listing])))
+    normalized = normalize_description(description)
+    normalized["version"] = "ai-line-sections-v3"
+    provider = (
+        Mock(side_effect=AIUnavailable("ai_timeout"))
+        if provider_fails
+        else Mock(return_value=normalized)
+    )
+    monkeypatch.setattr(ingestion, "normalize_with_ai", provider)
+    ingestion.ingest(source.pk)
+    provider.assert_called_once()
+    job = Job.objects.get()
+    run = source.ingestionrun_set.get()
+    assert job.description == description
+    assert run.imported == 1
+    assert run.enrichment_failed == int(provider_fails)
+    assert job.normalized["version"] == ("sections-v3" if provider_fails else "ai-line-sections-v3")

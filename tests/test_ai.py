@@ -16,6 +16,7 @@ pytestmark = pytest.mark.django_db
 def ai_settings(settings):
     settings.OPENAI_API_KEY = "test-key-never-real"
     settings.OPENAI_MODEL = "test-model"
+    settings.AI_MODEL_PRICES = {**settings.AI_MODEL_PRICES, "test-model": ["0.10", "0.50"]}
 
 
 def mock_provider(monkeypatch, handler):
@@ -99,3 +100,69 @@ def test_reject_invented_fact_and_gap(user, document, monkeypatch):  # noqa: F81
     )
     with pytest.raises(AIUnavailable, match="ai_unsupported_claim"):
         select_facts(profile, {"title": "Engineer", "description": "Python required"})
+
+
+def test_prompt_and_model_parameters_invalidate_cache(user, ai_settings, monkeypatch):
+    requests = []
+
+    def handler(request):
+        body = json.loads(request.content)
+        requests.append(body)
+        return httpx.Response(
+            200,
+            json={
+                "status": "completed",
+                "usage": {"input_tokens": 30, "output_tokens": 10},
+                "output": [
+                    {
+                        "type": "message",
+                        "content": [{"type": "output_text", "text": '{"answer":"ok"}'}],
+                    }
+                ],
+            },
+        )
+
+    mock_provider(monkeypatch, handler)
+    request_json(
+        user.pk,
+        "test",
+        {},
+        {},
+        "one",
+        model="gpt-6-luna",
+        reasoning_effort="none",
+        max_output_tokens=100,
+    )
+    request_json(
+        user.pk,
+        "test",
+        {},
+        {},
+        "one",
+        model="gpt-6-luna",
+        reasoning_effort="none",
+        max_output_tokens=100,
+    )
+    request_json(
+        user.pk,
+        "test",
+        {},
+        {},
+        "two",
+        model="gpt-6-luna",
+        reasoning_effort="low",
+        max_output_tokens=100,
+    )
+    assert len(requests) == 2
+    assert requests[0]["model"] == "gpt-6-luna"
+    assert requests[0]["reasoning"] == {"effort": "none"}
+    assert requests[0]["max_output_tokens"] == 100
+    assert AIQuota.objects.get().reserved_tokens == 80
+
+
+def test_ai_output_limit_zero_is_rejected_before_network(user, ai_settings, monkeypatch):
+    client = Mock()
+    monkeypatch.setattr("jobs.services.ai.httpx.Client", client)
+    with pytest.raises(AIUnavailable, match="ai_invalid_output_budget"):
+        request_json(user.pk, "test", {}, {}, "instructions", max_output_tokens=0)
+    client.assert_not_called()

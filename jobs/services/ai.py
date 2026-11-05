@@ -2,18 +2,25 @@
 
 import hashlib
 import json
+import logging
+import time
 from datetime import timedelta
 
 import httpx
 from django.conf import settings
 from django.db import transaction
+from django.db.models import F
 from django.utils import timezone
 
 from jobs.models import AIQuota, AIResult
 
+from .ai_costs import BudgetUnavailable
+from .ai_costs import reserve as reserve_cost
+from .ai_costs import settle as settle_cost
 from .retries import RetryWindowTooLong, retry_after_seconds
 
 VERSION = "fact-selection-v1"
+logger = logging.getLogger(__name__)
 
 
 class AIUnavailable(Exception):
@@ -27,15 +34,42 @@ def configured():
     return bool(settings.OPENAI_API_KEY and settings.OPENAI_MODEL)
 
 
-def request_json(owner_id, purpose, payload, schema, instructions):
-    if not configured():
+def request_json(
+    owner_id,
+    purpose,
+    payload,
+    schema,
+    instructions,
+    *,
+    model=None,
+    reasoning_effort=None,
+    max_output_tokens=None,
+    timeout_seconds=90,
+):
+    model = model or settings.OPENAI_MODEL
+    if reasoning_effort is None and model.startswith(("gpt-5", "gpt-6")):
+        reasoning_effort = settings.OPENAI_REASONING_EFFORT
+    output_limit = settings.AI_MAX_OUTPUT_TOKENS if max_output_tokens is None else max_output_tokens
+    if type(output_limit) is not int or not 1 <= output_limit <= settings.AI_MAX_OUTPUT_TOKENS:
+        raise AIUnavailable("ai_invalid_output_budget")
+    if not settings.OPENAI_API_KEY or not model:
         raise AIUnavailable("ai_not_configured")
     prompt = json.dumps(payload, ensure_ascii=False, sort_keys=True)
     if len(prompt) > settings.AI_MAX_INPUT_CHARACTERS:
         raise AIUnavailable("ai_input_budget_exceeded")
     key = hashlib.sha256(
         json.dumps(
-            [owner_id, VERSION, purpose, settings.OPENAI_MODEL, payload, schema],
+            [
+                owner_id,
+                VERSION,
+                purpose,
+                model,
+                payload,
+                schema,
+                instructions,
+                reasoning_effort,
+                output_limit,
+            ],
             sort_keys=True,
             ensure_ascii=False,
         ).encode()
@@ -45,6 +79,7 @@ def request_json(owner_id, purpose, payload, schema, instructions):
         AIResult.objects.get_or_create(key=key, defaults={"owner_id": owner_id})
         record = AIResult.objects.select_for_update().get(key=key)
         if record.result:
+            AIResult.objects.filter(pk=record.pk).update(cache_hits=F("cache_hits") + 1)
             return record.result
         if record.lease_until and record.lease_until > now:
             raise AIUnavailable("ai_retry_scheduled", (record.lease_until - now).total_seconds())
@@ -52,37 +87,55 @@ def request_json(owner_id, purpose, payload, schema, instructions):
         quota = AIQuota.objects.select_for_update().get(day=now.date())
         # Conservative reservation includes request text and the maximum output allowance.
         reserve = (
-            len(prompt.encode()) + len(instructions.encode()) + 1024 + settings.AI_MAX_OUTPUT_TOKENS
+            len(prompt.encode())
+            + len(instructions.encode())
+            + len(json.dumps(schema).encode())
+            + 1024
+            + output_limit
         )
         if quota.reserved_tokens + reserve > settings.AI_DAILY_TOKEN_BUDGET:
             raise AIUnavailable("ai_daily_budget_exceeded", 3600)
         quota.reserved_tokens += reserve
         quota.save(update_fields=["reserved_tokens"])
+        try:
+            charge = reserve_cost(
+                f"json:{record.key}:{now.isoformat()}",
+                model,
+                purpose,
+                reserve - output_limit,
+                output_limit,
+                owner=record.owner,
+            )
+        except BudgetUnavailable as exc:
+            raise AIUnavailable(exc.code, 3600) from exc
         record.lease_until = now + timedelta(minutes=3)
         record.save(update_fields=["lease_until"])
+    lease = record.lease_until
+    body = {
+        "model": model,
+        "store": False,
+        "instructions": instructions,
+        "input": prompt,
+        "max_output_tokens": output_limit,
+        "text": {
+            "format": {"type": "json_schema", "name": purpose, "strict": True, "schema": schema}
+        },
+    }
+    if reasoning_effort is not None:
+        body["reasoning"] = {"effort": reasoning_effort}
+    started = time.monotonic()
+    logger.info("ai_request_started", extra={"purpose": purpose, "model": model})
     try:
-        with httpx.Client(timeout=90, follow_redirects=False, trust_env=False) as client:
+        with httpx.Client(
+            timeout=timeout_seconds, follow_redirects=False, trust_env=False
+        ) as client:
             with client.stream(
                 "POST",
                 "https://api.openai.com/v1/responses",
                 headers={
                     "Authorization": f"Bearer {settings.OPENAI_API_KEY}",
                 },
-                json={
-                    "model": settings.OPENAI_MODEL,
-                    "store": False,
-                    "instructions": instructions,
-                    "input": prompt,
-                    "max_output_tokens": settings.AI_MAX_OUTPUT_TOKENS,
-                    "text": {
-                        "format": {
-                            "type": "json_schema",
-                            "name": purpose,
-                            "strict": True,
-                            "schema": schema,
-                        }
-                    },
-                },
+                json=body,
             ) as response:
                 if response.status_code == 429:
                     try:
@@ -113,17 +166,55 @@ def request_json(owner_id, purpose, payload, schema, instructions):
         if not isinstance(result, dict):
             raise AIUnavailable("ai_invalid_response")
     except (httpx.HTTPError, ValueError, KeyError, TypeError) as exc:
-        failure = AIUnavailable("ai_invalid_response")
-        AIResult.objects.filter(pk=record.pk).update(
+        code = (
+            "ai_timeout"
+            if isinstance(exc, httpx.TimeoutException)
+            else "ai_unavailable"
+            if isinstance(exc, httpx.HTTPError)
+            else "ai_invalid_response"
+        )
+        failure = AIUnavailable(code)
+        logger.warning(
+            "ai_request_failed", extra={"purpose": purpose, "model": model, "error_code": code}
+        )
+        AIResult.objects.filter(pk=record.pk, lease_until=lease).update(
             lease_until=timezone.now() + timedelta(seconds=failure.delay)
         )
         raise failure from exc
     except AIUnavailable as exc:
-        AIResult.objects.filter(pk=record.pk).update(
+        logger.warning(
+            "ai_request_failed", extra={"purpose": purpose, "model": model, "error_code": exc.code}
+        )
+        AIResult.objects.filter(pk=record.pk, lease_until=lease).update(
             lease_until=timezone.now() + timedelta(seconds=exc.delay)
         )
         raise
-    AIResult.objects.filter(pk=record.pk).update(result=result, lease_until=None)
+    with transaction.atomic():
+        current = AIResult.objects.select_for_update().get(pk=record.pk)
+        if current.lease_until != lease:
+            raise AIUnavailable("ai_execution_superseded")
+        usage = data.get("usage", {})
+        if not isinstance(usage, dict):
+            usage = {}
+        counts = [usage.get(name) for name in ("input_tokens", "output_tokens")]
+        if all(type(value) is int and value >= 0 for value in counts):
+            quota = AIQuota.objects.select_for_update().get(day=now.date())
+            if quota.reserved_tokens >= reserve:
+                quota.reserved_tokens += sum(counts) - reserve
+                quota.save(update_fields=["reserved_tokens"])
+        settle_cost(charge.pk, usage)
+        current.result, current.lease_until = result, None
+        current.save(update_fields=["result", "lease_until"])
+    logger.info(
+        "ai_request_completed",
+        extra={
+            "purpose": purpose,
+            "model": model,
+            "duration_seconds": round(time.monotonic() - started, 3),
+            "input_tokens": usage.get("input_tokens"),
+            "output_tokens": usage.get("output_tokens"),
+        },
+    )
     return result
 
 

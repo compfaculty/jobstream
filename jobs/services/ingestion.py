@@ -10,6 +10,7 @@ import uuid
 from dataclasses import replace
 from datetime import timedelta
 
+from django.conf import settings
 from django.db import connection, transaction
 from django.db.models import Q
 from django.utils import timezone
@@ -25,7 +26,7 @@ from .discovery import from_listing
 from .inventories import collect
 from .lifecycle import CONTENT_FIELDS, complete_inventory, reconcile
 from .network import HTTPStatusError, fetch_public
-from .normalization import normalize_with_ai
+from .normalization import needs_ai_normalization, normalize_with_ai
 from .retries import retry_after_seconds
 from .sources import ADAPTERS, BoardAdapter, RealWorkRSSAdapter, normalize
 
@@ -102,9 +103,10 @@ def ingest(source_id: int) -> None:
                     if listing.employer_status not in {"open", "closed", "filled"}:
                         raise ValueError("Invalid employer status")
                     values = normalize(listing)
-                    if source.ai_normalization and not (
-                        values["normalized"]["requirements"]
-                        or values["normalized"]["responsibilities"]
+                    if (
+                        not settings.JOB_NORMALIZATION_BATCH_ENABLED
+                        and (source.ai_normalization or settings.JOB_AI_NORMALIZATION_ENABLED)
+                        and (needs_ai_normalization(values["normalized"]))
                     ):
                         try:
                             values["normalized"] = normalize_with_ai(
@@ -177,6 +179,12 @@ def ingest(source_id: int) -> None:
                     canonical_url=existing.canonical_url if existing else url,
                     defaults={**values, "company_profile": profile, "last_seen_at": timezone.now()},
                 )
+                if settings.JOB_NORMALIZATION_BATCH_ENABLED and (
+                    source.ai_normalization or settings.JOB_AI_NORMALIZATION_ENABLED
+                ):
+                    from .normalization_batch import enqueue
+
+                    enqueue(job)
                 if not job.employer_source_id or source.authoritative:
                     observe(job, source, listing.url, listing.description)
                 from_listing(source, listing)

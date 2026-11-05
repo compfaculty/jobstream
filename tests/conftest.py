@@ -82,6 +82,7 @@ def agent_settings(settings):
     settings.INFINITY_SERVICE_TOKEN = "test-service-token-with-at-least-32-chars"
     settings.INFINITY_TOOL_SECRET = "test-tool-signing-secret-not-real"
     settings.INFINITY_MODEL = "fake"
+    settings.AI_MODEL_PRICES = {**settings.AI_MODEL_PRICES, "fake": ["0", "0"]}
     settings.AI_DAILY_TOKEN_BUDGET = 1000000
 
 
