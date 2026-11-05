@@ -40,6 +40,11 @@ def main() -> None:
                 "GRANT SELECT, INSERT, UPDATE ON ALL TABLES IN SCHEMA infinity_runtime TO {}"
             ).format(sql.Identifier(role))
         )
+        cursor.execute(
+            sql.SQL("GRANT DELETE ON infinity_runtime.provider_calls TO {}").format(
+                sql.Identifier(role)
+            )
+        )
         cursor.execute(sql.SQL("SET ROLE {}").format(sql.Identifier(role)))
         try:
             cursor.execute(

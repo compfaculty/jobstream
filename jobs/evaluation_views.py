@@ -19,8 +19,20 @@ from jobs.services import evaluations
 def start(request, pk):
     job = get_object_or_404(Job, pk=pk)
     try:
-        profile_id = int(request.POST.get("profile", "0"))
-        evaluations.start(request.user, job, profile_id)
+        selection = request.POST.get("cv")
+        if selection is not None:
+            kind, separator, identifier = selection.partition(":")
+            if not separator or kind not in {"document", "profile"}:
+                raise ValidationError("Choose a CV for evaluation.")
+            identifier = int(identifier)
+            if kind == "document":
+                evaluations.start(request.user, job, document_id=identifier)
+            else:
+                evaluations.start(request.user, job, identifier)
+        else:
+            # Retain the existing reviewed-profile POST contract.
+            profile_id = int(request.POST.get("profile", "0"))
+            evaluations.start(request.user, job, profile_id)
     except (ValidationError, ValueError) as exc:
         messages.error(request, str(exc))
     return redirect("job", pk=pk)
@@ -30,9 +42,11 @@ def start(request, pk):
 @require_GET
 def panel(request, pk):
     job = get_object_or_404(Job, pk=pk)
-    executions = AgentExecution.objects.filter(owner=request.user, job=job).order_by("-created_at")[
-        :10
-    ]
+    executions = (
+        AgentExecution.objects.filter(owner=request.user, job=job)
+        .select_related("document", "profile")
+        .order_by("-created_at")[:10]
+    )
     return render(
         request,
         "jobs/evaluation_panel.html",
@@ -73,7 +87,7 @@ def context(request, pk, attempt_id):
         claims = signing.loads(
             header[7:],
             key=settings.INFINITY_TOOL_SECRET,
-            salt=evaluations.VERSION,
+            salt=evaluations.CAPABILITY_SALT,
             max_age=180,
             fallback_keys=[],
         )
@@ -89,6 +103,6 @@ def context(request, pk, attempt_id):
             "schema_version": 1,
             "execution_id": str(pk),
             "attempt_id": str(attempt_id),
-            "context": execution.snapshot,
+            "context": evaluations.runtime_context(execution.snapshot),
         }
     )

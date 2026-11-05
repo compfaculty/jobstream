@@ -1,11 +1,27 @@
 <section id="evaluations" hx-get="{% url 'evaluation-panel' job.pk %}" {% if evaluation_poll %}hx-trigger="every 5s"{% else %}hx-trigger="none"{% endif %} hx-swap="outerHTML">
-{% for evaluation in evaluations %}<article><h3>Vacancy evaluation — {{ evaluation.status }}</h3>
-{% if evaluation.error_code %}<p>{{ evaluation.error_code }}</p>{% endif %}
-{% if evaluation.status == 'completed' %}<p>{{ evaluation.result.fit.state }}: {{ evaluation.result.fit.reason }}</p>
-<p>Matched technologies: {{ evaluation.result.fit.matched|join:", " }}</p>
-<p>Preferences matched: {{ evaluation.result.fit.preferred_matches|join:", " }}</p>
-<ul>{% for fact in evaluation.result.highlight_facts %}<li>{{ fact }}</li>{% endfor %}</ul>
-<ul>{% for gap in evaluation.result.ai_selection.unmatched_requirements %}<li>Experience to review: {{ gap }}</li>{% endfor %}</ul>
+{% for evaluation in evaluations %}<article>
+<h3>Vacancy evaluation — {{ evaluation.status }}</h3>
+<p class="muted">{% if evaluation.document %}{{ evaluation.document.name }}{% elif evaluation.profile %}{{ evaluation.profile.name }}{% endif %} · {{ evaluation.created_at }}</p>
+{% if evaluation.error_code %}<p>{{ evaluation.error_message }}</p>{% endif %}
+{% if evaluation.status == 'completed' %}
+  {% if evaluation.result.match_score != None %}
+    <strong class="match-score">{{ evaluation.result.match_score }}% fit for you</strong>
+    {% if evaluation.result.preference_blocks %}
+      {% for reason in evaluation.result.preference_blocks %}<p>{{ reason }}</p>{% endfor %}
+    {% else %}<p>{{ evaluation.result.summary }}</p>{% endif %}
+    <p class="muted">CV-to-job requirement coverage, not a hiring probability.</p>
+    {% if not evaluation.result.preference_blocks %}
+      {% for item in evaluation.result.strengths %}<p>Match: {{ item.explanation }}</p>{% endfor %}
+      {% for item in evaluation.result.gaps %}<p>Gap: {{ item.explanation }}</p>{% endfor %}
+    {% endif %}
+    <details><summary>How this score was calculated</summary>
+      {% if evaluation.result.assessment_skipped %}<p>No AI assessment was needed: a hard preference already forces 0%. No OpenAI tokens were used.</p>
+      {% else %}<p>CV evidence match: {{ evaluation.result.cv_match_score }}%. Evidence confidence: {{ evaluation.result.confidence }}.</p>{% endif %}
+      <p>Demonstrated = full credit; partial = half; not demonstrated = no credit. Required criteria weigh 3; preferred criteria weigh 1. Failed hard preferences force the final score to 0%. Preferences are captured when you evaluate.</p>
+      <p>{{ evaluation.result.summary }}</p>
+      {% for item in evaluation.result.assessments %}<p><strong>{{ item.requirement }}</strong> — {{ item.label }}: {{ item.explanation }}{% if item.evidence_quote %}<br>CV evidence: {{ item.evidence_quote }}{% endif %}</p>{% endfor %}
+    </details>
+  {% else %}<p>This older evaluation has no match percentage. Click Evaluate again to calculate a score using your CV and saved preferences.</p>{% endif %}
 {% endif %}
 {% if evaluation.status == 'queued' or evaluation.status == 'running' %}<form method="post" action="{% url 'evaluation-action' evaluation.pk 'cancel' %}">{% csrf_token %}<button class="secondary">Cancel evaluation</button></form>{% endif %}
 {% if evaluation_enabled and evaluation.status == 'failed' and evaluation.retryable and evaluation.attempt < 3 %}<form method="post" action="{% url 'evaluation-action' evaluation.pk 'retry' %}">{% csrf_token %}<button>Retry evaluation</button></form>{% endif %}

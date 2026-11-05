@@ -141,3 +141,105 @@ class AgentGateway:
 
     def cancel(self, execution_id: str, attempt_id: str) -> ExecutionResponse:
         return self.call("DELETE", execution_id, attempt_id)
+
+    def provider_calls(self, execution_id: str) -> list[dict]:
+        """Separate metadata contract; do not loosen execution-response validation."""
+        import json
+        from datetime import datetime
+
+        UUID(execution_id)
+        origin = urlsplit(settings.INFINITY_URL)
+        if (
+            origin.scheme not in {"http", "https"}
+            or not origin.hostname
+            or origin.username
+            or origin.password
+            or origin.query
+            or origin.fragment
+            or origin.path not in {"", "/"}
+            or not settings.INFINITY_SERVICE_TOKEN
+        ):
+            raise GatewayError("agent_not_configured")
+        try:
+            with httpx.Client(timeout=2, follow_redirects=False, trust_env=False) as client:
+                with client.stream(
+                    "GET",
+                    settings.INFINITY_URL.rstrip("/")
+                    + f"/v1/operations/executions/{execution_id}/calls",
+                    headers={"Authorization": f"Bearer {settings.INFINITY_SERVICE_TOKEN}"},
+                ) as response:
+                    if response.status_code != 200:
+                        raise GatewayError("agent_metadata_unavailable")
+                    chunks, size = [], 0
+                    for chunk in response.iter_bytes():
+                        size += len(chunk)
+                        if size > 256000:
+                            raise GatewayError("agent_response_too_large")
+                        chunks.append(chunk)
+            data = json.loads(b"".join(chunks))
+            if (
+                not isinstance(data, dict)
+                or type(data.get("schema_version")) is not int
+                or data.get("schema_version") != 1
+                or data.get("execution_id") != execution_id
+                or not isinstance(data.get("calls"), list)
+                or len(data["calls"]) > 100
+            ):
+                raise ValueError
+            fields = {
+                "call_id",
+                "execution_id",
+                "attempt_id",
+                "model",
+                "started_at",
+                "finished_at",
+                "latency_ms",
+                "outcome",
+                "error_code",
+                "input_tokens",
+                "output_tokens",
+                "provider_request_id",
+            }
+            calls = []
+            for call in data["calls"]:
+                if not isinstance(call, dict) or not fields.issubset(call):
+                    raise ValueError
+                if call["execution_id"] != execution_id:
+                    raise ValueError
+                for key in ("call_id", "attempt_id"):
+                    UUID(call[key])
+                for key in ("started_at", "finished_at"):
+                    if call[key] is not None:
+                        if len(call[key]) > 40 or datetime.fromisoformat(call[key]).tzinfo is None:
+                            raise ValueError
+                if call["started_at"] is None:
+                    raise ValueError
+                for key in ("latency_ms", "input_tokens", "output_tokens"):
+                    if call[key] is not None and (type(call[key]) is not int or call[key] < 0):
+                        raise ValueError
+                if call["outcome"] not in {
+                    "running",
+                    "completed",
+                    "failed",
+                    "interrupted",
+                    "cancelled",
+                    "timeout",
+                }:
+                    raise ValueError
+                for key, limit in (("model", 200), ("error_code", 80)):
+                    if not isinstance(call[key], str) or len(call[key]) > limit:
+                        raise ValueError
+                request_id = call["provider_request_id"]
+                if request_id is not None and (
+                    not isinstance(request_id, str)
+                    or not 0 < len(request_id) <= 200
+                    or not all(c.isascii() and (c.isalnum() or c in "_-") for c in request_id)
+                ):
+                    raise ValueError
+                # Unknown future fields can never leak into templates.
+                calls.append({key: call[key] for key in fields})
+            return calls
+        except httpx.HTTPError as exc:
+            raise GatewayError("agent_metadata_unavailable") from exc
+        except (ValueError, TypeError, AttributeError) as exc:
+            raise GatewayError("agent_invalid_metadata") from exc

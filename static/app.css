@@ -201,3 +201,5 @@ html { scrollbar-gutter: stable; }
   .job-browser { grid-template-columns: minmax(0, 1fr); }
 }
 .category-backdrop:hover, .category-backdrop:focus-visible { background: #0008; transform: none; box-shadow: none; }
+
+.match-score { display: block; font-size: clamp(28px, 4vw, 42px); line-height: 1.2; margin: 12px 0; }

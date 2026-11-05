@@ -6,6 +6,7 @@ import socket
 import subprocess
 import time
 import uuid
+from datetime import timedelta
 from pathlib import Path
 from urllib.parse import quote
 
@@ -56,6 +57,7 @@ def runtime(live_server, settings, agent_settings, tmp_path, request):
         "INFINITY_PROVIDER": "fake",
         "OPENAI_API_KEY": "",
         "INFINITY_FAKE_DELAY_MS": "0",
+        "RUST_LOG": "info",
     }
     if request.node.name == "test_real_provider_opt_in":
         assert os.environ.get("OPENAI_API_KEY"), "OPENAI_API_KEY required for opt-in provider test"
@@ -86,6 +88,11 @@ def runtime(live_server, settings, agent_settings, tmp_path, request):
                 sql.SQL(
                     "GRANT SELECT, INSERT, UPDATE ON ALL TABLES IN SCHEMA infinity_runtime TO {}"
                 ).format(sql.Identifier(role))
+            )
+            cursor.execute(
+                sql.SQL("GRANT DELETE ON infinity_runtime.provider_calls TO {}").format(
+                    sql.Identifier(role)
+                )
             )
         env["INFINITY_DATABASE_URL"] = (
             f"postgresql://{role}:{quote(password)}@"
@@ -151,7 +158,8 @@ def finish(record, timeout=15):
 
     until(done, timeout=timeout)
     assert record.status == "completed", record.error_code
-    assert record.result["ai_selection"]["ordered_fact_ids"] == ["f1"]
+    assert record.result["ai_selection"]["assessments"][0]["evidence_fact_id"] == "f1"
+    assert 0 <= record.result["match_score"] <= 100
 
 
 def test_real_runtime_end_to_end(user, job, evaluation_profile, runtime, client):
@@ -204,6 +212,10 @@ def test_restart_pending_tool_and_terminal_result(user, job, evaluation_profile,
         assert "responses-complete-item" in str(snapshot)
     launch()
     finish(record)
+    calls = AgentGateway().provider_calls(str(record.pk))
+    assert any(call["outcome"] == "interrupted" for call in calls)
+    assert any(call["outcome"] == "completed" for call in calls)
+    assert all(call["finished_at"] is not None for call in calls)
     accepted = record.result
     stop()
     launch()
@@ -251,3 +263,128 @@ def test_restart_publishes_committed_final_before_serving(user, job, evaluation_
     launch()
     finish(record)
     assert AuditEvent.objects.filter(event="agent.completed").count() == 1
+
+
+@pytest.mark.parametrize("runtime", [True], indirect=True)
+def test_provider_call_ledger_auth_usage_and_retention(
+    user, job, evaluation_profile, runtime, settings
+):
+    record = evaluations.start(user, job, evaluation_profile.pk)
+    finish(record)
+    gateway = AgentGateway()
+    calls = gateway.provider_calls(str(record.pk))
+    assert len(calls) == 2
+    assert all(call["outcome"] == "completed" for call in calls)
+    assert all(call["execution_id"] == str(record.pk) for call in calls)
+    assert all(call["input_tokens"] == call["output_tokens"] == 0 for call in calls)
+    assert all(call["latency_ms"] >= 0 for call in calls)
+    assert all("Python and Linux" not in str(call) for call in calls)
+    endpoint = f"{settings.INFINITY_URL}/v1/operations/executions/{record.pk}/calls"
+    assert httpx.get(endpoint).status_code == 401
+    with connection.cursor() as cursor:
+        cursor.execute(
+            "UPDATE infinity_runtime.provider_calls SET started_at=now()-interval '31 days' "
+            "WHERE execution_id=%s",
+            [str(record.pk)],
+        )
+    assert gateway.provider_calls(str(record.pk)) == []
+    launch, stop, _ = runtime
+    stop()
+    launch()
+
+    def cleaned():
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT count(*) FROM infinity_runtime.provider_calls")
+            return cursor.fetchone()[0] == 0
+
+    until(cleaned)
+
+
+@pytest.mark.parametrize("runtime", [True], indirect=True)
+def test_provider_call_cancellation(user, job, evaluation_profile, runtime):
+    launch, stop, _ = runtime
+    stop()
+    launch(delay=10000)
+    record = evaluations.start(user, job, evaluation_profile.pk)
+    evaluations.process(record.pk)
+    gateway = AgentGateway()
+    until(
+        lambda: any(call["outcome"] == "running" for call in gateway.provider_calls(str(record.pk)))
+    )
+    gateway.cancel(str(record.pk), str(record.attempt_id))
+    until(
+        lambda: any(
+            call["outcome"] == "cancelled" for call in gateway.provider_calls(str(record.pk))
+        )
+    )
+    assert not user.application_set.exists()
+
+
+@pytest.mark.parametrize("runtime", [True], indirect=True)
+def test_provider_call_deadline_timeout(user, job, evaluation_profile, runtime):
+    launch, stop, _ = runtime
+    stop()
+    launch(delay=10000)
+    record = evaluations.start(user, job, evaluation_profile.pk)
+    AgentExecution.objects.filter(pk=record.pk).update(
+        deadline=timezone.now() + timedelta(seconds=2)
+    )
+    evaluations.process(record.pk)
+    gateway = AgentGateway()
+    until(
+        lambda: any(call["outcome"] == "timeout" for call in gateway.provider_calls(str(record.pk)))
+    )
+    # Call metadata and the terminal execution response commit separately.
+    until(lambda: gateway.status(str(record.pk), str(record.attempt_id)).status == "failed")
+    response = gateway.status(str(record.pk), str(record.attempt_id))
+    assert response.status == "failed"
+    assert response.error_code == "agent_timeout"
+
+
+def test_runtime_reports_ready_and_idle_without_inference(runtime, tmp_path, settings):
+    log = tmp_path / "runtime.log"
+    until(lambda: "runtime heartbeat" in log.read_text())
+    output = log.read_text()
+    assert "runtime starting" in output
+    assert "runtime ready; waiting for evaluations" in output
+    assert "active_evaluations=0" in output
+    assert settings.INFINITY_SERVICE_TOKEN not in output
+
+
+def test_uploaded_pdf_evaluation_without_reviewed_profile(user, job, runtime, settings, tmp_path):
+    from django.core.files.uploadedfile import SimpleUploadedFile
+
+    from jobs.models import ResumeProfile
+    from jobs.services.documents import upload_document
+    from jobs.services.resumes import pdf_bytes
+
+    settings.MEDIA_ROOT = tmp_path
+    settings.STORAGES = {
+        **settings.STORAGES,
+        "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    }
+    data = pdf_bytes(
+        "Synthetic Engineer",
+        "",
+        [
+            {"section": "Experience", "text": "Built Python and Linux services."},
+        ],
+    )
+    document = upload_document(user, SimpleUploadedFile("synthetic.pdf", data, "application/pdf"))
+    record = evaluations.start(user, job, document_id=document.pk)
+
+    def completed():
+        AgentExecution.objects.filter(pk=record.pk).update(
+            lease_until=None, next_dispatch_at=timezone.now()
+        )
+        evaluations.process(record.pk)
+        record.refresh_from_db()
+        return record.status not in {"queued", "running"}
+
+    until(completed)
+    assert record.status == "completed", record.error_code
+    assert record.profile_id is None
+    assert record.document_id == document.pk
+    assert record.result["ai_selection"]["assessments"][0]["evidence_fact_id"] == "fact-1"
+    assert not ResumeProfile.objects.exists()
+    assert not user.application_set.exists()

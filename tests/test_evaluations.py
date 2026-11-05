@@ -18,7 +18,19 @@ pytestmark = pytest.mark.django_db
 
 
 def output():
-    return {"ordered_fact_ids": ["f1"], "highlight_fact_ids": ["f1"], "unmatched_requirements": []}
+    return {
+        "summary": "CV demonstrates the requested skills.",
+        "confidence": "medium",
+        "assessments": [
+            {
+                "requirement_id": "req-1",
+                "status": "met",
+                "evidence_fact_id": "f1",
+                "evidence_quote": "Python",
+                "explanation": "Python experience is documented.",
+            }
+        ],
+    }
 
 
 def response(record, status="completed", result=None, **kwargs):
@@ -167,7 +179,7 @@ def test_quota_rejected_before_network(
     record = evaluations.start(user, job, evaluation_profile.pk)
     evaluations.process(record.pk)
     record.refresh_from_db()
-    assert record.error_code == "ai_daily_budget_exceeded"
+    assert record.error_code == "ai_evaluation_budget_too_small"
     start.assert_not_called()
 
 
@@ -299,7 +311,7 @@ def test_capability_expiry_and_escaped_evidence(
         == 404
     )
     result = output()
-    result["unmatched_requirements"] = ["<script>alert(1)</script>"]
+    result["summary"] = "<script>alert(1)</script>"
     monkeypatch.setattr(AgentGateway, "start", lambda *args: response(record, result=result))
     monkeypatch.setattr(AgentGateway, "status", lambda *args: response(record, result=result))
     evaluations.process(record.pk)
@@ -334,3 +346,57 @@ def test_disabled_backend_stops_polling(
     html = client.get(reverse("evaluation-panel", args=[job.pk])).content.decode()
     assert 'hx-trigger="every 5s"' not in html
     assert "Retry evaluation" not in html
+
+
+def test_saved_excluded_language_forces_zero_without_ai(
+    user, job, evaluation_profile, agent_settings, monkeypatch
+):
+    from jobs.models import ApplicationPreferences
+
+    ApplicationPreferences.objects.create(owner=user, excluded_technologies=["C++", "Java"])
+    job.description = "Go or C++ or Java backend engineer"
+    job.save()
+    gateway = Mock(side_effect=AssertionError("A hard preference must not spend provider tokens"))
+    monkeypatch.setattr(AgentGateway, "start", gateway)
+    record = evaluations.start(user, job, evaluation_profile.pk)
+    evaluations.process(record.pk)
+    record.refresh_from_db()
+    assert record.status == "completed"
+    assert record.result["match_score"] == 0
+    assert record.result["assessment_skipped"]
+    assert len(record.result["preference_blocks"]) == 2
+    assert record.usage == {"input_tokens": 0, "output_tokens": 0}
+    assert not AIQuota.objects.exists()
+    gateway.assert_not_called()
+
+
+def test_legacy_evaluation_validation_remains_supported():
+    legacy = {
+        "facts": [{"id": "f1", "text": "Python"}],
+        "job": {"description": "Python"},
+        "fit": {"state": "eligible"},
+    }
+    result = evaluations.validate_result(
+        legacy,
+        {
+            "ordered_fact_ids": ["f1"],
+            "highlight_fact_ids": ["f1"],
+            "unmatched_requirements": [],
+        },
+    )
+    assert result["highlight_facts"] == ["Python"]
+
+
+def test_model_context_omits_duplicate_description_and_keeps_source_snapshot(
+    user, job, evaluation_profile, agent_settings
+):
+    from jobs.services.evaluation_context import runtime_context
+
+    record = evaluations.start(user, job, evaluation_profile.pk)
+    compact = runtime_context(record.snapshot)
+    assert "description" not in compact["job"]
+    assert "normalized" not in compact["job"]
+    assert compact["criteria"] == record.snapshot["criteria"]
+    assert record.snapshot["job"]["description"] == job.description
+    legacy = {"facts": [], "job": {"description": "Legacy"}}
+    assert runtime_context(legacy) == legacy

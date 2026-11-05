@@ -1,0 +1,34 @@
+<section id="vacancy-evaluation" aria-labelledby="vacancy-evaluation-title">
+  <h2 id="vacancy-evaluation-title">Evaluate vacancy</h2>
+  {% if evaluation_enabled %}
+    {% if evaluation_documents or evaluation_profiles %}
+      <form method="post" action="{% url 'evaluation-start' job.pk %}">
+        {% csrf_token %}
+        <label>CV to evaluate
+          <select name="cv" required>
+            {% if evaluation_documents %}<optgroup label="Uploaded PDFs">
+              {% for document in evaluation_documents %}<option value="document:{{ document.pk }}">{{ document.name }}{% if document.processing_status %} · {{ document.processing_status }}{% endif %}</option>{% endfor %}
+            </optgroup>{% endif %}
+            {% if evaluation_profiles %}<optgroup label="Optional reviewed profiles">
+              {% for profile in evaluation_profiles %}<option value="profile:{{ profile.pk }}">{{ profile.name }}</option>{% endfor %}
+            </optgroup>{% endif %}
+          </select>
+        </label>
+        <button>Evaluate</button>
+      </form>
+      <p class="muted">Evaluation reads the selected CV automatically. No manual profile setup is required.</p>
+    {% else %}
+      <p>Upload a PDF resume to evaluate this vacancy.</p>
+      <div class="actions">
+        <button disabled>Evaluate</button>
+        <a class="button secondary" href="{% url 'documents' %}">Upload a CV</a>
+      </div>
+    {% endif %}
+    <p class="muted">Paid comparisons have a daily allowance. Reused results and preference-blocked jobs do not consume it.</p>
+    <p class="muted">Evaluation is advisory. Application approval is separate.</p>
+  {% else %}
+    <p>Vacancy evaluation is currently unavailable.</p>
+    <button disabled>Evaluate</button>
+  {% endif %}
+</section>
+{% include 'jobs/evaluation_panel.html' %}

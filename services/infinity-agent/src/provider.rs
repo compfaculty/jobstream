@@ -23,6 +23,7 @@ pub struct Provider {
     pub failure: Arc<Mutex<Option<(String, bool, u64)>>>,
     pub db: Option<Arc<tokio_postgres::Client>>,
     pub attempt: String,
+    pub execution: String,
 }
 fn fatal(code: &str) -> CompletionError {
     CompletionError::provider(ErrorClass::Fatal, code)
@@ -84,7 +85,35 @@ impl ModelProvider for Provider {
         model_id: &str,
         request: CompletionRequest,
     ) -> Result<ModelStream, CompletionError> {
-        let result = self.complete(model_id, request).await;
+        let mut call = crate::telemetry::Call::new(&self.execution, &self.attempt, &self.model);
+        call.persist(self.db.as_deref()).await;
+        let started = std::time::Instant::now();
+        let result = self.complete(model_id, request, &mut call).await;
+        let code = match &result {
+            Ok(_) => "",
+            Err(CompletionError::ProviderError { message, .. }) => match message.as_str() {
+                "agent_fake_model_name_required"
+                | "agent_unknown_model"
+                | "agent_completion_limit"
+                | "agent_store_unavailable"
+                | "agent_input_budget"
+                | "agent_provider_unavailable"
+                | "agent_provider_timeout"
+                | "agent_provider_throttled"
+                | "agent_retry_requires_review"
+                | "agent_provider_rejected"
+                | "agent_provider_response_too_large"
+                | "agent_usage_missing"
+                | "agent_provider_incomplete"
+                | "agent_forbidden_tool"
+                | "agent_context_required"
+                | "agent_provider_invalid_output" => message.as_str(),
+                _ => "agent_provider_invalid_output",
+            },
+            _ => "agent_provider_invalid_output",
+        };
+        call.finish(started, code);
+        call.persist(self.db.as_deref()).await;
         if let Err(e) = &result {
             let (code, retryable, delay) = match e {
                 CompletionError::ProviderError { message, class } => (
@@ -112,6 +141,7 @@ impl Provider {
         &self,
         model_id: &str,
         request: CompletionRequest,
+        call: &mut crate::telemetry::Call,
     ) -> Result<ModelStream, CompletionError> {
         if self.fake && model_id != "fake" {
             return Err(fatal("agent_fake_model_name_required"));
@@ -181,8 +211,15 @@ impl Provider {
                     .iter()
                     .map(|f| f["id"].clone())
                     .collect();
-                StreamChunk::Text(json!({"ordered_fact_ids":ids,"highlight_fact_ids":ids.iter().take(3).collect::<Vec<_>>(),"unmatched_requirements":[]}).to_string())
+                let result = if context["context"]["assessment_version"] == 2 {
+                    crate::assessment::fake(&context["context"])
+                } else {
+                    json!({"ordered_fact_ids":ids,"highlight_fact_ids":ids.iter().take(3).collect::<Vec<_>>(),"unmatched_requirements":[]})
+                };
+                StreamChunk::Text(result.to_string())
             };
+            call.input_tokens = Some(0);
+            call.output_tokens = Some(0);
             return Ok(Box::pin(stream::iter(vec![
                 Ok(StreamChunk::Reasoning(reasoning_item(
                     &json!({"type":"reasoning","id":format!("rs_fake_{n}"),"encrypted_content":"fixture","summary":[]}),
@@ -199,16 +236,45 @@ impl Provider {
             ])));
         }
         let tools: Vec<Value> = request.tools.iter().map(|t| json!({"type":"function","name":t.name,"description":t.description,"parameters":t.parameters,"strict":true})).collect();
-        let schema = json!({"type":"object","additionalProperties":false,"properties":{
+        let legacy_schema = json!({"type":"object","additionalProperties":false,"properties":{
             "ordered_fact_ids":{"type":"array","items":{"type":"string"}},
             "highlight_fact_ids":{"type":"array","items":{"type":"string"}},
             "unmatched_requirements":{"type":"array","items":{"type":"string"}}
         },"required":["ordered_fact_ids","highlight_fact_ids","unmatched_requirements"]});
-        let body = json!({"model":self.model,"store":false,"include":["reasoning.encrypted_content"],
+        let legacy_context = has_context
+            && request.chat_history.iter().any(|m| {
+                if let Message::User { content } = m {
+                    content.iter().any(|c| {
+                        if let UserContent::ToolResult(result) = c {
+                            result.content.iter().any(|part| {
+                                if let ToolResultContent::Text(t) = part {
+                                    serde_json::from_str::<Value>(&t.text)
+                                        .is_ok_and(|v| v["context"]["assessment_version"] != 2)
+                                } else {
+                                    false
+                                }
+                            })
+                        } else {
+                            false
+                        }
+                    })
+                } else {
+                    false
+                }
+            });
+        let schema = if legacy_context {
+            legacy_schema
+        } else {
+            crate::assessment::schema()
+        };
+        let mut body = json!({"model":self.model,"store":false,"include":["reasoning.encrypted_content"],
             "instructions":request.preamble,"input":input,"tools":tools,"parallel_tool_calls":false,
             "tool_choice": if has_context {json!("none")} else {json!({"type":"function","name":"evaluation_context"})},
             "max_output_tokens":self.max_output,
             "text":{"format":{"type":"json_schema","name":"vacancy_evaluation","strict":true,"schema":schema}}});
+        if self.model.starts_with("gpt-5") || self.model.starts_with("gpt-6") {
+            body["reasoning"] = json!({"effort":std::env::var("INFINITY_REASONING_EFFORT").unwrap_or_else(|_| "low".into())});
+        }
         let response = self
             .client
             .post("https://api.openai.com/v1/responses")
@@ -216,9 +282,32 @@ impl Provider {
             .json(&body)
             .send()
             .await
-            .map_err(|_| {
-                CompletionError::provider(ErrorClass::Transient, "agent_provider_unavailable")
+            .map_err(|error| {
+                CompletionError::provider(
+                    ErrorClass::Transient,
+                    if error.is_timeout() {
+                        "agent_provider_timeout"
+                    } else {
+                        "agent_provider_unavailable"
+                    },
+                )
             })?;
+        self.receive(response, has_context, call).await
+    }
+
+    pub(crate) async fn receive(
+        &self,
+        response: reqwest::Response,
+        has_context: bool,
+        call: &mut crate::telemetry::Call,
+    ) -> Result<ModelStream, CompletionError> {
+        call.provider_request_id = response
+            .headers()
+            .get("x-request-id")
+            .and_then(|v| v.to_str().ok())
+            .and_then(crate::telemetry::safe_request_id);
+        // Retain a known request ID even if reading the response is interrupted.
+        call.persist(self.db.as_deref()).await;
         let status = response.status().as_u16();
         if status == 429 {
             let delay = retry_delay(
@@ -257,6 +346,8 @@ impl Provider {
         let data: Value = serde_json::from_slice(&bytes)?;
         let usage = &data["usage"];
 
+        call.input_tokens = usage["input_tokens"].as_u64();
+        call.output_tokens = usage["output_tokens"].as_u64();
         let input_tokens = usage["input_tokens"]
             .as_u64()
             .ok_or_else(|| fatal("agent_usage_missing"))?;

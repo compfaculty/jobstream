@@ -196,3 +196,37 @@ def test_activity_and_batches_are_owner_scoped(authenticated, user, other, appli
     assert b"Approved for sending" in response.content
     assert b"Base CV uploaded" not in response.content
     assert authenticated.get("/batches/").status_code == 200
+
+
+def test_evaluation_controls_visible_before_description_without_profile(
+    authenticated, job, settings
+):
+    from bs4 import BeautifulSoup
+
+    settings.AGENT_BACKEND = "infinity"
+    response = authenticated.get(f"/jobs/{job.pk}/")
+    soup = BeautifulSoup(response.content, "html.parser")
+    panel = soup.select_one("#vacancy-evaluation")
+    assert panel.find("h2").text == "Evaluate vacancy"
+    assert panel.find("button", string="Evaluate").has_attr("disabled")
+    assert panel.find("a", string="Upload a CV")["href"] == "/documents/"
+    html = response.content.decode()
+    assert html.index('id="vacancy-evaluation"') < html.index("Original description")
+
+
+def test_evaluation_controls_with_profile(authenticated, job, evaluation_profile, settings):
+    from bs4 import BeautifulSoup
+
+    settings.AGENT_BACKEND = "infinity"
+    response = authenticated.get(f"/jobs/{job.pk}/")
+    panel = BeautifulSoup(response.content, "html.parser").select_one("#vacancy-evaluation")
+    assert not panel.find("button", string="Evaluate").has_attr("disabled")
+    assert panel.find("option", value=f"profile:{evaluation_profile.pk}") is not None
+    assert panel.find("form")["action"] == f"/jobs/{job.pk}/evaluate/"
+
+
+def test_disabled_evaluation_is_explained(authenticated, job, settings):
+    settings.AGENT_BACKEND = "disabled"
+    response = authenticated.get(f"/jobs/{job.pk}/")
+    assert b"Evaluate vacancy" in response.content
+    assert b"Vacancy evaluation is currently unavailable" in response.content

@@ -1,5 +1,6 @@
 import hashlib
 
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import transaction
 
@@ -30,6 +31,10 @@ def upload_document(owner, upload) -> Document:
     try:
         with transaction.atomic():
             document.save()
+            if settings.CV_REPRESENTATIONS_ENABLED:
+                from .cv_profiles import ensure
+
+                ensure(document)
             AuditEvent.objects.create(
                 actor=owner, event="document.uploaded", details={"document_id": document.pk}
             )

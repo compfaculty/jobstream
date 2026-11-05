@@ -322,6 +322,34 @@ def test_concurrent_reservations_cannot_bypass_monthly_cap(settings):
     assert AICostMonth.objects.get().committed_usd == Decimal("0.00012")
 
 
+def test_new_profile_flow_requires_ready_and_deterministic_hit_is_free(  # noqa: F811
+    settings,
+    document,  # noqa: F811
+    job,
+    user,
+    agent_settings,  # noqa: F811
+):  # noqa: F811
+    from django.core.exceptions import ValidationError
+
+    from jobs.services import evaluations
+
+    settings.CV_REPRESENTATIONS_ENABLED = True
+    with pytest.raises(ValidationError, match="being processed"):
+        evaluations.start(user, job, document_id=document.pk)
+    record = ensure(document)
+    record.state = "ready"
+    record.facts = [{"id": "line-0", "text": "Python", "section": "Other", "source_line": 0}]
+    record.save()
+    job.normalized = {"requirements": ["Python"]}
+    job.save()
+    execution = evaluations.start(user, job, document_id=document.pk)
+    evaluations.process(execution.pk)
+    execution.refresh_from_db()
+    assert execution.status == "completed" and execution.result["match_score"] == 100
+    assert not AICharge.objects.exists() and not UserComparisonDay.objects.exists()
+    assert evaluations.start(user, job, document_id=document.pk).pk == execution.pk
+
+
 def test_batch_request_is_immutable_after_enqueue(settings, job):
     settings.JOB_NORMALIZATION_MODEL = "gpt-6-luna"
     settings.JOB_NORMALIZATION_REASONING_EFFORT = "none"

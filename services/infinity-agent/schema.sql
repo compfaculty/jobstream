@@ -19,3 +19,16 @@ CREATE TABLE IF NOT EXISTS infinity_runtime.executions (
 -- GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA infinity_runtime
 --     TO jobstream_infinity;
 -- Do not grant application table access or use the Django owner role for the runtime.
+
+-- Additive operational metadata; apply schema again when upgrading existing runtimes.
+CREATE TABLE IF NOT EXISTS infinity_runtime.provider_calls (
+    call_id text PRIMARY KEY,
+    execution_id text NOT NULL,
+    attempt_id text NOT NULL,
+    started_at timestamptz NOT NULL,
+    metadata jsonb NOT NULL
+);
+CREATE INDEX IF NOT EXISTS provider_calls_execution_time
+    ON infinity_runtime.provider_calls(execution_id, started_at DESC);
+CREATE INDEX IF NOT EXISTS provider_calls_retention
+    ON infinity_runtime.provider_calls(started_at);
