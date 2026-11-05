@@ -1,0 +1,35 @@
+{% extends 'base.html' %}{% load static %}
+{% block body_class %}operations-page{% endblock %}
+{% block title %}Operations · Jobstream{% endblock %}
+{% block content %}
+<script src="{% static 'operations.js' %}" defer></script>
+<h1>Operations</h1>
+<p class="muted">Read-only · Refreshes every 10 seconds while visible · Observed {{ observed_at }}</p>
+<p>CV comparison model: {{ evaluation_model }} · Job normalization model: {{ normalization_model }} · Automatic assistance for weak job extracts: {{ ai_normalization_enabled|yesno:'On,Off' }}</p>
+<section><h2>AI pilot budget</h2><p>Batch queue: {{ ai_batch_enabled|yesno:"On,Off" }} · Automatic paid rollout: {{ ai_rollout_approved|yesno:"Approved,Awaiting quality gate" }}</p><p>Monthly committed estimate: ${{ ai_costs.monthly_committed }} / ${{ ai_costs.monthly_limit }} · {{ ai_costs.unsettled }} unsettled requests. Reservations include uncertain outcomes; these are application estimates, not invoices.</p><p>Cache reuses: {{ ai_costs.cache_hits }} · Enrichment backlog: {{ ai_costs.backlog }} · Oldest: {{ ai_costs.backlog_age_seconds }} seconds · Budget blocked: {{ ai_costs.budget_blocked }}</p>{% for row in ai_costs.workloads %}<p>{{ row.workload }}: {{ row.requests }} requests · reserved ${{ row.reserved }} · reported usage cost ${{ row.charged|default_if_none:"unknown" }}</p>{% endfor %}{% for row in ai_costs.cv_states %}<p>CV {{ row.state }}: {{ row.count }}</p>{% endfor %}</section><h2>Infrastructure</h2>
+<p>Snapshot: <strong>{{ infrastructure.state }}</strong> · Last observed: {{ infrastructure.observed_at|default:'Never' }}</p>
+<p>Database: {{ infrastructure.payload.database|default:'unavailable' }} · Redis: {{ infrastructure.payload.redis|default:'unavailable' }} · Scheduler publication: {{ infrastructure.scheduler }}</p>
+{% if infrastructure.state == 'stale' %}<p role="status">These are historical observations. Current dependency and worker health is unknown.</p>{% endif %}
+<ul>{% for queue in infrastructure.queues %}<li>{{ queue.name }}: {{ queue.depth }} waiting · Consumer: {{ queue.worker_state }}</li>{% empty %}<li>Queue depths unavailable</li>{% endfor %}</ul>
+<ul>{% for worker in infrastructure.payload.workers %}<li>{{ worker.name }} · {{ worker.queues|join:', ' }}</li>{% empty %}<li>No workers observed</li>{% endfor %}</ul>
+<h3>Observed running tasks</h3>
+<ul>{% for task in infrastructure.payload.active_tasks %}<li>{{ task.task_name }} · {{ task.task_id }} · {{ task.worker }}</li>{% empty %}<li>No running tasks observed. Worker inspection is a point-in-time sample.</li>{% endfor %}</ul>
+<h2>Workflow states</h2>
+<p class="muted">All retained records; history and token totals below use the selected time window.</p>
+<div class="operations-summary">{% for label, summary in summaries.items %}<article><h3>{{ label }}</h3><p>{% for item in summary %}{{ item.label }}: {{ item.count }}{% if not forloop.last %} · {% endif %}{% empty %}No records{% endfor %}</p></article>{% endfor %}
+</div>
+<h2>Recent history</h2>
+<form method="get" class="actions">
+<label>Workflow <select name="kind">{% for value in kinds %}<option value="{{ value }}" {% if kind == value %}selected{% endif %}>{{ value|title }}</option>{% endfor %}</select></label>
+<label>Window <select name="hours"><option value="1" {% if hours == '1' %}selected{% endif %}>1 hour</option><option value="24" {% if hours == '24' %}selected{% endif %}>24 hours</option><option value="168" {% if hours == '168' %}selected{% endif %}>7 days</option></select></label>
+<label>Status <select name="status"><option value="">All</option>{% for value in statuses %}<option {% if status == value %}selected{% endif %}>{{ value }}</option>{% endfor %}</select></label>
+<button>Filter</button>
+</form>
+<p>Reported evaluation tokens in this window: {{ tokens.input_tokens }} input · {{ tokens.output_tokens }} output · {{ tokens.unknown }} executions with unknown or partial usage. Totals use execution records only.</p>
+{% for row in rows %}<article>
+<h3>{% if kind == 'evaluations' %}<a href="{% url 'operation-execution' row.id %}">{{ row.id }}</a>{% else %}#{{ row.id }}{% endif %} · {{ row.status }}{% if row.overdue %} · Overdue{% endif %}</h3>
+<p>{{ row.created_at }}{% if row.error_code %} · Error: {{ row.error_code }}{% endif %}</p>
+<dl>{% for key, value in row.metadata %}<dt>{{ key }}</dt><dd>{{ value|default_if_none:'Unknown' }}</dd>{% endfor %}</dl>
+</article>{% empty %}<p>No records in this window.</p>{% endfor %}
+<nav aria-label="History pages">{% if page.has_previous %}<a href="?kind={{ kind }}&amp;hours={{ hours }}&amp;status={{ status|urlencode }}&amp;page={{ page.previous_page_number }}">Previous</a>{% endif %} Page {{ page.number }} of {{ page.paginator.num_pages }} {% if page.has_next %}<a href="?kind={{ kind }}&amp;hours={{ hours }}&amp;status={{ status|urlencode }}&amp;page={{ page.next_page_number }}">Next</a>{% endif %}</nav>
+{% endblock %}

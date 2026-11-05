@@ -202,4 +202,8 @@ html { scrollbar-gutter: stable; }
 }
 .category-backdrop:hover, .category-backdrop:focus-visible { background: #0008; transform: none; box-shadow: none; }
 
+/* Staff operational metadata uses the existing visual system. */
+.operations-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr)); gap: 12px; }
+.operations-summary article { margin: 0 0 12px; }
+.operations-page dd, .operations-page li, .operations-page h3 { overflow-wrap: anywhere; }
 .match-score { display: block; font-size: clamp(28px, 4vw, 42px); line-height: 1.2; margin: 12px 0; }

@@ -8,6 +8,8 @@ class JobsConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
 
     def ready(self):
+        from . import task_telemetry  # noqa: F401
+
         if os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT"):
             from opentelemetry import trace
             from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter

@@ -1,0 +1,15 @@
+{% extends 'base.html' %}{% load static %}
+{% block body_class %}operations-page{% endblock %}
+{% block title %}Execution · Operations{% endblock %}
+{% block content %}
+<script src="{% static 'operations.js' %}" defer></script>
+<a href="{% url 'operations' %}">← Operations</a>
+<h1>Evaluation {{ execution.pk }}</h1>
+<p>{{ execution.status }} · {{ execution.model }} · Attempt {{ execution.attempt }}</p>
+<dl><dt>Attempt ID</dt><dd>{{ execution.attempt_id }}</dd><dt>Created / updated</dt><dd>{{ execution.created_at }} / {{ execution.updated_at }}</dd><dt>Deadline</dt><dd>{{ execution.deadline|default_if_none:'Unknown' }}</dd><dt>Lease</dt><dd>{{ execution.lease_until|default_if_none:'None' }}</dd><dt>Next dispatch</dt><dd>{{ execution.next_dispatch_at }}</dd><dt>Retryable</dt><dd>{{ execution.retryable|yesno:'Yes,No' }}</dd><dt>Error category</dt><dd>{{ execution.error_code|default:'None' }}</dd><dt>Reported execution tokens</dt><dd>Input {{ input_tokens|default_if_none:'Unknown' }} · Output {{ output_tokens|default_if_none:'Unknown' }}</dd></dl>
+<h2>Infinity / OpenAI calls</h2>
+<p class="muted">Metadata only · Most recent 100 calls across attempts · Refreshes every 10 seconds while visible</p>
+{% if provider_unavailable %}<p role="status">Provider-call history unavailable. Django execution history remains available. Durable history requires Infinity database persistence and the updated runtime schema.</p>{% endif %}
+{% for call in calls %}<article><h3>{{ call.model }} · {{ call.outcome }}</h3><dl>
+<dt>Call / attempt</dt><dd>{{ call.call_id }} / {{ call.attempt_id }}</dd><dt>Started / finished</dt><dd>{{ call.started_at }} / {{ call.finished_at|default_if_none:'Running' }}</dd><dt>Latency (ms)</dt><dd>{{ call.latency_ms|default_if_none:'Unknown' }}</dd><dt>Reported tokens</dt><dd>Input {{ call.input_tokens|default_if_none:'Unknown' }} · Output {{ call.output_tokens|default_if_none:'Unknown' }}</dd><dt>Error category</dt><dd>{{ call.error_code|default:'None' }}</dd><dt>Provider request ID</dt><dd>{{ call.provider_request_id|default:'Unavailable' }}</dd></dl></article>{% empty %}{% if not provider_unavailable %}<p>No provider calls recorded. Instrumentation does not backfill historical calls.</p>{% endif %}{% endfor %}
+{% endblock %}

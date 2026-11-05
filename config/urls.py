@@ -4,7 +4,7 @@ from drf_spectacular.views import SpectacularAPIView
 from rest_framework.routers import DefaultRouter
 from two_factor.urls import urlpatterns as two_factor_urls
 
-from jobs import evaluation_views, views
+from jobs import evaluation_views, operations_views, views
 from jobs.api import ApplicationViewSet, BatchViewSet, JobViewSet
 
 router = DefaultRouter()
@@ -12,6 +12,10 @@ router.register("batches", BatchViewSet, basename="api-batch")
 router.register("jobs", JobViewSet, basename="api-job")
 router.register("applications", ApplicationViewSet, basename="api-application")
 urlpatterns = [
+    path("operations/", operations_views.index, name="operations"),
+    path(
+        "operations/executions/<uuid:pk>/", operations_views.execution, name="operation-execution"
+    ),
     path("jobs/<int:pk>/evaluate/", evaluation_views.start, name="evaluation-start"),
     path("jobs/<int:pk>/evaluations/", evaluation_views.panel, name="evaluation-panel"),
     path(
