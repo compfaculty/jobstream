@@ -43,6 +43,77 @@ def test_identity_scoped_and_normalized(source):
     assert companies.resolve_company("  ", source) is None
 
 
+def test_secret_postings_do_not_create_catalogue_companies(source):
+    source.adapter = Source.Adapter.SECRET
+    source.save()
+    # An identical catalogue name is not evidence of employer identity.
+    Company.objects.create(name="Example")
+    assert companies.resolve_company("Example", source) is None
+    assert Company.objects.count() == 1
+
+
+def test_clean_company_provenance_is_scoped_and_idempotent(source):
+    direct = companies.resolve_company("Direct employer", source)
+    board = Source.objects.create(
+        name="Secret", adapter=Source.Adapter.SECRET, url="https://secret.example/jobs"
+    )
+    legacy = Company.objects.create(name="Legacy employer", source=board)
+    job = Job.objects.create(
+        title="Engineer",
+        company="Legacy employer",
+        company_profile=legacy,
+        canonical_url="https://secret.example/jobs/1",
+    )
+    origin = JobOrigin.objects.create(job=job, source=board, source_url=job.canonical_url)
+    output = StringIO()
+    call_command("clean_company_provenance", stdout=output)
+    legacy.refresh_from_db()
+    assert legacy.source_id == board.pk
+    for _ in range(2):
+        call_command("clean_company_provenance", apply=True, stdout=output)
+    legacy.refresh_from_db()
+    direct.refresh_from_db()
+    job.refresh_from_db()
+    origin.refresh_from_db()
+    assert legacy.source_id is None
+    assert direct.source_id == source.pk
+    assert job.company_profile_id == legacy.pk
+    assert origin.source_id == board.pk
+
+
+def test_secret_preserves_historical_company_and_verified_alias(source):
+    from jobs.models import CompanyAlias
+
+    historical = companies.resolve_company("Example", source)
+    source.adapter = Source.Adapter.SECRET
+    source.save()
+    assert companies.resolve_company("Example", source) == historical
+    verified = Company.objects.create(name="Verified employer")
+    CompanyAlias.objects.create(
+        company=verified,
+        name="Historical employer name",
+        legacy_identity=companies.company_key("Old name", f"source:{source.pk}"),
+    )
+    assert companies.resolve_company("Old name", source) == verified
+
+
+def test_secret_ingestion_stores_job_without_creating_company(monkeypatch, source):
+    source.adapter = Source.Adapter.SECRET
+    source.enabled = True
+    source.save()
+    listing = Listing("https://example.com/new-job", "Engineer", company="New employer")
+    monkeypatch.setattr(ingestion, "fetch_public", lambda url: b"board")
+    monkeypatch.setitem(
+        ingestion.ADAPTERS, Source.Adapter.SECRET, Mock(discover=Mock(return_value=[listing]))
+    )
+    ingestion.ingest(source.pk)
+    job = Job.objects.get(canonical_url=listing.url)
+    assert job.company == "New employer"
+    assert job.company_profile_id is None
+    assert not Company.objects.exists()
+    assert JobOrigin.objects.filter(job=job, source=source).exists()
+
+
 def test_backfill_preserves_text_and_uses_provenance(source):
     a = Job.objects.create(title="A", company="Acme", canonical_url="https://example.com/a")
     b = Job.objects.create(title="B", company="ACME", canonical_url="https://example.com/b")

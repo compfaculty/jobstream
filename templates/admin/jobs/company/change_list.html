@@ -1,4 +1,10 @@
 {% extends "admin/change_list.html" %}
+{% block content %}
+<p>Companies are employers. Add or import an employer, verify its official website,
+then discover and review its career endpoints.
+Secret Tel Aviv supplies supplementary jobs and does not create catalogue companies.</p>
+{{ block.super }}
+{% endblock %}
 {% block object-tools-items %}
 {% if has_add_permission %}<a class="btn btn-outline-primary" href="{% url 'admin:jobs_company_import' %}">Import CSV</a>{% endif %}
 {{ block.super }}

@@ -2,6 +2,35 @@
 
 Companies are the catalogue entry point; `Source` is a company career endpoint.
 A company may have several endpoints. Secret Tel Aviv remains supplementary.
+`Source` also represents supplementary job aggregators; those are not employer
+career endpoints. `Company.source` is historical posting provenance, while
+`Source.company` associates a career endpoint with its employer. These relationships
+must not be interpreted interchangeably.
+
+Secret Tel Aviv ingestion retains employer names on jobs and provenance in
+`JobOrigin`, but no longer creates catalogue companies from those names. Existing
+company links and consolidated aliases remain available for compatibility. A name
+match alone cannot link an aggregator posting to an independently verified employer.
+Clear misleading Secret Tel Aviv provenance from existing company records with
+`python manage.py clean_company_provenance --apply` (omit `--apply` to preview).
+This removes `Company.source`, not the employer identity, career endpoints or job
+origins. The legacy field is hidden from company admin. Never rename the shared
+aggregator source to an employer: it supplies postings for multiple employers.
+
+The intended pipeline is: independently identify an employer → verify its official
+website → discover its own or hosted ATS career endpoint → collect, normalize and
+store jobs → prepare an application through a separately supported delivery adapter
+→ preview and approve the exact application and CV before delivery. Optional AI
+tailoring may emphasize verified CV facts and generate a PDF; it must not invent
+qualifications or bypass approval.
+
+Current limits: company entry is manual/CSV, not general web-wide employer discovery.
+Collection support does not imply application submission support. Greenhouse/Ashby
+delivery is integration-specific; Workday and Akeyless/Comeet are not generally
+automated delivery routes. Unsupported routes require manual action. CV PDF
+generation and optional AI tailoring exist in the batch preparation path; this is
+not evidence that paid AI validation or rollout has been approved.
+
 General RSS/Atom, Telfed and Real Work polling is disabled by migration 0028;
 existing jobs, source provenance and applications remain available. Operators can
 explicitly re-enable those feeds.

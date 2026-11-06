@@ -131,7 +131,6 @@ class CareerSourceInline(admin.TabularInline):
 class CompanyAdmin(admin.ModelAdmin):
     list_display = (
         "name",
-        "source",
         "website",
         "website_verified",
         "enriched_at",
@@ -139,7 +138,8 @@ class CompanyAdmin(admin.ModelAdmin):
         "review_required",
         "discovery_error",
     )
-    list_filter = ("website_verified", "review_required", "discovery_enabled", "source")
+    list_filter = ("website_verified", "review_required", "discovery_enabled")
+    exclude = ("source",)
     search_fields = ("name", "website", "official_domain", "aliases__name")
     readonly_fields = (
         "identity_key",

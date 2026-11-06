@@ -34,6 +34,11 @@ def resolve_company(name: str, source: Source) -> Company | None:
     alias = CompanyAlias.objects.filter(legacy_identity=legacy).select_related("company").first()
     if alias:
         return alias.company
+    if source.adapter == Source.Adapter.SECRET:
+        # Aggregator employer text is posting data, not company identity evidence.
+        # Keep historical links (including consolidated aliases), but do not grow
+        # the company catalogue from Secret Tel Aviv observations.
+        return Company.objects.filter(identity_key=legacy).first()
     company, _ = Company.objects.get_or_create(
         identity_key=company_key(name, f"source:{source.pk}"),
         defaults={"name": name, "source": source},
