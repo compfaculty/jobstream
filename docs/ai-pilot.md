@@ -97,7 +97,11 @@ The committed public labels check selected source-line category placements, not 
 recall over every sentence. A passing placement score is not a hiring-accuracy guarantee. It reports extraction and comparison accuracy separately, unsupported
 evidence, elapsed time, usage estimates and cache reuse. The gate requires all 100
 postings reviewed, >=95% agreement in both tasks, all 30 comparisons run, and no
-unsupported evidence. Hard-preference tests are a separate required automated check.
+unsupported evidence. Every posting and comparison case must complete; meeting the
+assertion-count or accuracy threshold on a partial run cannot pass. Reports include
+completed case counts. Usage estimates include only new charges admitted within the
+command execution context, excluding concurrent application work and cached charges.
+Hard-preference tests are a separate required automated check.
 Do not treat a fixture self-check or mocked model as measured live semantic accuracy.
 
 `tests/test_ai_pilot.py` exercises 5,000 unique ingested job events, duplicate enqueue,

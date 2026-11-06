@@ -17,7 +17,7 @@ batch, and supported integrations prepare/send eligible applications concurrentl
 Current delivery approval remains per prepared application; automatic batch consent is
 future work, not implicitly enabled by the matching/preferences changes.
 
-Accepted matching policy:
+Application preparation fit-screen policy (existing behavior):
 
 - Explicit per-user excluded technologies block only mandatory requirements. In
   “Python, Node.js, or Go”, excluding Node.js leaves Python/Go as alternatives.
@@ -31,6 +31,13 @@ Accepted matching policy:
   Saved exclusions always apply, including approval and queued-send preflight.
 - Skips retain reasons and matched/excluded labels. Rechecking fit never approves or
   sends an application. A new batch/profile is needed when changing immutable CV facts.
+
+The percentage-evaluation/recommendation path uses a stricter exclusion policy:
+any excluded technology mention, including optional mentions and alternatives, blocks
+the evaluation before inference. See [AI pipeline](ai-pipeline.md). These are distinct
+existing paths; passing the preparation fit screen does not establish a current
+recommendation or override an evaluation block. Do not silently change either policy
+while adding company adapters.
 
 My preferences now stores common application answers in an owner-bound encrypted
 record, only on explicit save. Reuse is separately opt-in. Secret Tel Aviv contact

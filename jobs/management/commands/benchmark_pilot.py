@@ -13,6 +13,7 @@ from django.core.management.base import BaseCommand
 from jobs.models import AICharge, AIResult
 from jobs.services.agent_gateway import GatewayError
 from jobs.services.ai import AIUnavailable, request_json
+from jobs.services.ai_costs import observe_charges
 from jobs.services.evaluation_scoring import validate_assessment
 from jobs.services.normalization import (
     needs_ai_normalization,
@@ -48,9 +49,12 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
+        with observe_charges() as charge_ids:
+            self.run_benchmark(options, charge_ids)
+
+    def run_benchmark(self, options, charge_ids):
         root = Path(options["fixtures"])
         rows, correct, checks, unsupported = [], 0, 0, 0
-        charges_before = AICharge.objects.count()
         prompt_file = settings.BASE_DIR / "services/infinity-agent/src/assessment.rs"
         prompt = json.loads(
             re.search(r'pub const PROMPT: &str = ("(?:[^"\\]|\\.)*");', prompt_file.read_text())[1]
@@ -155,14 +159,25 @@ class Command(BaseCommand):
             rows.append(row)
         from django.db.models import Sum
 
-        usage = AICharge.objects.order_by("pk")[charges_before:].aggregate(
+        usage = AICharge.objects.filter(pk__in=charge_ids).aggregate(
             reserved=Sum("reserved_usd"), charged=Sum("charged_usd")
         )
         reviewed = sum(
             bool(c["reviewed"] and (c["labels"] or c.get("expected_empty"))) for c in public
         )
+        completed_postings = sum(
+            r["kind"] == "normalization" and r["state"] == "reviewed" for r in rows
+        )
+        completed_comparisons = sum(
+            r["kind"] == "comparison" and r["state"] == "completed" for r in rows
+        )
         passed = (
-            reviewed >= 100
+            options["live"]
+            and reviewed == len(public)
+            and reviewed >= 100
+            and completed_postings == len(public)
+            and completed_comparisons == len(comparisons)
+            and completed_comparisons >= 30
             and checks > 0
             and correct / checks >= 0.95
             and comparison_checks >= 30
@@ -186,6 +201,9 @@ class Command(BaseCommand):
             "reviewed_postings": reviewed,
             "normalization_correct": correct,
             "normalization_checks": checks,
+            "completed_postings": completed_postings,
+            "completed_comparisons": completed_comparisons,
+            "comparison_cases": len(comparisons),
             "comparison_correct": comparison_correct,
             "comparison_checks": comparison_checks,
             "unsupported": unsupported,

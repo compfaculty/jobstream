@@ -106,3 +106,25 @@ never permit another POST. Equivalent phone punctuation/email casing and provide
 attribution metadata do not count as content changes. Diagnostics retain only changed
 field names, not answer values or verification codes. A provider receipt remains the
 criterion for completion; an email-code prompt alone is not a successful application.
+
+
+## Pipeline recheck — 2026-11-06
+
+Read-only runtime inspection found 115 active Cato postings, including Automation
+Engineer (`greenhouse:catonetworks:4937879101`, local job 21110). The public
+`check_cato_application 4937879101` diagnostic returned `schema_supported=true`.
+This establishes current schema compatibility only; no upload, submission, receipt
+or interactive browser compatibility was established by that check.
+
+`test_company_inventory_to_approved_adapter` now exercises the discovery-to-delivery
+seams with a fake official-page response, public inventory, schema and transport:
+verified company -> authoritative Greenhouse source -> complete inventory ->
+source-backed deterministic sections -> owner-bound UI draft -> explicit approval ->
+fake confirmed or unknown delivery. It verifies that drafts and foreign owners cannot
+send/approve and that confirmed/unknown outcomes cannot replay. Both cases passed.
+The broader catalogue/discovery/adapter/submission/network suite passed 132 tests
+(with 12 existing Django URLField deprecation warnings).
+
+Live Cato delivery remains pending explicit owner review/approval. The prior deferred
+application is not resumed by this verification, and the Camunda receipt must not be
+resent. The AI quality benchmark and rollout flags remain separate gates.

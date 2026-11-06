@@ -1,5 +1,7 @@
 """Atomic application-side USD reservations. Unknown outcomes are never refunded."""
 
+from contextlib import contextmanager
+from contextvars import ContextVar
 from decimal import ROUND_UP, Decimal
 
 from django.conf import settings
@@ -7,6 +9,19 @@ from django.db import transaction
 from django.utils import timezone
 
 from jobs.models import AICharge, AICostMonth, AIQuota, UserComparisonDay
+
+_charge_observer = ContextVar("ai_charge_observer", default=None)
+
+
+@contextmanager
+def observe_charges():
+    """Collect admissions in this execution context, excluding concurrent callers."""
+    charge_ids = set()
+    token = _charge_observer.set(charge_ids)
+    try:
+        yield charge_ids
+    finally:
+        _charge_observer.reset(token)
 
 
 class BudgetUnavailable(Exception):
@@ -86,7 +101,7 @@ def reserve(
         allowance.save(update_fields=["admitted"])
     bucket.committed_usd += amount
     bucket.save(update_fields=["committed_usd"])
-    return AICharge.objects.create(
+    charge = AICharge.objects.create(
         key=key,
         month=bucket,
         owner=owner,
@@ -97,6 +112,11 @@ def reserve(
         day=day,
         daily_tokens=token_bound if daily else 0,
     )
+
+    observer = _charge_observer.get()
+    if observer is not None:
+        observer.add(charge.pk)
+    return charge
 
 
 @transaction.atomic

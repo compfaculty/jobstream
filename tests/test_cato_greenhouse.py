@@ -294,3 +294,76 @@ def test_preflight_requires_supported_portal_cv_and_current_preferences(cato_app
     cato_application.job.provider_key = "greenhouse:unverified:4937879101"
     with pytest.raises(ValidationError, match="employer portal"):
         submissions.validate_content(cato_application)
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize(
+    "outcome,state", [(None, "confirmed"), (PortalUnknown("uncertain"), "unknown")]
+)
+def test_company_inventory_to_approved_adapter(
+    authenticated, cato_application, other, monkeypatch, settings, outcome, state
+):
+    """Exercise the integration seams with public fixtures and a fake delivery."""
+    from django.utils import timezone
+
+    from jobs.models import Job
+    from jobs.services import catalogue, cato_browser, ingestion
+
+    document = cato_application.document
+    company = cato_application.job.company_profile
+    cato_application.delete()
+    settings.JOB_NORMALIZATION_BATCH_ENABLED = True
+    settings.AI_PILOT_ROLLOUT_APPROVED = False
+    monkeypatch.setattr(
+        catalogue,
+        "fetch_public_document",
+        lambda url: (b'<a href="https://job-boards.greenhouse.io/catonetworks">Jobs</a>', url),
+    )
+    [source] = catalogue.discover_company(company)
+    assert source.enabled and source.authoritative and not source.discovery_pending
+    source.next_run_at = timezone.now()
+    source.save()
+    inventory = {
+        "jobs": [
+            {
+                "id": int(IDENTITY),
+                "title": "Automation Engineer",
+                "absolute_url": f"https://job-boards.greenhouse.io/catonetworks/jobs/{IDENTITY}",
+                "location": {"name": "Tel Aviv, Israel"},
+                "content": "<h2>Requirements</h2><p>Python</p>"
+                "<h2>Responsibilities</h2><p>Build automated tests</p>",
+            }
+        ],
+        "meta": {"total": 1},
+    }
+    monkeypatch.setattr(
+        ingestion, "fetch_public", lambda *args, **kw: json.dumps(inventory).encode()
+    )
+    ingestion.ingest(source.pk)
+    job = Job.objects.get(provider_key=f"greenhouse:catonetworks:{IDENTITY}")
+    assert job.company_profile_id == company.pk and job.employer_source_id == source.pk
+    assert job.normalized["requirements"] == ["Python"]
+    assert job.normalized["responsibilities"] == ["Build automated tests"]
+    run = source.ingestionrun_set.latest("pk")
+    assert run.complete and run.rejected == 0
+
+    values = {f"cato_{key}": value for key, value in ANSWERS.items()}
+    values.update(subject="Application", body="Private note", document=document.pk)
+    response = authenticated.post(f"/jobs/{job.pk}/apply/", values)
+    assert response.status_code == 302
+    application = Application.objects.get(job=job, owner=document.owner)
+    assert application.channel == "portal" and application.status == "draft"
+    delivery = Mock(return_value=f"cato_greenhouse:{IDENTITY}", side_effect=outcome)
+    monkeypatch.setattr(cato_browser, "deliver", delivery)
+    monkeypatch.setattr(cato, "fetch_public", lambda url: json.dumps(PAYLOAD).encode())
+    submissions.submit(application.pk)
+    delivery.assert_not_called()
+    with pytest.raises(Application.DoesNotExist):
+        submissions.approve(other, application.pk)
+    submissions.approve(document.owner, application.pk)
+    submissions.submit(application.pk)
+    application.refresh_from_db()
+    assert application.status == state
+    submissions.submit(application.pk)
+    submissions.reconcile(application.pk)
+    delivery.assert_called_once()
