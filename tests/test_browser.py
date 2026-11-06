@@ -76,6 +76,8 @@ def test_mfa_qr_has_white_background(page, live_server, settings):
     expect(qr).to_be_visible()
     expect(qr).to_have_css("background-color", "rgb(255, 255, 255)")
     expect(qr).to_have_css("padding", "16px")
+    # Visibility does not wait for the separate QR response to finish decoding.
+    qr.evaluate("image => image.decode()")
     assert qr.evaluate("image => image.complete && image.naturalWidth > 0")
 
 

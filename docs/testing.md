@@ -75,6 +75,9 @@ bucket IAM, secret rotation, origin access or backups.
 CI scans the web, browser and Infinity images with the existing Trivy action and
 separately scans Infinity's Cargo lockfile for high/critical advisories, including
 unfixed advisories. Image scans retain their existing fixed-vulnerability policy.
+The source secret scan runs before image/scanner tooling creates caches and uses
+`scripts/scan_secrets.py` to include tracked and unignored project files. Generated
+vulnerability databases are not project source and must not be scanned as such.
 A configured workflow is not evidence that its current run passed. Repository
 administrators must configure required status checks in branch protection separately.
 

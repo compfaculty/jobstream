@@ -59,6 +59,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - if: matrix.name == 'web'
+        run: python3 scripts/scan_secrets.py
       - run: docker build --target ${{ matrix.target }} -t jobstream-${{ matrix.name }}:${{ github.sha }} ${{ matrix.context }}
       - uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1 # 0.35.0
         with:
@@ -66,8 +68,6 @@ jobs:
           severity: CRITICAL,HIGH
           exit-code: '1'
           ignore-unfixed: true
-      - if: matrix.name == 'web'
-        run: docker run --rm -v "$PWD:/repo:ro" zricethezav/gitleaks:v8.24.2 dir /repo --redact --no-banner
   rust-dependencies:
     runs-on: ubuntu-latest
     steps:
