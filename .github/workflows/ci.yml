@@ -62,7 +62,7 @@ jobs:
       - if: matrix.name == 'web'
         run: python3 scripts/scan_secrets.py
       - run: docker build --target ${{ matrix.target }} -t jobstream-${{ matrix.name }}:${{ github.sha }} ${{ matrix.context }}
-      - uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1 # 0.35.0
+      - uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # 0.36.0
         with:
           image-ref: jobstream-${{ matrix.name }}:${{ github.sha }}
           severity: CRITICAL,HIGH
@@ -72,7 +72,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-      - uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1 # 0.35.0
+      - uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # 0.36.0
         with:
           scan-type: fs
           scan-ref: services/infinity-agent
