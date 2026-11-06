@@ -295,16 +295,209 @@ class UploadForm(forms.Form):
 
 
 class ResumeProfileForm(forms.Form):
-    name = forms.CharField(max_length=150, label="Full name")
-    contact = forms.CharField(max_length=500, required=False, label="Contact details")
-    summary = forms.CharField(widget=forms.Textarea, required=False)
-    skills = forms.CharField(widget=forms.Textarea, required=False)
-    experience = forms.CharField(widget=forms.Textarea, required=False)
-    projects = forms.CharField(widget=forms.Textarea, required=False)
-    education = forms.CharField(widget=forms.Textarea, required=False)
-    other = forms.CharField(widget=forms.Textarea, required=False)
+    name = forms.CharField(
+        max_length=150, label="Full name", widget=forms.TextInput(attrs={"autocomplete": "name"})
+    )
+    headline = forms.CharField(
+        max_length=200,
+        required=False,
+        label="Professional headline",
+        help_text=(
+            "Your role and specialties. Example: Senior Software Engineer | Cloud & Networking"
+        ),
+    )
+    email = forms.EmailField(
+        required=False,
+        label="Email address",
+        widget=forms.EmailInput(attrs={"autocomplete": "email"}),
+    )
+    phone = forms.CharField(
+        max_length=50,
+        required=False,
+        label="Phone number",
+        help_text="Include your country code, for example +972 50 123 4567.",
+        widget=forms.TextInput(attrs={"type": "tel", "autocomplete": "tel"}),
+    )
+    location = forms.CharField(
+        max_length=150,
+        required=False,
+        label="City, region and country",
+        help_text="Example: Tel Aviv District, Israel. No street address needed.",
+    )
+    linkedin = forms.URLField(
+        max_length=300, required=False, label="LinkedIn URL", assume_scheme="https"
+    )
+    website = forms.URLField(
+        max_length=300, required=False, label="Portfolio or personal website", assume_scheme="https"
+    )
+    github = forms.URLField(
+        max_length=300, required=False, label="GitHub or code portfolio URL", assume_scheme="https"
+    )
+    contact = forms.CharField(
+        max_length=500,
+        required=False,
+        label="Other / previously saved contact details",
+        help_text="Move older contact details into the fields above when convenient.",
+    )
+    summary = forms.CharField(
+        required=False,
+        label="About you",
+        widget=forms.Textarea(attrs={"rows": 4}),
+        help_text=(
+            "In 3–5 sentences: what you do, your areas of expertise, and the problems you solve."
+        ),
+    )
+    skills = forms.CharField(
+        required=False,
+        label="Skills and technologies",
+        widget=forms.Textarea(attrs={"rows": 3}),
+        help_text=(
+            "List specific tools and skills, separated by commas. Example: "
+            "Python, Go, Linux, Kubernetes."
+        ),
+    )
+    languages = forms.CharField(
+        required=False,
+        label="Languages and proficiency",
+        help_text="Example: English — professional working; Ukrainian — native.",
+    )
+    certifications = forms.CharField(
+        required=False,
+        label="Certifications and licenses",
+        widget=forms.Textarea(attrs={"rows": 3}),
+        help_text=(
+            "One per line: credential, issuing organization, year, and credential URL if available."
+        ),
+    )
+    experience = forms.CharField(
+        required=False,
+        label="Previously saved experience / additional context",
+        widget=forms.Textarea(attrs={"rows": 3}),
+    )
+    projects = forms.CharField(
+        required=False,
+        label="Previously saved projects / additional context",
+        widget=forms.Textarea(attrs={"rows": 3}),
+    )
+    education = forms.CharField(
+        required=False,
+        label="Previously saved education / additional context",
+        widget=forms.Textarea(attrs={"rows": 3}),
+    )
+    other = forms.CharField(
+        required=False,
+        label="Additional facts",
+        widget=forms.Textarea(attrs={"rows": 4}),
+        help_text=(
+            "Awards, publications, volunteering, or other relevant facts. "
+            "Separate entries with a blank line."
+        ),
+    )
     confirmed = forms.BooleanField(
-        label="I confirm these facts, including any additions, are accurate."
+        label="I confirm these facts, including my additions, are accurate."
+    )
+
+
+class DatedProfileEntryForm(forms.Form):
+    start = forms.DateField(
+        required=False,
+        label="Start date",
+        input_formats=["%Y-%m"],
+        widget=forms.DateInput(format="%Y-%m", attrs={"type": "month"}),
+    )
+    end = forms.DateField(
+        required=False,
+        label="End date",
+        input_formats=["%Y-%m"],
+        widget=forms.DateInput(format="%Y-%m", attrs={"type": "month"}),
+    )
+    current = forms.BooleanField(required=False, label="I currently work / study here")
+
+    def clean(self):
+        values = super().clean()
+        if values.get("current") and values.get("end"):
+            self.add_error("end", "Leave the end date empty for a current entry.")
+        if values.get("start") and values.get("end") and values["end"] < values["start"]:
+            self.add_error("end", "End date must be on or after the start date.")
+        return values
+
+
+class ProfileExperienceForm(DatedProfileEntryForm):
+    field_order = [
+        "title",
+        "company",
+        "employment_type",
+        "location",
+        "start",
+        "end",
+        "current",
+        "description",
+        "technologies",
+    ]
+
+    title = forms.CharField(
+        max_length=200, label="Job title", help_text="Example: Senior Software Engineer"
+    )
+    company = forms.CharField(max_length=200, label="Company or organization")
+    employment_type = forms.ChoiceField(
+        required=False,
+        label="Employment type",
+        choices=[
+            ("", "Select if relevant"),
+            ("Full-time", "Full-time"),
+            ("Part-time", "Part-time"),
+            ("Contract", "Contract"),
+            ("Freelance", "Freelance"),
+            ("Internship", "Internship"),
+            ("Self-employed", "Self-employed"),
+        ],
+    )
+    location = forms.CharField(max_length=150, required=False, label="Location / remote")
+    description = forms.CharField(
+        max_length=3500,
+        required=False,
+        label="Responsibilities and achievements",
+        widget=forms.Textarea(attrs={"rows": 4}),
+        help_text=(
+            "One point per line: what you built or improved, how, and the "
+            "result. Include metrics only if known."
+        ),
+    )
+    technologies = forms.CharField(
+        max_length=500, required=False, label="Technologies used in this role"
+    )
+
+
+class ProfileEducationForm(DatedProfileEntryForm):
+    field_order = ["school", "degree", "field", "start", "end", "current", "description"]
+
+    school = forms.CharField(max_length=250, label="School or university")
+    degree = forms.CharField(max_length=200, required=False, label="Degree or qualification")
+    field = forms.CharField(max_length=200, required=False, label="Field of study")
+    description = forms.CharField(
+        max_length=3000,
+        required=False,
+        label="Relevant coursework, thesis or honors",
+        widget=forms.Textarea(attrs={"rows": 3}),
+    )
+
+
+class ProfileProjectForm(forms.Form):
+    name = forms.CharField(max_length=200, label="Project name")
+    role = forms.CharField(max_length=200, required=False, label="Your role / contribution")
+    url = forms.URLField(
+        max_length=300, required=False, label="Project or repository URL", assume_scheme="https"
+    )
+    technologies = forms.CharField(max_length=500, required=False, label="Technologies used")
+    description = forms.CharField(
+        max_length=3500,
+        required=False,
+        label="What you built and achieved",
+        widget=forms.Textarea(attrs={"rows": 4}),
+        help_text=(
+            "Describe the problem, your own contribution, and the outcome. "
+            "Personal and AI projects are welcome."
+        ),
     )
 
 

@@ -621,42 +621,77 @@ def batch_detail(request, pk):
 @login_required
 def resume_profile(request, pk):
     from .forms import ResumeProfileForm
+    from .services.profile_editor import (
+        CONTACT_FIELDS,
+        confirmed_sections,
+        entry_sets,
+        serialize_entries,
+    )
     from .services.resumes import SECTIONS, confirm, extract
 
     document = owned_document(request.user, pk)
-    extracted = ""
     latest = document.profiles.filter(owner=request.user).order_by("-pk").first()
     initial = {}
+    extracted = ""
     if latest:
-        initial = {"name": latest.name, "contact": latest.contact}
-        for section in SECTIONS:
-            initial[section.lower()] = "\n\n".join(
-                fact["text"] for fact in latest.facts if fact["section"] == section
-            )
-    elif request.method == "GET":
+        if latest.details:
+            initial = latest.details.get("basics", {}).copy()
+        else:
+            initial = {"contact": latest.contact}
+            for section in SECTIONS:
+                initial[section.lower()] = "\n\n".join(
+                    fact["text"] for fact in latest.facts if fact["section"] == section
+                )
+        initial["name"] = latest.name
+    data = request.POST if request.method == "POST" else None
+    form = ResumeProfileForm(data, initial=initial, label_suffix="")
+    groups = entry_sets(data, latest.details if latest else None)
+    if request.method == "POST":
+        valid = form.is_valid()
+        group_validity = [group["forms"].is_valid() for group in groups]
+        if valid and all(group_validity):
+            entries = serialize_entries(groups)
+            values = form.cleaned_data
+            contact = " | ".join(values[key] for key in CONTACT_FIELDS if values[key])
+            if len(contact) > 500:
+                form.add_error(None, "Combined contact details must be at most 500 characters.")
+            else:
+                try:
+                    confirm(
+                        request.user,
+                        document,
+                        values["name"],
+                        contact,
+                        confirmed_sections(values, entries),
+                        details={
+                            "basics": {
+                                key: value for key, value in values.items() if key != "confirmed"
+                            },
+                            **entries,
+                        },
+                    )
+                except ValidationError as exc:
+                    form.add_error(None, exc)
+                else:
+                    messages.success(
+                        request, "Profile saved. Existing batches retain their profile version."
+                    )
+                    return redirect("documents")
+    if request.method in {"GET", "POST"}:
         try:
             extracted = extract(document)
-            initial["other"] = extracted
         except ValidationError as exc:
             messages.error(request, "; ".join(exc.messages))
-    form = ResumeProfileForm(request.POST or None, initial=initial)
-    if request.method == "POST" and form.is_valid():
-        try:
-            confirm(
-                request.user,
-                document,
-                form.cleaned_data["name"],
-                form.cleaned_data["contact"],
-                {section: form.cleaned_data[section.lower()] for section in SECTIONS},
-            )
-        except ValidationError as exc:
-            form.add_error(None, exc)
-        else:
-            messages.success(
-                request, "Factual profile saved. Existing batches retain their profile version."
-            )
-            return redirect("documents")
-    return render(request, "jobs/profile.html", {"form": form, "document": document})
+    return render(
+        request,
+        "jobs/profile.html",
+        {
+            "form": form,
+            "document": document,
+            "entry_groups": groups,
+            "extracted": extracted,
+        },
+    )
 
 
 @login_required

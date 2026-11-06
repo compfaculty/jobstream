@@ -178,3 +178,22 @@ if (categoryPanel && categoryToggle) {
     htmx.process(categoryPanel);
   });
 }
+
+// Django formset indices remain stable, including entries marked for deletion.
+for (const group of document.querySelectorAll('[data-profile-group]')) {
+  const button = group.querySelector('[data-profile-add]');
+  const total = group.querySelector('input[name$="-TOTAL_FORMS"]');
+  const maximum = Number(group.querySelector('input[name$="-MAX_NUM_FORMS"]').value);
+  button.hidden = false;
+  button.disabled = Number(total.value) >= maximum;
+  button.addEventListener('click', () => {
+    const index = Number(total.value);
+    if (index >= maximum) return;
+    const template = group.querySelector('[data-profile-template]');
+    const html = template.innerHTML.replaceAll('__prefix__', String(index));
+    group.querySelector('[data-profile-entries]').insertAdjacentHTML('beforeend', html);
+    total.value = index + 1;
+    button.disabled = index + 1 >= maximum;
+    group.querySelector('[data-profile-entries]').lastElementChild.querySelector('input').focus();
+  });
+}

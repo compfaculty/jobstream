@@ -1,6 +1,49 @@
-{% extends 'base.html' %}{% block content %}
-<h1>Review factual profile</h1><p>Base CV: {{ document.name }}</p>
-<p>Review extracted text, organize it into sections, and add genuine experience omitted from your CV, including AI projects. Keep employer names, roles, dates, and accomplishments together in a paragraph. Separate independent facts with a blank line.</p>
-<p>Each save creates an immutable version. Tailoring uses these confirmed paragraphs; it cannot invent qualifications from a job description.</p>
-<form method="post" class="stack">{% csrf_token %}{{ form.as_p }}<button>Confirm and save profile</button></form>
+{% extends 'base.html' %}
+{% block title %}Edit your professional profile · Jobstream{% endblock %}
+{% block content %}
+<div class="profile-heading"><p class="muted">YOUR PROFESSIONAL PROFILE</p><h1>Your experience, clearly presented.</h1>
+<p>Build a complete profile, one detail at a time. Only your name and confirmation are required; add the facts relevant to your career.</p>
+<p class="muted">Base CV: {{ document.name }} · Every save creates a new version.</p></div>
+<div class="profile-layout">
+<form method="post" class="stack profile-editor">{% csrf_token %}
+{{ form.non_field_errors }}
+<section class="profile-section"><h2>1. Introduction & contact</h2><p class="muted">Help employers understand what you do and how to reach you.</p>
+<div class="profile-fields">
+{% for field in form %}{% if field.name in 'name,headline,email,phone,location,linkedin,website,github,contact' %}
+{% include 'jobs/partials/profile_field.html' %}
+{% endif %}{% endfor %}
+</div></section>
+<section class="profile-section"><h2>2. About & skills</h2>
+{% include 'jobs/partials/profile_field.html' with field=form.summary %}
+{% include 'jobs/partials/profile_field.html' with field=form.skills %}
+</section>
+{% for group in entry_groups %}
+<section class="profile-section" data-profile-group="{{ group.key }}">
+<h2>{{ forloop.counter|add:2 }}. {{ group.label }}</h2>
+<p class="muted">Add one entry for each {% if group.key == 'experience' %}role, starting with your most recent{% elif group.key == 'education' %}school or qualification{% else %}project you want to highlight{% endif %}. Leave unused entries blank.</p>
+{{ group.forms.management_form }}{{ group.forms.non_form_errors }}
+<div data-profile-entries>
+{% for entry in group.forms %}
+<fieldset class="profile-entry"><legend>{{ group.label }} entry {{ forloop.counter }}</legend>{{ entry.non_field_errors }}
+<div class="profile-fields">{% for field in entry %}{% include 'jobs/partials/profile_field.html' %}{% endfor %}</div></fieldset>
+{% endfor %}
+</div>
+<template data-profile-template><fieldset class="profile-entry"><legend>New {{ group.label|lower }} entry</legend><div class="profile-fields">{% for field in group.forms.empty_form %}{% include 'jobs/partials/profile_field.html' %}{% endfor %}</div></fieldset></template>
+<button type="button" class="quiet" data-profile-add hidden>+ Add {{ group.label|lower }} entry</button>
+{% if group.key == 'experience' and form.experience.value %}{% include 'jobs/partials/profile_field.html' with field=form.experience %}
+{% elif group.key == 'education' and form.education.value %}{% include 'jobs/partials/profile_field.html' with field=form.education %}
+{% elif group.key == 'projects' and form.projects.value %}{% include 'jobs/partials/profile_field.html' with field=form.projects %}{% endif %}
+</section>
+{% endfor %}
+<section class="profile-section"><h2>6. More about your background</h2>
+{% include 'jobs/partials/profile_field.html' with field=form.languages %}
+{% include 'jobs/partials/profile_field.html' with field=form.certifications %}
+{% include 'jobs/partials/profile_field.html' with field=form.other %}
+</section>
+<section class="profile-section"><h2>Review & save</h2><p>Your confirmed facts are used for CV tailoring. Include only experience and qualifications you can support.</p>
+{% include 'jobs/partials/profile_field.html' with field=form.confirmed %}
+<button type="submit">Confirm and save profile</button> <a href="{% url 'documents' %}">Back to resumes</a></section>
+</form>
+<aside class="profile-reference"><details open><summary>Original CV text</summary><p class="muted">Use this reference to fill in your profile. Check names, dates and line breaks before saving.</p>{% if extracted %}<pre>{{ extracted }}</pre>{% else %}<p>PDF text is unavailable. Your saved profile is still editable.</p>{% endif %}</details></aside>
+</div>
 {% endblock %}

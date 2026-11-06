@@ -632,6 +632,7 @@ class ResumeProfile(models.Model):
     document = models.ForeignKey(Document, on_delete=models.PROTECT, related_name="profiles")
     name = models.CharField(max_length=150)
     contact = models.CharField(max_length=500, blank=True)
+    details = models.JSONField(default=dict, blank=True)
     facts = models.JSONField(default=list)
     confirmed_at = models.DateTimeField(default=timezone.now)
 

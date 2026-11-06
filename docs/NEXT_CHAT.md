@@ -159,3 +159,23 @@ Local PostgreSQL/Redis, browser and Docker checks may require sandbox escalation
 `.env` and `private-backups/` are intentionally untracked. Never print credentials, CV
 bodies or backup contents. The verified private backup location is documented locally;
 backups must stay out of Git and Docker build context. No new hosted service is wanted.
+
+## Profile editor — future improvement needed
+
+The structured profile editor is an initial iteration, not the final UX. It now has
+separate contact fields and repeatable experience, education, and project entries,
+with immutable saved versions and a reference view of the original PDF text.
+
+Follow-up work:
+
+- Add source-backed PDF prefilling with explicit user review; never infer missing
+  qualifications, dates, or contact details.
+- Reduce the length of the form with clearer section navigation and compact entry
+  summaries; retain accessible mobile and keyboard behavior.
+- Improve entry removal/reordering and the experience without JavaScript.
+- Replace the combined 500-character contact limit with structured rendering in
+  generated CVs, while preserving existing saved versions and downstream contracts.
+
+Keep this follow-up separate from the AI rollout gates above. The profile change
+adds migration `0047_resume_profile_details`; it does not change rollout flags,
+provider budgets, or application-send approval requirements.

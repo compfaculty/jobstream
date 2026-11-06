@@ -53,7 +53,9 @@ def extract(document: Document) -> str:
 
 
 @transaction.atomic
-def confirm(owner, document, name: str, contact: str, sections: dict) -> ResumeProfile:
+def confirm(
+    owner, document, name: str, contact: str, sections: dict, *, details: dict | None = None
+) -> ResumeProfile:
     if document.owner_id != owner.pk:
         raise ValidationError("Document does not belong to applicant.")
     facts: list[dict[str, str]] = []
@@ -70,7 +72,12 @@ def confirm(owner, document, name: str, contact: str, sections: dict) -> ResumeP
     if not name.strip() or not facts or len(facts) > 200:
         raise ValidationError("Provide your name and between 1 and 200 factual paragraphs.")
     profile = ResumeProfile.objects.create(
-        owner=owner, document=document, name=name.strip(), contact=contact.strip(), facts=facts
+        owner=owner,
+        document=document,
+        name=name.strip(),
+        contact=contact.strip(),
+        facts=facts,
+        details=details or {},
     )
     AuditEvent.objects.create(
         actor=owner,
