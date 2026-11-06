@@ -34,7 +34,7 @@ dependencies = [
   "playwright>=1.56,<2",
 ]
 [dependency-groups]
-dev = ["pytest>=8,<10", "pytest-django>=4.11,<5", "pytest-cov>=6,<8", "ruff>=0.12,<1", "mypy>=1.17,<2", "django-stubs>=5.2,<5.3", "types-requests", "pip-audit>=2.9,<3", "pytest-playwright>=0.7,<1"]
+dev = ["pytest>=8,<10", "pytest-django>=4.11,<5", "pytest-cov>=6,<8", "ruff>=0.12,<1", "mypy>=1.17,<2", "django-stubs>=5.2,<6.2", "types-requests", "pip-audit>=2.9,<3", "pytest-playwright>=0.7,<1"]
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "config.settings"
 testpaths = ["tests"]
