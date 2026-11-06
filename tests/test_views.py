@@ -230,3 +230,55 @@ def test_disabled_evaluation_is_explained(authenticated, job, settings):
     response = authenticated.get(f"/jobs/{job.pk}/")
     assert b"Evaluate vacancy" in response.content
     assert b"Vacancy evaluation is currently unavailable" in response.content
+
+
+def test_delete_resume(authenticated, user, settings, tmp_path, django_capture_on_commit_callbacks):
+    from jobs.models import Document
+
+    settings.MEDIA_ROOT = tmp_path
+    document = Document.objects.create(
+        owner=user,
+        name="Resume",
+        sha256="a" * 64,
+        size=3,
+        file=SimpleUploadedFile("resume.pdf", b"pdf"),
+    )
+    path = document.file.path
+    url = f"/documents/{document.pk}/delete/"
+    assert url.encode() in authenticated.get("/documents/").content
+    assert authenticated.get(url).status_code == 200
+    assert Document.objects.filter(pk=document.pk).exists()
+    with django_capture_on_commit_callbacks(execute=True):
+        assert authenticated.post(url).status_code == 302
+    assert not Document.objects.filter(pk=document.pk).exists()
+    assert not document.file.storage.exists(path)
+    assert authenticated.post(url).status_code == 404
+
+
+def test_delete_resume_permissions(authenticated, client, user, other, evaluation_profile):
+    from django.test import Client
+
+    document = evaluation_profile.document
+    url = f"/documents/{document.pk}/delete/"
+    assert client.post(url).status_code == 302
+    csrf_client = Client(enforce_csrf_checks=True)
+    csrf_client.force_login(user)
+    assert csrf_client.post(url).status_code == 403
+    assert authenticated.put(url).status_code == 405
+    authenticated.force_login(other)
+    assert authenticated.get(url).status_code == 404
+    assert authenticated.post(url).status_code == 404
+    document.refresh_from_db()
+
+
+@pytest.mark.parametrize("reference", ["profile", "application"])
+def test_delete_referenced_resume(authenticated, evaluation_profile, application, reference):
+    document = evaluation_profile.document
+    if reference == "application":
+        evaluation_profile.delete()
+        application.document = document
+        application.save()
+    response = authenticated.post(f"/documents/{document.pk}/delete/", follow=True)
+    assert response.status_code == 200
+    assert b"cannot be deleted" in response.content
+    document.refresh_from_db()

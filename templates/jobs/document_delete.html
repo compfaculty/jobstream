@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>Delete resume</h1>
+<p>Delete “{{ document.name }}”? This permanently removes the uploaded file and cannot be undone.</p>
+<p>Resumes used by applications, CV profiles, batches, or evaluations cannot be deleted.</p>
+<form method="post" class="stack">
+  {% csrf_token %}
+  <div><button type="submit">Delete resume</button> <a href="{% url 'documents' %}">Cancel</a></div>
+</form>
+{% endblock %}

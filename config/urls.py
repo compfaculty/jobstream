@@ -45,6 +45,7 @@ urlpatterns = [
     path("preferences/", views.application_preferences, name="application-preferences"),
     path("documents/", views.documents, name="documents"),
     path("documents/<int:pk>/profile/", views.resume_profile, name="resume-profile"),
+    path("documents/<int:pk>/delete/", views.document_delete, name="document-delete"),
     path("documents/<int:pk>/", views.document_download, name="document-download"),
     path("gmail/", views.gmail_settings, name="gmail"),
     path("gmail/connect/", views.gmail_connect, name="gmail-connect"),

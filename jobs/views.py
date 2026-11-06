@@ -9,10 +9,11 @@ from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import Exists, OuterRef, Q
+from django.db.models.deletion import ProtectedError
 from django.http import FileResponse, Http404, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_http_methods, require_POST
 from google_auth_oauthlib.flow import Flow
 
 from .forms import ApplicationForm, RegistrationForm, TrackingForm, UploadForm
@@ -382,6 +383,27 @@ def documents(request):
         "jobs/documents.html",
         {"form": form, "documents": request.user.document_set.order_by("-created_at")},
     )
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def document_delete(request, pk):
+    document = owned_document(request.user, pk)
+    if request.method == "POST":
+        try:
+            with transaction.atomic():
+                document.delete()
+                transaction.on_commit(lambda: document.file.delete(save=False), robust=True)
+        except ProtectedError:
+            messages.error(
+                request,
+                "This resume is used by an application, CV profile, batch, or evaluation "
+                "and cannot be deleted. Existing records keep their original resume.",
+            )
+        else:
+            messages.success(request, "Resume deleted.")
+        return redirect("documents")
+    return render(request, "jobs/document_delete.html", {"document": document})
 
 
 @login_required
