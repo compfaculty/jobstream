@@ -3,12 +3,13 @@
 import hashlib
 import json
 import re
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from datetime import datetime, timedelta
 from urllib.parse import urlsplit
 
 from django.utils import timezone
 
+from .comeet import HostedAdapter
 from .crawl import CrawlDeferred
 from .network import HTTPStatusError, canonical_url, fetch_public, request_public_document
 from .normalization import text_blocks
@@ -147,10 +148,22 @@ class WorkdayAdapter:
         )
 
 
+def source_adapter(source):
+    adapter = ADAPTERS.get(source.adapter)
+    if source.adapter == "akeyless" and urlsplit(source.url).hostname in {
+        "www.comeet.com",
+        "comeet.com",
+        "www.comeet.co",
+        "comeet.co",
+    }:
+        adapter = HostedAdapter()
+    return adapter
+
+
 def collect(source, cursor, *, fetch=fetch_public):
     if source.adapter == "workday":
         return WorkdayAdapter().collect(source, cursor), b""
-    adapter = ADAPTERS[source.adapter]
+    adapter = source_adapter(source)
     data = (
         fetch(source.url)
         if source.max_response_bytes == 2 * 1024 * 1024
@@ -166,7 +179,13 @@ def collect(source, cursor, *, fetch=fetch_public):
     )
     # Public full-response APIs still need bounded database/normalization batches.
     if hasattr(type(adapter), "complete"):
-        digest = hashlib.sha256(data).hexdigest()
+        # Hosted HTML contains volatile widget/session markup unrelated to jobs.
+        snapshot = (
+            json.dumps([asdict(posting) for posting in postings], sort_keys=True).encode()
+            if isinstance(adapter, HostedAdapter)
+            else data
+        )
+        digest = hashlib.sha256(snapshot).hexdigest()
         offset = cursor.get("offset", 0)
         if type(offset) is not int or not 0 <= offset <= len(postings):
             raise ValueError("Invalid inventory offset")

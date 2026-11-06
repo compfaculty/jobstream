@@ -18,6 +18,15 @@ def provider_identity(url: str) -> str | None:
         match = re.fullmatch(r"/([^/]+)/([a-fA-F0-9-]{36})(?:/application)?/?", parts.path)
         if match:
             return f"ashby:{match[1]}:{match[2]}"
+    if host in {"www.comeet.com", "comeet.com", "www.comeet.co", "comeet.co"}:
+        from .comeet import identity
+
+        try:
+            _, company, posting = identity(url)
+        except ValueError:
+            return None
+        if posting:
+            return f"comeet:{company}:{posting}"
     return None
 
 

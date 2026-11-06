@@ -1,93 +1,55 @@
-# Next chat: integrate another company end to end
+# Next chat: Akeyless checkpoint and remaining validation
 
-Continue Jobstream with a **different company**, not another Cato/GitLab/Camunda
-validation session. The user explicitly deferred new-company work to the next chat.
-Repository: `/Users/alexg/projects/jobstream`; branch at handoff: `master`.
-Read AGENTS.md, check Git status/recent commits, and preserve subsequent work.
+Repository: `/Users/alexg/projects/jobstream`.
+Integration branch: `feat/akeyless-comeet-integration`, created from `4032da1` on
+`master`, preserving its two local commits. Read AGENTS.md and inspect current Git
+status/diff and commit history before continuing.
 
-## Objective and selection
+## Current tranche
 
-Complete one small company tranche:
-**verified company -> get jobs -> normalize -> supported application adapter**.
-Reuse existing platform adapters and approval machinery. Do not start a generic
-redesign or expand all sources at once.
+Akeyless / Comeet collection and explicit manual application handoff are implemented.
+See `docs/integrations/akeyless.md` for public evidence, configuration, limitations
+and verification commands. Automated application delivery remains incomplete.
 
-1. Inspect the current company/source catalogue and existing integration notes.
-2. Propose a different company with a working public careers endpoint and a useful
-   application route. Akeyless/Comeet is a candidate for a different platform, not an
-   attested choice: verify its current official site, board relationship and form first.
-   Prefer a suitable existing disabled catalogue entry over inventing an employer.
-3. State the selected company and route. Ask only if selection or scope needs user
-   input; otherwise continue with bounded read-only inspection and offline work.
+- Official careers links establish the Akeyless-to-Comeet board relationship.
+  The direct official-site request returned 403; no bypass was attempted.
+- The public hosted board returned nine embedded positions on 2026-11-06.
+  Collection uses stable `comeet:27.006:<uid>` identities, deterministic normalization,
+  bounded 250-job persistence batches and posting-content-hash checkpoints. It never claims
+  a complete inventory or infers missing-job closure from HTML data.
+- Comeet proposals remain disabled/pending even from verified-site discovery.
+  Existing legacy Akeyless careers-page sources are preserved. No runtime source
+  records or enabled cohort were changed; closure remains off.
+- The reviewed hosted vacancy had reCAPTCHA enabled and a JavaScript form widget.
+  There is no supported automated submit adapter. Drafts require an owned CV,
+  show the manual route, and cannot be approved/sent through Jobstream. Batches
+  require manual action; owner answers/consents are entered on the employer site.
+- No real application, upload, email, paid AI call, rollout, push or deployment
+  was performed. No provider receipt was established or fabricated.
 
-## Implementation milestones
+## Verification checkpoint
 
-### 1. Establish identity and collection
+The final combined PostgreSQL suite passed **210 tests**, including intercepted
+Chromium. Focused Ruff lint/security rules, formatting, Django checks, migration-drift
+checks and `git diff --check` passed. All nine captured public postings parsed and
+normalized offline. See the integration note for commands, warnings and limitations.
+No full-project security scan or production-settings check was run.
 
-- Read `docs/company-integration-workflow.md`, `docs/company-catalogue.md`,
-  `docs/sources.md`, and the relevant adapter code/tests.
-- Verify the official employer-to-ATS relationship using public read-only evidence.
-  Do not transfer employer API credentials, bypass challenges or assume authority
-  from a board listing alone.
-- Reuse supported collectors; add the smallest adapter change only if necessary.
-- Cover bounded/resumable collection, stable provider IDs, duplicates, malformed or
-  truncated responses, rate limits, interrupted runs and changed inventories.
-- Preserve operator overrides and existing jobs/application IDs. Leave automatic
-  closure off pending shadow review. Keep the current four-source cohort unchanged
-  until an explicit rollout decision; test candidate activation with fixtures first.
+## Next work
 
-### 2. Normalize and connect application preparation
+Review the tranche and integration note. Keep automated delivery marked
+incomplete unless a safe public applicant route and meaningful schema are established.
+A challenge must lead to human action, never bypass. Any future live submission needs
+explicit approval for the selected vacancy, owned CV, factual answers and destination.
+Do not transfer employer API credentials or treat widget tokens as authorization.
 
-- Publish deterministic normalized jobs immediately. Preserve original descriptions,
-  exact source evidence and curated overrides; AI enrichment must remain optional.
-- Test mandatory/preferred sections, alternatives, negations, years and technology
-  evidence against reviewed public fixtures.
-- Trace the collected provider identity through the UI's adapter selection and draft
-  preparation. Prefer shared platform code over employer-specific duplication.
-- Preserve the existing distinction: application preparation's technology-fit screen
-  differs from percentage evaluation's absolute excluded-technology blockers.
-  Do not silently change either policy (see `docs/ai-pipeline.md`).
+Keep the four-source enabled cohort unchanged until an explicit rollout decision.
+Do not enable closure for hosted Comeet HTML inventories. Fixture activation is
+covered; live operator activation and ingestion have not been performed here.
+Preserve the distinct preparation-fit and percentage-evaluation policies.
 
-### 3. Implement the application route safely
-
-- Inspect the public form/schema and supported submission route. Record manual
-  handoff explicitly if automation is unsupported; do not call that a finished
-  automated integration.
-- Require factual owner-entered answers, an owned CV, and approval bound to the exact
-  answers, attachment, destination and meaningful form schema. Changed questions or
-  consents require review. Saved answers require opt-in and semantic equivalence.
-- Cover cross-owner access, schema drift, challenges, 429s, duplicate tasks,
-  cancellation, worker interruption and uncertain outcomes. Never replay UNKNOWN.
-- Tests use synthetic applicants and fake/intercepted providers. No real upload,
-  application, email, invitation or notification without explicit approval for it.
-
-### 4. Verify, document and checkpoint
-
-- Add a pipeline regression spanning company discovery, real collector parsing,
-  normalization, UI draft, owner approval and fake confirmed/unknown delivery.
-- Run focused Ruff, PostgreSQL tests and intercepted Chromium checks as appropriate;
-  run broader checks if production changes warrant them. Review the final diff.
-- Record public evidence, commands, results and remaining live-validation boundaries
-  in a new `docs/integrations/<company>.md` note. Distinguish fake success from a real
-  receipt. Follow the existing per-company commit convention; never push/deploy
-  without authorization. This handoff does not authorize a future commit by itself.
-
-## Work completed in the preceding chat
-
-- `benchmark_pilot.py`: all postings and comparison cases must complete before a
-  live gate passes; assertion counts alone cannot establish complete coverage.
-  Reports include completed-case counts.
-- `ai_costs.py`: execution-context charge observation attributes newly admitted
-  benchmark costs without including unrelated concurrent application work. Budget
-  admission, settlement, cache identity and limits remain unchanged.
-- Added benchmark regressions and Cato pipeline tests; clarified current policies
-  and documented Cato's read-only recheck.
-- Executed checks: benchmark/accounting suite **27 passed**; adjacent budget,
-  normalization/preferences suite **34 passed**; company/discovery/adapter/
-  submission/network suite **132 passed** (12 Django URLField deprecation warnings);
-  two new Cato pipeline cases **2 passed**; Cato Chromium fixtures **15 passed**.
-  Ruff lint/format and `git diff --check` passed. These are historical results; rerun
-  relevant checks after changes. No full-project test/security scan was run.
+The prior Cato benchmark/accounting hardening is in `4032da1`; the prior profile-editor
+work is separate. Do not resume Cato/GitLab/Camunda sends as part of this tranche.
 
 ## Deferred AI validation — do not lose or silently enable
 

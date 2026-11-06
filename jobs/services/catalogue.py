@@ -81,7 +81,7 @@ def candidate(company: Company, url: str, *, evidence: str = "", trusted: bool =
             company.save(update_fields=["review_required"])
             return source
         source.company = company
-        if trusted:
+        if trusted and endpoint[0] in {"greenhouse", "ashby", "workday"}:
             if not company.website_verified or not company.official_domain:
                 raise ValueError("Automatic endpoint activation requires verified company identity")
             if source.review_reason == "Operator disabled automatic activation":

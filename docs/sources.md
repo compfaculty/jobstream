@@ -28,6 +28,11 @@ bound global and per-host ingestion work. Keep source access conservative and au
 - JSON-LD: imports JobPosting nodes embedded in the configured page, including @graph.
 - Comeet: configure a public positions API endpoint returning a JSON array. No token
   is embedded in the example repository. Page URLs and API URLs are different inputs.
+- Akeyless hosted Comeet board: the existing `akeyless` adapter also accepts
+  `https://www.comeet.com/jobs/akeyless/27.006`. It decodes public embedded job data
+  with bounded, hash-checked persistence batches, without proving inventory completeness.
+  Discovery proposes a disabled source; applications use manual handoff. See
+  [Akeyless integration](integrations/akeyless.md). Legacy careers-page settings remain intact.
 - Secret Tel Aviv: public `wpjb-col-title` listings and job-detail selectors from JF.
 - Telfed: public UAEL title links and job-detail selectors from JF.
 

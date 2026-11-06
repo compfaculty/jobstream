@@ -23,6 +23,11 @@ class ApplicationForm(forms.ModelForm):
         self.fields["recipient"].required = self.instance.channel == "email"
         self.fields["document"].queryset = Document.objects.filter(owner=owner)
         self.fields["document"].label_from_instance = lambda obj: obj.name
+        from .services.comeet import manual_url
+
+        if self.instance.job_id and manual_url(self.instance.job):
+            self.fields["document"].required = True
+            self.fields["body"].label = "Private note (not sent to Akeyless)"
         from .services.secret_telaviv import supported
 
         self.secret_portal = (

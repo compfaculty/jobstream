@@ -37,6 +37,14 @@ def ats_endpoint(url: str) -> tuple[str, str] | None:
         except ValueError:
             return None
         return "workday", f"https://{host}/{site}"
+    from .comeet import BOARD, identity
+
+    try:
+        slug, company, _ = identity(url)
+    except ValueError:
+        return None
+    if (slug, company) == ("akeyless", "27.006"):
+        return "akeyless", BOARD
     return None
 
 

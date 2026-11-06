@@ -195,6 +195,11 @@ def application_create(request, pk):
             draft.channel = "portal"
         except ValueError:
             pass
+    from .services.comeet import manual_url
+
+    if not job.apply_email and (handoff := manual_url(job)):
+        draft.portal_url = handoff
+        draft.channel = "portal"
     form = ApplicationForm(
         request.POST or None,
         owner=request.user,
@@ -231,6 +236,7 @@ def application_detail(request, pk):
     from .services.camunda_ashby import PortalRejected, inspect_schema
     from .services.camunda_ashby import supported as camunda_supported
     from .services.cato_greenhouse import supported as cato_supported
+    from .services.comeet import manual_url
     from .services.secret_telaviv import supported
 
     gitlab_review = []
@@ -275,6 +281,9 @@ def application_detail(request, pk):
                 "-created_at", "-pk"
             ),
             "can_edit": application.status in {"draft", "approved", "failed"},
+            "akeyless_manual_url": manual_url(application.job)
+            if application.channel == "portal"
+            else "",
             "secret_portal": supported(application),
             "cato_portal": cato_supported(application),
             "camunda_portal": camunda_supported(application),

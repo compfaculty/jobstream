@@ -1,0 +1,26 @@
+{
+  "uid": "D7.A26",
+  "name": "Explore New Opportunities",
+  "company_name": "Akeyless",
+  "url_active_page": "https://bit.ly/AkeylessPeope",
+  "url_comeet_hosted_page": "https://www.comeet.com/jobs/akeyless/27.006/explore-new-opportunities/D7.A26",
+  "custom_fields": {
+    "details": [
+      {
+        "name": "Description",
+        "value": "<p>Interested in working at Akeyless but don\u2019t see an open position to match your skill set?</p><p>Submit your resume here and we will contact you when an appropriate role becomes available.</p>",
+        "order": 1
+      },
+      {
+        "name": "Requirements",
+        "value": null,
+        "order": 2
+      }
+    ],
+    "categories": []
+  },
+  "is_internal": false,
+  "location": {
+    "name": "USA / IL"
+  }
+}

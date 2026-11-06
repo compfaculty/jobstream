@@ -23,7 +23,7 @@ from .companies import resolve_company
 from .contacts import observe
 from .crawl import CrawlDeferred, collection_context
 from .discovery import from_listing
-from .inventories import collect
+from .inventories import collect, source_adapter
 from .lifecycle import CONTENT_FIELDS, complete_inventory, reconcile
 from .network import HTTPStatusError, fetch_public
 from .normalization import needs_ai_normalization, normalize_with_ai
@@ -83,7 +83,11 @@ def ingest(source_id: int) -> None:
             result, _data = collect(source, source.inventory_cursor, fetch=fetch_public)
             run.scope = result.scope[:300]
             prepared = []
-            adapter = ADAPTERS.get(source.adapter)
+            adapter = (
+                source_adapter(source)
+                if source.adapter == "akeyless"
+                else ADAPTERS.get(source.adapter)
+            )
             seen = set()
             for index, listing in enumerate(result.postings):
                 try:
