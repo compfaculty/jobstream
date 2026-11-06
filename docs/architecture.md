@@ -50,8 +50,23 @@ latency must be measured against representative data.
 
 Local Compose is a development environment. Production provider, region, budget,
 availability targets, RPO/RTO and data residency remain decisions before Terraform.
+References to deployed pilot features in `NEXT_CHAT.md` are historical runtime
+observations, not evidence that this production readiness boundary has been met.
 The intended topology is managed containers, PostgreSQL, Redis and private object
 storage behind Cloudflare, with restricted origin access. No Kubernetes or microservices.
 
 JF informed adapters and application workflows. SQLite-on-EFS infrastructure and global
 application flags were not copied. Source selectors require ongoing fixture maintenance.
+
+## Optional evaluation runtime and portal delivery
+
+The existing Rust Infinity service evaluates vacancies; it does not replace Django,
+ingestion or application delivery. Django owns authorization, source-backed result
+validation and budget accounting. Infinity uses a separate restricted PostgreSQL
+role/schema and short-lived capabilities to read one active execution's context.
+It must not gain access to application tables or delivery tools. See
+[the runtime boundary and recovery contract](../services/infinity-agent/README.md).
+
+Approved delivery also includes supported employer portal adapters and a separate
+browser-delivery queue. Explicit approval and unknown-outcome constraints apply
+to those paths as well as Gmail.

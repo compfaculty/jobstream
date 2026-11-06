@@ -14,7 +14,8 @@ SECRET_KEY = os.getenv("SECRET_KEY", "")
 if not SECRET_KEY:
     if not DEBUG:
         raise ImproperlyConfigured("SECRET_KEY is required outside DEBUG=1")
-    SECRET_KEY = "local-development-only-not-for-deployment"
+    # Explicit DEBUG-only fallback; production refuses to start without a secret.
+    SECRET_KEY = "local-development-only-not-for-deployment"  # noqa: S105
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1,testserver").split(",")
 CSRF_TRUSTED_ORIGINS = list(filter(None, os.getenv("CSRF_TRUSTED_ORIGINS", "").split(",")))
 INSTALLED_APPS = [

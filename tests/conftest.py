@@ -1,4 +1,6 @@
+import ipaddress
 import os
+import socket
 
 os.environ.setdefault("DEBUG", "1")
 os.environ.setdefault("DATABASE_URL", "postgresql://jobstream:local-only@127.0.0.1:5432/jobstream")
@@ -7,6 +9,41 @@ import pytest
 from django.contrib.auth.models import User
 
 from jobs.models import Application, GmailConnection, Job
+
+
+@pytest.fixture(scope="session", autouse=True)
+def local_python_connections_only():
+    """Prevent accidental Python TCP provider calls, including in server threads.
+
+    PostgreSQL's native driver and browser/Rust subprocesses are outside this
+    guard; their test configuration must still use isolated services/fakes.
+    """
+    original_connect = socket.socket.connect
+    original_connect_ex = socket.socket.connect_ex
+
+    def validate(sock, address):
+        if sock.family == socket.AF_UNIX:
+            return
+        host = address[0]
+        try:
+            allowed = ipaddress.ip_address(host).is_loopback
+        except ValueError:
+            allowed = False
+        if not allowed:
+            raise RuntimeError("Test network access blocked; mock the provider or use loopback")
+
+    def connect(sock, address):
+        validate(sock, address)
+        return original_connect(sock, address)
+
+    def connect_ex(sock, address):
+        validate(sock, address)
+        return original_connect_ex(sock, address)
+
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setattr(socket.socket, "connect", connect)
+        patch.setattr(socket.socket, "connect_ex", connect_ex)
+        yield
 
 
 @pytest.fixture

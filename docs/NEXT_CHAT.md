@@ -140,7 +140,8 @@ Read:
 - `jobs/services/ai_costs.py`, `cv_profiles.py`, `normalization_batch.py` and
   `recommendations.py`; `jobs/management/commands/benchmark_pilot.py`.
 
-Current migrations run through `0046_recommendation_lookup`. Recent verification:
+Current migrations run through `0047_resume_profile_details`. Historical verification
+(rerun against the current checkout before claiming a current pass):
 492 non-browser Python tests passed (9 opt-in checks skipped); browser navigation,
 Operations refresh and fake-provider gateway checks passed (14 checks, 1 real-provider
 opt-in skip in the combined run); 11 Rust unit tests and

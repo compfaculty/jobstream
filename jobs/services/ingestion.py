@@ -232,7 +232,10 @@ def ingest(source_id: int) -> None:
             source.next_run_at = timezone.now() + (
                 timedelta(seconds=15)
                 if continuing
-                else timedelta(minutes=source.interval_minutes * random.uniform(0.95, 1.05))
+                else timedelta(
+                    # Scheduling jitter needs no cryptographic unpredictability.
+                    minutes=source.interval_minutes * random.uniform(0.95, 1.05)  # noqa: S311
+                )
             )
             if continuing and result.retry_at:
                 source.next_run_at = max(source.next_run_at, result.retry_at)

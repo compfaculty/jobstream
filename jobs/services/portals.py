@@ -10,7 +10,8 @@ from bs4 import BeautifulSoup
 
 from .network import canonical_url, fetch_public_document
 
-SECRET_HOST = "jobs.secrettelaviv.com"
+# Public portal hostname, not a credential.
+SECRET_HOST = "jobs.secrettelaviv.com"  # noqa: S105
 EXPECTED_FIELDS = {
     "_wpjb_action": "hidden",
     "_job_id": "hidden",

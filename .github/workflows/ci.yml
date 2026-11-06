@@ -29,6 +29,7 @@ jobs:
       - run: uv sync --frozen
       - run: uv run python manage.py collectstatic --noinput
       - run: make check
+      - run: make check-deploy
       - run: rustup toolchain install stable --profile minimal --component rustfmt --component clippy
       - run: cargo build --locked --manifest-path services/infinity-agent/Cargo.toml
       - run: cargo test --locked --manifest-path services/infinity-agent/Cargo.toml
@@ -48,14 +49,35 @@ jobs:
             coverage.json
             test-results/
   container:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {name: web, context: ., target: default}
+          - {name: browser, context: ., target: browser}
+          - {name: infinity, context: services/infinity-agent, target: runtime}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-      - run: docker build -t jobstream:${{ github.sha }} .
+      - run: docker build --target ${{ matrix.target }} -t jobstream-${{ matrix.name }}:${{ github.sha }} ${{ matrix.context }}
       - uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1 # 0.35.0
         with:
-          image-ref: jobstream:${{ github.sha }}
+          image-ref: jobstream-${{ matrix.name }}:${{ github.sha }}
           severity: CRITICAL,HIGH
           exit-code: '1'
           ignore-unfixed: true
-      - run: docker run --rm -v "$PWD:/repo:ro" zricethezav/gitleaks:v8.24.2 dir /repo --redact --no-banner
+      - if: matrix.name == 'web'
+        run: docker run --rm -v "$PWD:/repo:ro" zricethezav/gitleaks:v8.24.2 dir /repo --redact --no-banner
+  rust-dependencies:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1 # 0.35.0
+        with:
+          scan-type: fs
+          scan-ref: services/infinity-agent
+          scanners: vuln
+          skip-dirs: services/infinity-agent/target
+          severity: CRITICAL,HIGH
+          exit-code: '1'
+          ignore-unfixed: false

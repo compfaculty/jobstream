@@ -369,7 +369,8 @@ def retry_rate_limited(pk: int, retry_after: str) -> None:
         application.error_code = "rate_limit_retries_exhausted"
     else:
         delay = min(60 * 2 ** max(application.send_attempts - 1, 0), 3600)
-        delay += random.uniform(0, delay * 0.25)
+        # Retry jitter is not a security token.
+        delay += random.uniform(0, delay * 0.25)  # noqa: S311
         now = timezone.now()
         try:
             delay = retry_after_seconds(retry_after, delay, now=now)

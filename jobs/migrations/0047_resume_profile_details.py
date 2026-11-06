@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('jobs', '0046_recommendation_lookup'),
+        ("jobs", "0046_recommendation_lookup"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='resumeprofile',
-            name='details',
+            model_name="resumeprofile",
+            name="details",
             field=models.JSONField(blank=True, default=dict),
         ),
     ]

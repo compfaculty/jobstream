@@ -66,7 +66,8 @@ class SecretSession:
         parts = urlsplit(url)
         if parts.hostname != SECRET_HOST or method not in {"GET", "POST"}:
             raise ValueError("Unexpected portal destination")
-        request = Request(url, method=method)
+        # canonical_url enforces HTTPS/443; the hostname allowlist above is mandatory.
+        request = Request(url, method=method)  # noqa: S310
         self.cookies.add_cookie_header(request)
         headers = {"User-Agent": "Jobstream/0.1", "Accept-Encoding": "identity"}
         if request.has_header("Cookie"):

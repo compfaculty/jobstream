@@ -53,3 +53,51 @@ counts, concurrency, payload sizes, source workload and warm/cold cache conditio
 Before production, run mixed search/detail/save workloads alongside ingestion, inspect
 PostgreSQL plans and worker memory, and agree latency/RPO/RTO budgets. Set latency gates
 from those measurements. Do not choose an arbitrary p95 as a capacity claim.
+
+## Repository quality gates
+
+`make check` runs Ruff lint/format, the existing two-service mypy scope, Django
+checks and migration drift checks. Ruff's Bandit-derived `S` rules now cover `jobs`
+and `config`; tests (synthetic credentials/assertions) and operational scripts are
+outside this initial SAST scope. Script subprocess/SQL findings require a separate
+review; they are not claimed clean. Inline suppressions in application code explain
+the individual false positives (DEBUG-only key, public hostname, validated URL and
+non-security retry jitter). Maintainers must review these explanations when changing
+those lines. Existing 90% critical-service branch/statement gates remain unchanged.
+
+`make check-deploy` runs Django deployment checks with DEBUG disabled and ephemeral
+synthetic secrets/storage configuration. It makes no provider, database or storage
+requests. Warnings fail except `security.W021`: HSTS preload requires a separate
+operator/domain decision. This exception belongs to the synthetic check only;
+production settings are not silenced. This does not verify proxy headers, TLS,
+bucket IAM, secret rotation, origin access or backups.
+
+CI scans the web, browser and Infinity images with the existing Trivy action and
+separately scans Infinity's Cargo lockfile for high/critical advisories, including
+unfixed advisories. Image scans retain their existing fixed-vulnerability policy.
+A configured workflow is not evidence that its current run passed. Repository
+administrators must configure required status checks in branch protection separately.
+
+The session-wide Python TCP guard permits literal loopback and Unix sockets only.
+Use local PostgreSQL/Redis and fake providers. Direct hostname connections are denied;
+normal clients resolving localhost to loopback continue to work. The guard also
+covers the Django live-server thread. It does not sandbox native database clients,
+UDP, browsers, Rust or other subprocesses. Those retain isolated test configuration;
+real-provider subprocess tests remain explicit paid opt-ins, never routine CI.
+
+The pilot benchmark defaults to a unique, owner-only temporary file and reports its
+path as `report_path` in the summary JSON. This works with a read-only container
+working directory and avoids a predictable shared `/tmp` file. Explicit `--report`
+paths retain their existing behavior and must be private, trusted locations.
+
+## Remaining adoption work
+
+Do not equate these gates with complete production readiness. Maintainers still
+need to review operational scripts under SAST, expand types incrementally, bound
+adversarial PDF extraction resources, and define retention/account-erasure across
+application storage, Infinity history, telemetry and backups. Actual deployment
+IAM/proxy/restore verification requires an isolated environment. AI quality evidence
+in `ai-pilot-verification.json` remains historical and incomplete; do not change
+rollout flags or budgets to make validation pass. Fix report denominator semantics
+before using that artifact as a rollout decision. None of these pending items is a
+scanner exemption for new application vulnerabilities.

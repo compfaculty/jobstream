@@ -1,4 +1,4 @@
-.PHONY: setup services migrate run worker browser-worker beat test check
+.PHONY: setup services migrate run worker browser-worker beat test check check-deploy
 setup:
 	uv sync --frozen
 services:
@@ -20,6 +20,9 @@ check:
 	uv run python manage.py check
 	uv run python manage.py makemigrations --check --dry-run
 	test -f uv.lock
+check-deploy:
+	uv run python scripts/check_deploy.py
+
 test:
 	uv run pytest -m 'not browser' --cov=jobs --cov-report=term-missing --cov-report=json
 	uv run python scripts/check_coverage.py

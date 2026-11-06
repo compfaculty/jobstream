@@ -2,6 +2,7 @@
 
 import json
 import re
+import tempfile
 import time
 from collections import Counter
 from pathlib import Path
@@ -21,12 +22,27 @@ from jobs.services.normalization import (
 )
 
 
+def write_report(report: dict, destination: str | None) -> Path:
+    if destination is not None:
+        path = Path(destination)
+        path.write_text(json.dumps(report, indent=2))
+        return path
+    # Atomic creation avoids shared-directory symlinks and restricts file permissions.
+    with tempfile.NamedTemporaryFile(
+        mode="w", prefix="jobstream-pilot-quality-", suffix=".json", delete=False
+    ) as stream:
+        json.dump(report, stream, indent=2)
+        return Path(stream.name)
+
+
 class Command(BaseCommand):
     help = "Evaluate reviewed fixtures; --live permits bounded, shared-budget provider calls."
 
     def add_arguments(self, parser):
         parser.add_argument("--live", action="store_true")
-        parser.add_argument("--report", default="/tmp/jobstream-pilot-quality.json")
+        parser.add_argument(
+            "--report", help="Report path; defaults to a unique private temporary file"
+        )
         parser.add_argument(
             "--fixtures", default=str(settings.BASE_DIR / "tests/fixtures/ai_pilot")
         )
@@ -177,5 +193,7 @@ class Command(BaseCommand):
             "cache_reuses": AIResult.objects.aggregate(n=Sum("cache_hits"))["n"] or 0,
             "rows": rows,
         }
-        Path(options["report"]).write_text(json.dumps(report, indent=2))
-        self.stdout.write(json.dumps({k: v for k, v in report.items() if k != "rows"}))
+        path = write_report(report, options["report"])
+        summary = {k: v for k, v in report.items() if k != "rows"}
+        summary["report_path"] = str(path)
+        self.stdout.write(json.dumps(summary))
