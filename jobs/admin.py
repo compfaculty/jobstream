@@ -32,6 +32,7 @@ class SourceAdmin(admin.ModelAdmin):
         "name",
         "kind",
         "adapter",
+        "needs_adapter",
         "enabled",
         "next_run_at",
         "last_success_at",
@@ -40,7 +41,14 @@ class SourceAdmin(admin.ModelAdmin):
         "last_complete_at",
         "last_error",
     )
-    list_filter = ("kind", "enabled", "adapter", "discovery_pending", "authoritative")
+    list_filter = (
+        "kind",
+        "enabled",
+        "needs_adapter",
+        "adapter",
+        "discovery_pending",
+        "authoritative",
+    )
     search_fields = ("name", "url", "notes")
     autocomplete_fields = ("company",)
     readonly_fields = (
@@ -59,7 +67,10 @@ class SourceAdmin(admin.ModelAdmin):
         "discovery_url",
     )
     fieldsets = (
-        (None, {"fields": ("name", "kind", "company", "url", "adapter", "enabled")}),
+        (
+            None,
+            {"fields": ("name", "kind", "company", "url", "needs_adapter", "adapter", "enabled")},
+        ),
         (
             "Review and collection",
             {
@@ -165,7 +176,15 @@ class CareerSourceInline(admin.TabularInline):
     extra = 0
     show_change_link = True
     can_delete = False
-    fields = ("name", "adapter", "url", "enabled", "discovery_pending", "last_complete_at")
+    fields = (
+        "name",
+        "adapter",
+        "needs_adapter",
+        "url",
+        "enabled",
+        "discovery_pending",
+        "last_complete_at",
+    )
     readonly_fields = fields
 
     def has_add_permission(self, request, obj=None):

@@ -78,7 +78,12 @@ class Source(models.Model):
         help_text="Reviewed employer source; complete ATS snapshots may close vacancies.",
     )
     name = models.CharField(max_length=160)
-    adapter = models.CharField(max_length=20, choices=Adapter.choices)
+    adapter = models.CharField(max_length=20, choices=Adapter.choices, blank=True)
+    needs_adapter = models.BooleanField(
+        "Need to implement adapter",
+        default=False,
+        help_text="Keep disabled until the missing adapter is implemented and tested.",
+    )
     url = models.URLField(max_length=2048, unique=True)
     notes = models.TextField(
         blank=True, db_default="", help_text="Adapter limitations and operator review notes."
@@ -100,6 +105,18 @@ class Source(models.Model):
 
     class Meta:
         constraints = [
+            models.CheckConstraint(
+                condition=(
+                    models.Q(
+                        needs_adapter=True,
+                        enabled=False,
+                        authoritative=False,
+                        closure_enabled=False,
+                    )
+                    | (models.Q(needs_adapter=False) & ~models.Q(adapter=""))
+                ),
+                name="source_adapter_readiness",
+            ),
             models.CheckConstraint(
                 condition=(
                     models.Q(
@@ -132,6 +149,18 @@ class Source(models.Model):
             canonical_url(self.url)
         except ValueError as exc:
             raise ValidationError({"url": str(exc)}) from exc
+        if self.needs_adapter and (self.enabled or self.authoritative or self.closure_enabled):
+            raise ValidationError(
+                {
+                    "needs_adapter": "Sources awaiting an adapter must be disabled, "
+                    "non-authoritative, "
+                    "and have automatic closure disabled."
+                }
+            )
+        if not self.needs_adapter and not self.adapter:
+            raise ValidationError(
+                {"adapter": "Select an adapter or check Need to implement adapter."}
+            )
         if self.kind == self.Kind.BOARD and (
             self.company_id or self.authoritative or self.closure_enabled
         ):
