@@ -1,7 +1,7 @@
 """Public HTML directory only; never call Pituchim's disallowed API endpoints."""
 
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from urllib.parse import parse_qs, urljoin, urlsplit
 from urllib.robotparser import RobotFileParser
 
@@ -20,6 +20,7 @@ MAX_COMPANIES = 60
 class DirectoryCompany:
     name: str
     website: str
+    hiring: bool = field(default=False, compare=False)
 
 
 def page_url(page: int) -> str:
@@ -60,7 +61,13 @@ def parse(
         key = (name.casefold(), website)
         if key not in seen:
             seen.add(key)
-            companies.append(DirectoryCompany(name, website))
+            companies.append(
+                DirectoryCompany(
+                    name,
+                    website,
+                    hiring is not None and hiring.get_text(" ", strip=True).lower() == "hiring",
+                )
+            )
     if not usable:
         raise ValueError("No usable directory companies")
     more = False
@@ -104,13 +111,15 @@ def check_robots(page: int) -> None:
             raise ValueError("Directory crawling disallowed by robots.txt")
 
 
-def fetch(page: int, *, robots_approved: bool = False) -> tuple[list[DirectoryCompany], bool]:
+def fetch(
+    page: int, *, robots_approved: bool = False, hiring_only: bool = True
+) -> tuple[list[DirectoryCompany], bool]:
     url = page_url(page)
     if not robots_approved:
         check_robots(page)
-    data, effective = fetch_public_document(url)
+    data, effective = fetch_public_document(url, max_bytes=8 * 1024 * 1024)
     if canonical_url(effective) != canonical_url(url):
         raise ValueError("Unexpected directory redirect")
-    result = parse(data, page)
+    result = parse(data, page, hiring_only=hiring_only)
     cooldown(HOST, 5)
     return result

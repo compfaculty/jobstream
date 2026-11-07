@@ -185,7 +185,7 @@ def inspect(
 
     initial, initial_url = fetch(candidate_url)
     queue = [(initial, initial_url)]
-    seen = set()
+    seen: set[str] = set()
     name = plain(company_hint)[:250]
     website = canonical_url(website_hint) if website_hint else ""
     if website and domain(initial_url) != domain(website):

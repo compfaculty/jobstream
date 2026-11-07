@@ -14,7 +14,7 @@ from django.core.files.base import ContentFile
 from django.utils import timezone
 from PIL import Image, UnidentifiedImageError
 
-from jobs.models import Company, CompanyAlias, Source
+from jobs.models import Company, Source
 
 from .network import canonical_url, fetch_public_document
 
@@ -25,25 +25,12 @@ def company_key(name: str, scope: str) -> str:
 
 
 def resolve_company(name: str, source: Source) -> Company | None:
-    name = " ".join(name.split())[:250]
-    if not name:
+    """Only an explicit company career endpoint can identify an employer record."""
+    if source.kind == Source.Kind.BOARD:
         return None
-    if source.company_id:
-        return source.company
-    legacy = company_key(name, f"source:{source.pk}")
-    alias = CompanyAlias.objects.filter(legacy_identity=legacy).select_related("company").first()
-    if alias:
-        return alias.company
-    if source.adapter == Source.Adapter.SECRET:
-        # Aggregator employer text is posting data, not company identity evidence.
-        # Keep historical links (including consolidated aliases), but do not grow
-        # the company catalogue from Secret Tel Aviv observations.
-        return Company.objects.filter(identity_key=legacy).first()
-    company, _ = Company.objects.get_or_create(
-        identity_key=company_key(name, f"source:{source.pk}"),
-        defaults={"name": name, "source": source},
-    )
-    return company
+    if source.company_id is None:
+        raise ValueError("Company career source has no company")
+    return source.company
 
 
 def website_metadata(data: bytes, base_url: str) -> tuple[str, list[str]]:
@@ -157,7 +144,7 @@ def enrich_company(
         return changes
     from .discovery import from_html
 
-    from_html(data, effective_url, company.name, company.source)
+    from_html(data, effective_url, company.name)
     old_logo = company.logo.name
     new_logo = None
     try:

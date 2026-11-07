@@ -292,3 +292,17 @@ def schedule_employer_discovery():
     from jobs.services.employer_discovery import dispatch
 
     dispatch()
+
+
+@shared_task
+def inspect_catalogue_company(provenance_id):
+    from jobs.services.catalogue_inspections import step
+
+    step(provenance_id)
+
+
+@shared_task
+def schedule_catalogue_inspections():
+    from jobs.services.catalogue_inspections import dispatch
+
+    dispatch()

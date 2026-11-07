@@ -7,7 +7,7 @@ from jobs.models import Job
 def search_jobs(
     query: str = "", location: str = "", company: str = "", *, include_inactive: bool = False
 ):
-    jobs = Job.objects.all().select_related("company_profile")
+    jobs = Job.objects.all().select_related("company_profile").prefetch_related("origins__source")
     if not include_inactive:
         jobs = jobs.filter(active=True)
     if company:

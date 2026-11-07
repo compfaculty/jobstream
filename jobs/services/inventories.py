@@ -161,6 +161,27 @@ def source_adapter(source):
 
 
 def collect(source, cursor, *, fetch=fetch_public):
+    if source.adapter in {"arbeitnow", "himalayas"}:
+        from .company_feeds import fetch as fetch_feed
+
+        page = fetch_feed(source.adapter, cursor)
+        return CollectionResult(
+            postings=[
+                Listing(
+                    url=row.job_url,
+                    title=row.title,
+                    company=row.name,
+                    description=row.description,
+                    location=row.location,
+                    apply_url=row.application_url,
+                    provider_key=f"{source.adapter}:{row.record_key}",
+                )
+                for row in page.records
+                if row.hiring
+            ],
+            scope=f"board:{source.adapter}",
+            cursor=page.cursor,
+        ), b""
     if source.adapter == "workday":
         return WorkdayAdapter().collect(source, cursor), b""
     adapter = source_adapter(source)

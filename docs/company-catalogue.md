@@ -1,21 +1,10 @@
 # Company-first discovery
 
-Companies are the catalogue entry point; `Source` is a company career endpoint.
-A company may have several endpoints. Secret Tel Aviv remains supplementary.
-`Source` also represents supplementary job aggregators; those are not employer
-career endpoints. `Company.source` is historical posting provenance, while
-`Source.company` associates a career endpoint with its employer. These relationships
-must not be interpreted interchangeably.
-
-Secret Tel Aviv ingestion retains employer names on jobs and provenance in
-`JobOrigin`, but no longer creates catalogue companies from those names. Existing
-company links and consolidated aliases remain available for compatibility. A name
-match alone cannot link an aggregator posting to an independently verified employer.
-Clear misleading Secret Tel Aviv provenance from existing company records with
-`python manage.py clean_company_provenance --apply` (omit `--apply` to preview).
-This removes `Company.source`, not the employer identity, career endpoints or job
-origins. The legacy field is hidden from company admin. Never rename the shared
-aggregator source to an employer: it supplies postings for multiple employers.
+See [the clean data model](data-model.md) for the current entity relationships and
+fresh development bootstrap. Companies are independently discovered employers;
+career sources belong to Companies, while job boards have no owning Company.
+Board employer names stay on jobs as text and never create/link Company records.
+The legacy `Company.source` relationship and historical backfill chain are removed.
 
 The intended pipeline is: independently identify an employer → verify its official
 website → discover its own or hosted ATS career endpoint → collect, normalize and
@@ -24,9 +13,11 @@ store jobs → prepare an application through a separately supported delivery ad
 tailoring may emphasize verified CV facts and generate a PDF; it must not invent
 qualifications or bypass approval.
 
-Company entry supports manual/CSV input and an opt-in, bounded employer discovery
-worker with Brave search and a no-key Pituchim HTML directory provider. See [Employer discovery](employer-discovery.md) for configuration,
-evidence requirements, budgets and review. Both seeded campaigns ship disabled.
+Company entry supports manual/CSV input and Pituchim directory discovery.
+Arbeitnow and Himalayas are job sources, not company-discovery providers. The [free catalogue workflow](company-discovery-sources.md)
+imports pending companies before confirming hiring, including source-identified companies
+with missing websites. Identity attestation and source activation remain operator decisions. See [Employer discovery](employer-discovery.md) for configuration,
+evidence requirements, budgets and review. All seeded campaigns ship disabled.
 Collection support does not imply application submission support. Greenhouse/Ashby
 delivery is integration-specific; Workday and Akeyless/Comeet are not generally
 automated delivery routes. Unsupported routes require manual action. CV PDF
@@ -157,7 +148,7 @@ logged. Use Ingestion runs in admin for individual results.
 
 ## Rollout
 
-1. Back up PostgreSQL before applying migrations 0027–0031. Schema additions are
+1. Back up PostgreSQL before applying the fresh initial schema. Schema additions are
    compatible with existing application records. Data backfill consolidates verified
    domains and disables general boards; reversing migrations does not reconstruct
    merged company identities or restore old polling settings. Restore the backup if

@@ -46,6 +46,7 @@ def gitlab_job(job):
         official_domain="about.gitlab.com",
     )
     source = Source.objects.create(
+        kind=Source.Kind.COMPANY,
         name="GitLab official",
         company=company,
         adapter="greenhouse",

@@ -12,6 +12,7 @@ from .models import (
     AuditEvent,
     Company,
     CompanyAlias,
+    CompanyProvenance,
     IngestionRun,
     Invitation,
     Job,
@@ -29,6 +30,7 @@ admin.site.__class__ = AdminSiteOTPRequired
 class SourceAdmin(admin.ModelAdmin):
     list_display = (
         "name",
+        "kind",
         "adapter",
         "enabled",
         "next_run_at",
@@ -38,7 +40,7 @@ class SourceAdmin(admin.ModelAdmin):
         "last_complete_at",
         "last_error",
     )
-    list_filter = ("enabled", "adapter", "discovery_pending", "authoritative")
+    list_filter = ("kind", "enabled", "adapter", "discovery_pending", "authoritative")
     search_fields = ("name", "url", "notes")
     autocomplete_fields = ("company",)
     readonly_fields = (
@@ -55,6 +57,49 @@ class SourceAdmin(admin.ModelAdmin):
         "failure_count",
         "discovered_from",
         "discovery_url",
+    )
+    fieldsets = (
+        (None, {"fields": ("name", "kind", "company", "url", "adapter", "enabled")}),
+        (
+            "Review and collection",
+            {
+                "fields": (
+                    "discovery_pending",
+                    "review_reason",
+                    "employer_name",
+                    "authoritative",
+                    "closure_enabled",
+                    "interval_minutes",
+                    "ai_normalization",
+                    "notes",
+                )
+            },
+        ),
+        (
+            "Operational details",
+            {
+                "classes": ("collapse",),
+                "fields": (
+                    "max_items",
+                    "max_response_bytes",
+                    "next_run_at",
+                    "next_dispatch_at",
+                    "last_started_at",
+                    "last_success_at",
+                    "last_complete_at",
+                    "failure_count",
+                    "last_error",
+                    "discovery_url",
+                    "discovered_from",
+                    "lease_token",
+                    "lease_until",
+                    "inventory_token",
+                    "inventory_cursor",
+                    "inventory_config",
+                    "inventory_started_at",
+                ),
+            },
+        ),
     )
     actions = ["schedule_now"]
 
@@ -127,6 +172,27 @@ class CareerSourceInline(admin.TabularInline):
         return False
 
 
+class CompanyProvenanceInline(admin.TabularInline):
+    model = CompanyProvenance
+    fk_name = "company"
+    extra = 0
+    can_delete = False
+    fields = (
+        "provider",
+        "reported_name",
+        "source_url",
+        "reported_website",
+        "regional_status",
+        "regional_evidence",
+        "possible_duplicate",
+        "last_observed_at",
+    )
+    readonly_fields = fields
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+
 @admin.register(Company)
 class CompanyAdmin(admin.ModelAdmin):
     list_display = (
@@ -139,7 +205,6 @@ class CompanyAdmin(admin.ModelAdmin):
         "discovery_error",
     )
     list_filter = ("website_verified", "review_required", "discovery_enabled")
-    exclude = ("source",)
     search_fields = ("name", "website", "official_domain", "aliases__name")
     readonly_fields = (
         "identity_key",
@@ -153,7 +218,7 @@ class CompanyAdmin(admin.ModelAdmin):
         "enrichment_error",
     )
 
-    inlines = (CompanyAliasInline, CareerSourceInline)
+    inlines = (CompanyAliasInline, CareerSourceInline, CompanyProvenanceInline)
     change_list_template = "admin/jobs/company/change_list.html"
     actions = ("verify_official_websites", "schedule_career_discovery")
 
@@ -268,6 +333,7 @@ class JobAdmin(admin.ModelAdmin):
     list_display = (
         "title",
         "company_label",
+        "source_labels",
         "location",
         "lifecycle",
         "status_override",
@@ -310,6 +376,13 @@ class JobAdmin(admin.ModelAdmin):
     )
     inlines = (JobOriginInline, JobEventInline)
     actions = ("resume_automatic_status", "resume_imported_content")
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).prefetch_related("origins__source")
+
+    @admin.display(description="Job source")
+    def source_labels(self, obj):
+        return ", ".join(origin.source.name for origin in obj.origins.all())
 
     @admin.display(description="Company", ordering="company")
     def company_label(self, obj):

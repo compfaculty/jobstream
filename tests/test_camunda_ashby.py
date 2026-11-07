@@ -57,6 +57,7 @@ def camunda_job(job):
         official_domain="camunda.com",
     )
     source = Source.objects.create(
+        kind=Source.Kind.COMPANY,
         name="Camunda official",
         company=company,
         adapter="ashby",

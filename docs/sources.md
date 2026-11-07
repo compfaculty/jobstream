@@ -1,3 +1,9 @@
+# Job sources
+
+Use [the clean data model and bootstrap](data-model.md). The former `seed_sources`
+command and 54-source automatic import are retired. `jobs/source_catalog.py` is only
+a reference list; it is not applied to the development database.
+
 # Adding and operating sources
 
 Company-first catalogue import, discovery, lifecycle and rollout are documented in

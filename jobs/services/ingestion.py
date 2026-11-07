@@ -37,6 +37,7 @@ def configuration(source: Source) -> str:
     value = [
         source.url,
         source.adapter,
+        source.kind,
         source.authoritative,
         source.company_id,
         source.employer_name,
@@ -77,6 +78,7 @@ def ingest(source_id: int) -> None:
         )
     request_stats = {"requests": 0}
     try:
+        source.full_clean()
         if source.authoritative and not source.employer_name.strip():
             raise ValueError("Authoritative source requires an employer name")
         with collection_context() as request_stats:
@@ -107,6 +109,9 @@ def ingest(source_id: int) -> None:
                     if listing.employer_status not in {"open", "closed", "filled"}:
                         raise ValueError("Invalid employer status")
                     values = normalize(listing)
+                    if source.adapter in {"arbeitnow", "himalayas"} and listing.apply_url:
+                        # Public feed adapters already validated this exact provider route.
+                        values["apply_url"] = listing.apply_url
                     if (
                         not settings.JOB_NORMALIZATION_BATCH_ENABLED
                         and (source.ai_normalization or settings.JOB_AI_NORMALIZATION_ENABLED)
@@ -123,6 +128,11 @@ def ingest(source_id: int) -> None:
                         or provider_identity(listing.apply_url)
                         or provider_identity(listing.url)
                     )
+                    if source.kind == Source.Kind.BOARD:
+                        key = (
+                            f"board:{source.pk}:"
+                            + hashlib.sha256(values["canonical_url"].encode()).hexdigest()
+                        )
                     identity = key or values["canonical_url"]
                     if identity in seen:
                         raise ValueError("Duplicate vacancy in inventory")
@@ -161,6 +171,9 @@ def ingest(source_id: int) -> None:
                 # JSON snapshots use ISO timestamps rather than datetime objects.
                 if imported["posted_at"]:
                     imported["posted_at"] = imported["posted_at"].isoformat()
+                if existing and existing.company_profile_id and source.kind == Source.Kind.BOARD:
+                    run.rejected += 1
+                    continue
                 if existing and existing.employer_source_id and not source.authoritative:
                     for field in CONTENT_FIELDS:
                         values[field] = getattr(existing, field)
@@ -172,13 +185,10 @@ def ingest(source_id: int) -> None:
                             values[field] = value
                 if source.authoritative:
                     values.update(employer_source=source, verified_at=timezone.now())
-                profile = source.company or (
-                    existing.company_profile
-                    if existing
-                    and existing.company_profile_id
-                    and existing.company.casefold().strip() == values["company"].casefold().strip()
-                    else resolve_company(values["company"], source)
-                )
+                profile = resolve_company(values["company"], source)
+                # Board observations never attach or create catalogue employers.
+                if source.kind == Source.Kind.BOARD:
+                    values["employer_source"] = None
                 job, _ = Job.objects.update_or_create(
                     canonical_url=existing.canonical_url if existing else url,
                     defaults={**values, "company_profile": profile, "last_seen_at": timezone.now()},

@@ -339,3 +339,8 @@ CELERY_BEAT_SCHEDULE["employer-discovery"] = {
     "schedule": 60.0,
 }
 CELERY_TASK_ROUTES["jobs.tasks.discover_employers"] = {"queue": "ingestion"}
+CELERY_BEAT_SCHEDULE["catalogue-inspections"] = {
+    "task": "jobs.tasks.schedule_catalogue_inspections",
+    "schedule": 60.0,
+}
+CELERY_TASK_ROUTES["jobs.tasks.inspect_catalogue_company"] = {"queue": "ingestion"}

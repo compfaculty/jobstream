@@ -1,7 +1,7 @@
 import pytest
 from django.core.exceptions import ValidationError
 
-from jobs.models import Job, Source
+from jobs.models import Company, Job, Source
 from jobs.services.discovery import ats_endpoint, from_html, propose
 from jobs.services.ingestion import ingest
 
@@ -32,6 +32,9 @@ def test_proposal_is_disabled_idempotent_and_preserves_review():
     assert source.discovery_pending and not source.enabled and not source.authoritative
     assert source.discovery_url == "https://example.com/job"
     assert source.discovered_from == board
+    source.company = Company.objects.create(
+        name="Acme", website="https://acme.example/", website_verified=True
+    )
     source.discovery_pending = False
     source.authoritative = source.enabled = True
     source.save()
@@ -100,4 +103,6 @@ def test_board_cannot_overwrite_employer_content(monkeypatch):
     ingest(board.pk)
     job.refresh_from_db()
     assert job.title == "Verified title" and job.description == "Employer requirements"
-    assert job.origins.filter(source=board).exists()
+    assert not job.origins.filter(source=board).exists()
+    board_job = Job.objects.get(origins__source=board)
+    assert board_job.company_profile_id is None and board_job.title == "Board marketing"

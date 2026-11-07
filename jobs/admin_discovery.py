@@ -4,7 +4,12 @@ from django.contrib import admin, messages
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction
 
-from .models import EmployerDiscoveryCampaign, EmployerDiscoveryLead, EmployerDiscoveryRun
+from .models import (
+    CompanyProvenance,
+    EmployerDiscoveryCampaign,
+    EmployerDiscoveryLead,
+    EmployerDiscoveryRun,
+)
 from .services.employer_discovery import promote, start
 
 
@@ -24,7 +29,7 @@ class EmployerDiscoveryCampaignAdmin(admin.ModelAdmin):
     def get_readonly_fields(self, request, obj=None):
         fields = super().get_readonly_fields(request, obj)
         if obj and EmployerDiscoveryRun.objects.filter(campaign=obj).exists():
-            return (*fields, "provider")
+            return (*fields, "provider", "catalogue_mode", "hiring_only")
         return fields
 
     actions = ("run_now",)
@@ -52,6 +57,8 @@ class EmployerDiscoveryRunAdmin(admin.ModelAdmin):
         "searched",
         "inspected",
         "confirmed",
+        "companies_created",
+        "companies_existing",
         "unresolved",
         "duplicate",
         "rejected",
@@ -83,7 +90,13 @@ class EmployerDiscoveryLeadAdmin(admin.ModelAdmin):
         "diagnostic",
         "company",
     )
-    list_filter = ("status", "campaign", "evidence_kind")
+    list_filter = (
+        "status",
+        "campaign",
+        "evidence_kind",
+        "hiring_signal",
+        "provenance__regional_status",
+    )
     search_fields = ("name", "website", "candidate_url", "vacancy_title", "vacancy_location")
     readonly_fields = (
         "campaign",
@@ -96,8 +109,15 @@ class EmployerDiscoveryLeadAdmin(admin.ModelAdmin):
         "diagnostic",
         "company",
         "created_at",
+        "provenance",
+        "reported_title",
+        "reported_location",
+        "reported_application_url",
+        "reported_expiry",
+        "reported_at",
+        "hiring_signal",
     )
-    actions = ("promote_selected", "reject_selected")
+    actions = ("import_pending", "promote_selected", "reject_selected")
 
     def has_add_permission(self, request):
         return False
@@ -109,6 +129,41 @@ class EmployerDiscoveryLeadAdmin(admin.ModelAdmin):
         return self.has_change_permission(request) and request.user.has_perms(
             ["jobs.add_company", "jobs.add_source"]
         )
+
+    def has_import_permission(self, request):
+        return self.has_change_permission(request) and request.user.has_perm("jobs.add_company")
+
+    @admin.action(description="Import named leads as pending companies", permissions=["import"])
+    def import_pending(self, request, queryset):
+        if not self.has_import_permission(request):
+            raise PermissionDenied
+        from .services.company_feeds import CompanyRecord
+        from .services.company_registry import observe
+
+        imported = refused = 0
+        for lead in queryset.select_related("campaign", "run")[:100]:
+            if lead.status == "rejected" or not lead.name.strip():
+                refused += 1
+                continue
+            record = CompanyRecord(
+                company_key="lead:" + lead.key,
+                record_key=lead.candidate_url,
+                name=lead.name,
+                source_url=lead.candidate_url,
+                website=lead.website,
+                regional_evidence="Operator imported source-identified company; region unresolved",
+            )
+            try:
+                result = observe(lead.campaign, lead.run, record)
+            except ValueError, ValidationError:
+                refused += 1
+                continue
+            if result.rejected:
+                refused += 1
+                continue
+            imported += 1
+            self.log_change(request, lead, "Imported pending company without identity attestation")
+        self.message_user(request, f"Imported: {imported}; refused: {refused}.")
 
     @admin.action(
         description="Promote leads with recorded vacancy/relationship evidence",
@@ -151,3 +206,52 @@ class EmployerDiscoveryLeadAdmin(admin.ModelAdmin):
             obj.status = "rejected" if current.status == "rejected" else "unresolved"
             obj.company_id = current.company_id
             super().save_model(request, obj, form, change)
+
+
+class MissingCompanyWebsiteFilter(admin.SimpleListFilter):
+    title = "company website"
+    parameter_name = "missing_website"
+
+    def lookups(self, request, model_admin):
+        return [("yes", "Unresolved"), ("no", "Available")]
+
+    def queryset(self, request, queryset):
+        if self.value() == "yes":
+            return queryset.filter(company__website="")
+        if self.value() == "no":
+            return queryset.exclude(company__website="")
+        return queryset
+
+
+@admin.register(CompanyProvenance)
+class CompanyProvenanceAdmin(admin.ModelAdmin):
+    list_display = (
+        "reported_name",
+        "company",
+        "provider",
+        "regional_status",
+        "possible_duplicate",
+        "hiring_observed_at",
+        "last_observed_at",
+        "last_inspected_at",
+        "diagnostic",
+    )
+    list_filter = (
+        "provider",
+        "regional_status",
+        "possible_duplicate",
+        "company__review_required",
+        "hiring_observed_at",
+        MissingCompanyWebsiteFilter,
+    )
+    search_fields = ("reported_name", "reported_domain", "external_identity", "company__name")
+    readonly_fields = tuple(field.name for field in CompanyProvenance._meta.fields)
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False

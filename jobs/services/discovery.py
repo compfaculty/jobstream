@@ -66,6 +66,7 @@ def propose(url: str, employer: str, evidence_url: str, source: Source | None = 
     return Source.objects.create(
         name=f"Employer feed: {employer.strip()[:105]} [{key[:12]}]",
         adapter=adapter,
+        kind=Source.Kind.COMPANY,
         url=api_url,
         employer_name=employer.strip()[:250],
         discovered_from=source,
@@ -83,6 +84,8 @@ def propose(url: str, employer: str, evidence_url: str, source: Source | None = 
 
 
 def from_listing(source, listing):
+    if source.kind == Source.Kind.BOARD:
+        return
     for url in dict.fromkeys([listing.apply_url, listing.url]):
         if url:
             propose(url, listing.company, listing.url, source)

@@ -1,10 +1,7 @@
-import importlib
 from datetime import timedelta
 from unittest.mock import Mock
 
 import pytest
-from django.apps import apps
-from django.db import connection
 from django.utils import timezone
 
 from jobs.models import (
@@ -58,11 +55,12 @@ def ready(run):
     EmployerDiscoveryRun.objects.filter(pk=run.pk).update(next_attempt_at=timezone.now())
 
 
-def test_seed_disabled_without_key():
-    migration = importlib.import_module("jobs.migrations.0051_seed_pituchim_discovery")
-    migration.seed(apps, Mock(connection=connection))
-    migration.seed(apps, Mock(connection=connection))
-    campaign = EmployerDiscoveryCampaign.objects.get(name="Pituchim hiring companies")
+def test_seed_disabled_without_key(settings):
+    settings.DEBUG = True
+    from django.core.management import call_command
+
+    call_command("bootstrap_development")
+    campaign = EmployerDiscoveryCampaign.objects.get(name="Company directory discovery")
     campaign.full_clean()
     assert not campaign.enabled and campaign.provider == "pituchim" and not campaign.queries
 

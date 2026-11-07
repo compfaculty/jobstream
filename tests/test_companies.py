@@ -1,12 +1,9 @@
-import importlib
 from io import BytesIO, StringIO
 from unittest.mock import Mock
 
 import pytest
-from django.apps import apps
 from django.core.management import call_command
 from django.core.management.base import CommandError
-from django.db import connection
 from PIL import Image
 
 from jobs.models import Company, Job, JobOrigin, Source
@@ -26,21 +23,16 @@ def source(db):
 
 @pytest.fixture
 def company(source):
-    return companies.resolve_company("Example", source)
+    company = Company.objects.create(name="Example")
+    source.kind, source.company = Source.Kind.COMPANY, company
+    source.save()
+    return company
 
 
 def png():
     data = BytesIO()
     Image.new("RGB", (500, 200), "red").save(data, format="PNG")
     return data.getvalue()
-
-
-def test_identity_scoped_and_normalized(source):
-    first = companies.resolve_company("  EXAMPLE   Inc ", source)
-    assert companies.resolve_company("Example Inc", source) == first
-    other = Source.objects.create(name="Other feed", adapter="rss", url="https://other.com/feed")
-    assert companies.resolve_company("Example Inc", other) != first
-    assert companies.resolve_company("  ", source) is None
 
 
 def test_secret_postings_do_not_create_catalogue_companies(source):
@@ -50,51 +42,6 @@ def test_secret_postings_do_not_create_catalogue_companies(source):
     Company.objects.create(name="Example")
     assert companies.resolve_company("Example", source) is None
     assert Company.objects.count() == 1
-
-
-def test_clean_company_provenance_is_scoped_and_idempotent(source):
-    direct = companies.resolve_company("Direct employer", source)
-    board = Source.objects.create(
-        name="Secret", adapter=Source.Adapter.SECRET, url="https://secret.example/jobs"
-    )
-    legacy = Company.objects.create(name="Legacy employer", source=board)
-    job = Job.objects.create(
-        title="Engineer",
-        company="Legacy employer",
-        company_profile=legacy,
-        canonical_url="https://secret.example/jobs/1",
-    )
-    origin = JobOrigin.objects.create(job=job, source=board, source_url=job.canonical_url)
-    output = StringIO()
-    call_command("clean_company_provenance", stdout=output)
-    legacy.refresh_from_db()
-    assert legacy.source_id == board.pk
-    for _ in range(2):
-        call_command("clean_company_provenance", apply=True, stdout=output)
-    legacy.refresh_from_db()
-    direct.refresh_from_db()
-    job.refresh_from_db()
-    origin.refresh_from_db()
-    assert legacy.source_id is None
-    assert direct.source_id == source.pk
-    assert job.company_profile_id == legacy.pk
-    assert origin.source_id == board.pk
-
-
-def test_secret_preserves_historical_company_and_verified_alias(source):
-    from jobs.models import CompanyAlias
-
-    historical = companies.resolve_company("Example", source)
-    source.adapter = Source.Adapter.SECRET
-    source.save()
-    assert companies.resolve_company("Example", source) == historical
-    verified = Company.objects.create(name="Verified employer")
-    CompanyAlias.objects.create(
-        company=verified,
-        name="Historical employer name",
-        legacy_identity=companies.company_key("Old name", f"source:{source.pk}"),
-    )
-    assert companies.resolve_company("Old name", source) == verified
 
 
 def test_secret_ingestion_stores_job_without_creating_company(monkeypatch, source):
@@ -112,24 +59,6 @@ def test_secret_ingestion_stores_job_without_creating_company(monkeypatch, sourc
     assert job.company_profile_id is None
     assert not Company.objects.exists()
     assert JobOrigin.objects.filter(job=job, source=source).exists()
-
-
-def test_backfill_preserves_text_and_uses_provenance(source):
-    a = Job.objects.create(title="A", company="Acme", canonical_url="https://example.com/a")
-    b = Job.objects.create(title="B", company="ACME", canonical_url="https://example.com/b")
-    c = Job.objects.create(title="C", company="Acme", canonical_url="https://example.com/c")
-    for job in (a, b):
-        JobOrigin.objects.create(job=job, source=source, source_url=job.canonical_url)
-    module = importlib.import_module("jobs.migrations.0007_backfill_company_profiles")
-    with connection.schema_editor(atomic=False) as editor:
-        module.backfill(apps, editor)
-        module.backfill(apps, editor)
-    a.refresh_from_db()
-    b.refresh_from_db()
-    c.refresh_from_db()
-    assert a.company == "Acme" and b.company == "ACME"
-    assert a.company_profile_id == b.company_profile_id != c.company_profile_id
-    assert Company.objects.count() == 2
 
 
 def test_company_filter_pages_and_api(authenticated, client, company, job):
@@ -155,7 +84,7 @@ def test_company_filter_pages_and_api(authenticated, client, company, job):
     assert other.company_profile_id is None
 
 
-def test_ingestion_links_and_retains_manual_profile(monkeypatch, source, company):
+def test_ingestion_uses_explicit_source_company(monkeypatch, source, company):
     source.enabled = True
     source.save()
     monkeypatch.setattr(ingestion, "fetch_public", lambda url: b"feed")
@@ -179,7 +108,7 @@ def test_ingestion_links_and_retains_manual_profile(monkeypatch, source, company
 
     Source.objects.filter(pk=source.pk).update(next_run_at=timezone.now())
     ingestion.ingest(source.pk)
-    assert Job.objects.get(canonical_url="https://example.com/a").company_profile == manual
+    assert Job.objects.get(canonical_url="https://example.com/a").company_profile == company
 
 
 @pytest.mark.parametrize("value", [b"<svg/>", b"<html>not an image</html>", b"\x89PNGbroken"])

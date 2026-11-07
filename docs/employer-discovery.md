@@ -1,5 +1,9 @@
 # Employer discovery worker
 
+For broad company imports before hiring verification, use the new
+[free company catalogue workflow](company-discovery-sources.md). The evidence-gated
+workflow below remains available for the original Brave and Pituchim campaigns.
+
 The worker finds **companies for operator review**, independently of job ingestion.
 It uses Brave Search API or the no-key Pituchim public HTML directory, checks bounded public employer pages,
 and promotes companies only when a technology vacancy and employer relationship

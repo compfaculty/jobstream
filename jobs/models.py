@@ -27,6 +27,12 @@ class Invitation(models.Model):
 
 
 class Source(models.Model):
+    class Kind(models.TextChoices):
+        COMPANY = "company", "Company careers"
+        BOARD = "board", "Job board"
+
+    kind = models.CharField(max_length=12, choices=Kind.choices, default=Kind.BOARD)
+
     class Adapter(models.TextChoices):
         WORKDAY = "workday", "Workday public careers"
         GREENHOUSE = "greenhouse", "Greenhouse public jobs API"
@@ -37,6 +43,8 @@ class Source(models.Model):
         JSONLD = "jsonld", "Company page (JobPosting JSON-LD)"
         COMEET = "comeet", "Comeet public positions API"
         REALWORK = "realwork", "Real Work From Anywhere RSS + details"
+        ARBEITNOW = "arbeitnow", "Arbeitnow job board"
+        HIMALAYAS = "himalayas", "Himalayas remote jobs"
         FORTYSEAS = "40seas", "40Seas careers"
         AGREMATCH = "agrematch", "Agrematch careers"
         AI21 = "ai21", "AI21 careers"
@@ -69,9 +77,9 @@ class Source(models.Model):
         default=False,
         help_text="Reviewed employer source; complete ATS snapshots may close vacancies.",
     )
-    name = models.CharField(max_length=160, unique=True)
+    name = models.CharField(max_length=160)
     adapter = models.CharField(max_length=20, choices=Adapter.choices)
-    url = models.URLField(max_length=2048)
+    url = models.URLField(max_length=2048, unique=True)
     notes = models.TextField(
         blank=True, db_default="", help_text="Adapter limitations and operator review notes."
     )
@@ -91,6 +99,23 @@ class Source(models.Model):
     failure_count = models.PositiveIntegerField(default=0)
 
     class Meta:
+        constraints = [
+            models.CheckConstraint(
+                condition=(
+                    models.Q(
+                        kind="board",
+                        company__isnull=True,
+                        authoritative=False,
+                        closure_enabled=False,
+                    )
+                    | models.Q(kind="company", company__isnull=False)
+                    | models.Q(
+                        kind="company", enabled=False, authoritative=False, closure_enabled=False
+                    )
+                ),
+                name="source_kind_ownership",
+            ),
+        ]
         indexes = [
             models.Index(
                 fields=["next_run_at", "next_dispatch_at"],
@@ -107,6 +132,14 @@ class Source(models.Model):
             canonical_url(self.url)
         except ValueError as exc:
             raise ValidationError({"url": str(exc)}) from exc
+        if self.kind == self.Kind.BOARD and (
+            self.company_id or self.authoritative or self.closure_enabled
+        ):
+            raise ValidationError(
+                "Job boards cannot own a Company or authoritative employer state."
+            )
+        if self.kind == self.Kind.COMPANY and self.enabled and not self.company_id:
+            raise ValidationError("Assign the company before enabling its career source.")
         if self.closure_enabled and not self.authoritative:
             raise ValidationError("Only authoritative sources can enable automatic closure.")
         if self.authoritative and self.company_id and not self.company.website_verified:
@@ -150,9 +183,6 @@ class Company(models.Model):
         max_length=64, unique=True, editable=False, default=secrets.token_hex
     )
     name = models.CharField(max_length=250, db_index=True)
-    source = models.ForeignKey(
-        Source, null=True, blank=True, on_delete=models.SET_NULL, related_name="legacy_companies"
-    )
     website = models.URLField(max_length=2048, blank=True)
     website_verified = models.BooleanField(default=False)
     official_domain = models.CharField(max_length=253, null=True, blank=True, unique=True)
@@ -189,7 +219,6 @@ class Company(models.Model):
         from urllib.parse import urlsplit
 
         context = urlsplit(self.website).hostname if self.website_verified else None
-        context = context or (self.source.name if self.source_id else "")
         return f"{self.name} · {context}" if context else self.name
 
 
@@ -239,7 +268,7 @@ class Job(models.Model):
     verified_at = models.DateTimeField(null=True, blank=True)
     canonical_url = models.URLField(max_length=2048, unique=True)
     title = models.CharField(max_length=300)
-    company = models.CharField(max_length=250, blank=True)
+    company = models.CharField("Employer name from posting", max_length=250, blank=True)
     company_profile = models.ForeignKey(
         Company, related_name="jobs", null=True, blank=True, on_delete=models.SET_NULL
     )
@@ -844,7 +873,15 @@ class EmployerDiscoveryCampaign(models.Model):
         choices=[
             ("brave", "Brave Search API"),
             ("pituchim", "Pituchim public directory"),
+            ("arbeitnow", "Arbeitnow public feed"),
+            ("himalayas", "Himalayas public feed"),
         ],
+    )
+    catalogue_mode = models.BooleanField(
+        default=False, help_text="Import pending companies before checking vacancies."
+    )
+    hiring_only = models.BooleanField(
+        default=True, help_text="Pituchim only: restrict company imports to Hiring badges."
     )
     directory_page = models.PositiveIntegerField(default=1, editable=False)
     name = models.CharField(max_length=200, unique=True)
@@ -856,7 +893,7 @@ class EmployerDiscoveryCampaign(models.Model):
         default=list, help_text="Case-insensitive job title phrases."
     )
     daily_search_limit = models.PositiveSmallIntegerField(
-        default=30, validators=[MinValueValidator(1), MaxValueValidator(30)]
+        default=30, validators=[MinValueValidator(1), MaxValueValidator(500)]
     )
     daily_candidate_limit = models.PositiveSmallIntegerField(
         default=100, validators=[MinValueValidator(1), MaxValueValidator(100)]
@@ -867,9 +904,17 @@ class EmployerDiscoveryCampaign(models.Model):
 
     def clean(self):
         super().clean()
+        if self.provider == "brave" and self.catalogue_mode:
+            raise ValidationError(
+                {"catalogue_mode": "Brave retains its evidence-based lead workflow."}
+            )
+        if self.provider == "brave" and self.daily_search_limit > 30:
+            raise ValidationError({"daily_search_limit": "Brave is capped at 30 attempts/day."})
+        if self.provider in {"arbeitnow", "himalayas"} and not self.catalogue_mode:
+            raise ValidationError({"catalogue_mode": "Free job feeds require catalogue mode."})
         for field, maximum, length in (("queries", 200, 400), ("technology_roles", 100, 80)):
             values = getattr(self, field)
-            if field == "queries" and self.provider == "pituchim":
+            if field == "queries" and self.provider != "brave":
                 continue
             if (
                 not isinstance(values, list)
@@ -884,7 +929,11 @@ class EmployerDiscoveryCampaign(models.Model):
     class Meta:
         constraints = [
             models.CheckConstraint(
-                condition=models.Q(daily_search_limit__range=(1, 30)), name="employer_search_limit"
+                condition=(
+                    models.Q(daily_search_limit__range=(1, 500))
+                    & (~models.Q(provider="brave") | models.Q(daily_search_limit__lte=30))
+                ),
+                name="employer_search_limit",
             ),
             models.CheckConstraint(
                 condition=models.Q(daily_candidate_limit__range=(1, 100)),
@@ -914,6 +963,8 @@ class EmployerDiscoveryRun(models.Model):
     searched = models.PositiveIntegerField(default=0)
     inspected = models.PositiveIntegerField(default=0)
     confirmed = models.PositiveIntegerField(default=0)
+    companies_created = models.PositiveIntegerField(default=0)
+    companies_existing = models.PositiveIntegerField(default=0)
     unresolved = models.PositiveIntegerField(default=0)
     duplicate = models.PositiveIntegerField(default=0)
     rejected = models.PositiveIntegerField(default=0)
@@ -945,6 +996,19 @@ class EmployerDiscoveryBudget(models.Model):
 
 
 class EmployerDiscoveryLead(models.Model):
+    provenance = models.ForeignKey(
+        "CompanyProvenance",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="observations",
+    )
+    reported_title = models.CharField(max_length=300, blank=True)
+    reported_location = models.CharField(max_length=500, blank=True)
+    reported_application_url = models.URLField(max_length=2048, blank=True)
+    reported_expiry = models.DateTimeField(null=True, blank=True)
+    reported_at = models.DateTimeField(null=True, blank=True)
+    hiring_signal = models.BooleanField(default=False)
     campaign = models.ForeignKey(EmployerDiscoveryCampaign, on_delete=models.PROTECT)
     run = models.ForeignKey(EmployerDiscoveryRun, on_delete=models.PROTECT)
     key = models.CharField(max_length=64, editable=False)
@@ -981,3 +1045,55 @@ class EmployerDiscoveryLead(models.Model):
 
     def __str__(self):
         return self.name or self.candidate_url
+
+
+class CompanyProvenance(models.Model):
+    company = models.ForeignKey(
+        Company, on_delete=models.CASCADE, related_name="discovery_provenance"
+    )
+    campaign = models.ForeignKey(EmployerDiscoveryCampaign, on_delete=models.PROTECT)
+    provider = models.CharField(max_length=12, db_index=True)
+    external_identity = models.CharField(max_length=512)
+    source_url = models.URLField(max_length=2048)
+    reported_name = models.CharField(max_length=250)
+    reported_website = models.URLField(max_length=2048, blank=True)
+    reported_domain = models.CharField(max_length=253, blank=True, db_index=True)
+    regional_status = models.CharField(
+        max_length=12,
+        default="unknown",
+        choices=[
+            ("target", "Target region"),
+            ("unknown", "Region unresolved"),
+        ],
+        db_index=True,
+    )
+    regional_evidence = models.CharField(max_length=500, blank=True)
+    possible_duplicate = models.BooleanField(default=False, db_index=True)
+    first_observed_at = models.DateTimeField(default=timezone.now)
+    last_observed_at = models.DateTimeField(default=timezone.now)
+    hiring_observed_at = models.DateTimeField(null=True, blank=True)
+    priority = models.PositiveSmallIntegerField(default=0)
+    source_lead = models.ForeignKey(
+        EmployerDiscoveryLead,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="inspection_sources",
+    )
+    last_inspected_at = models.DateTimeField(null=True, blank=True)
+    next_check_at = models.DateTimeField(default=timezone.now, db_index=True)
+    next_dispatch_at = models.DateTimeField(default=timezone.now)
+    lease_token = models.UUIDField(null=True, blank=True, editable=False)
+    lease_until = models.DateTimeField(null=True, blank=True, editable=False)
+    retries = models.PositiveSmallIntegerField(default=0)
+    diagnostic = models.CharField(max_length=80, blank=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["provider", "external_identity"], name="company_provider_identity"
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.reported_name} ({self.provider})"

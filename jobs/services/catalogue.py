@@ -10,7 +10,7 @@ from urllib.parse import urljoin, urlsplit
 from bs4 import BeautifulSoup
 from django.db import connection, transaction
 
-from jobs.models import Company, CompanyAlias, Job, Source
+from jobs.models import Company, CompanyAlias, CompanyProvenance, EmployerDiscoveryLead, Job, Source
 
 from .crawl import collection_context
 from .discovery import ats_endpoint, propose
@@ -41,6 +41,7 @@ def verify_company(company: Company) -> Company:
     """Only call after an operator attests the official website; never from CSV import."""
     with connection.cursor() as cursor:
         cursor.execute("SELECT pg_advisory_xact_lock(720316002)")
+        cursor.execute("SELECT pg_advisory_xact_lock(720316015)")
     company = Company.objects.select_for_update().get(pk=company.pk)
     website = canonical_url(company.website)
     host = domain(website)
@@ -56,6 +57,12 @@ def verify_company(company: Company) -> Company:
         retain_identity(target, company.identity_key, company.name)
         Source.objects.filter(company=company).update(company=target)
         Job.objects.filter(company_profile=company).update(company_profile=target)
+        CompanyProvenance.objects.filter(company=company).update(
+            company=target,
+            lease_token=None,
+            lease_until=None,
+        )
+        EmployerDiscoveryLead.objects.filter(company=company).update(company=target)
         company.delete()
         return target
     old_key = company.identity_key
@@ -74,18 +81,19 @@ def verify_company(company: Company) -> Company:
 def candidate(company: Company, url: str, *, evidence: str = "", trusted: bool = False) -> Source:
     endpoint = ats_endpoint(url)
     if endpoint:
-        source = propose(url, company.name, evidence or company.website, company.source)
+        source = propose(url, company.name, evidence or company.website)
         if source.company_id not in (None, company.pk):
             # A shared ATS board is ambiguous; do not transfer its identity or authority.
             company.review_required = True
             company.save(update_fields=["review_required"])
             return source
         source.company = company
+        source.kind = Source.Kind.COMPANY
         if trusted and endpoint[0] in {"greenhouse", "ashby", "workday"}:
             if not company.website_verified or not company.official_domain:
                 raise ValueError("Automatic endpoint activation requires verified company identity")
             if source.review_reason == "Operator disabled automatic activation":
-                source.save(update_fields=["company"])
+                source.save(update_fields=["company", "kind"])
                 return source
             source.employer_name = company.name
             source.enabled = source.authoritative = True
@@ -107,6 +115,7 @@ def candidate(company: Company, url: str, *, evidence: str = "", trusted: bool =
         defaults={
             "name": f"Careers: {company.name[:90]} [{company.pk}:{digest[:12]}]",
             "adapter": "jsonld",
+            "kind": Source.Kind.COMPANY,
             "employer_name": company.name,
             "discovery_pending": True,
             "review_reason": "Inspect HTML/JSON-LD or add an adapter",

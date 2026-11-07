@@ -16,9 +16,10 @@ set +a
 make setup
 make services
 make migrate
+# The jobs schema now requires a fresh development database; see docs/data-model.md.
 uv run python manage.py collectstatic --noinput
 uv run python manage.py createsuperuser
-uv run python manage.py seed_sources
+uv run python manage.py bootstrap_development
 make run
 ```
 
@@ -151,3 +152,5 @@ Status: **needs real end-to-end verification**; resume with job 20407 using the 
 Experimental owner-scoped vacancy evaluation with Rust Infinity is disabled by default.
 See [local setup, tests and rollback](services/infinity-agent/README.md) and the
 [architecture audit](docs/architecture/infinity-migration.md).
+
+Company/job-source relationships and fresh database setup: [data model](docs/data-model.md).

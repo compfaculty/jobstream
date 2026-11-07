@@ -4,7 +4,7 @@ from datetime import timedelta
 import pytest
 from django.utils import timezone
 
-from jobs.models import Job, Source
+from jobs.models import Company, Job, Source
 from jobs.services.ats import AshbyAdapter, GreenhouseAdapter, provider_identity
 from jobs.services.ingestion import ingest
 
@@ -66,6 +66,10 @@ def test_ashby_parse():
 @pytest.mark.django_db
 def test_authoritative_snapshot_closes_only_verified_scope(monkeypatch):
     source = Source.objects.create(
+        kind=Source.Kind.COMPANY,
+        company=Company.objects.create(
+            name="Test employer", website="https://employer.example/", website_verified=True
+        ),
         closure_enabled=True,
         name="Example direct",
         adapter="greenhouse",
@@ -96,6 +100,10 @@ def test_authoritative_snapshot_closes_only_verified_scope(monkeypatch):
 @pytest.mark.django_db
 def test_incomplete_or_failed_snapshot_cannot_close(monkeypatch):
     source = Source.objects.create(
+        kind=Source.Kind.COMPANY,
+        company=Company.objects.create(
+            name="Test employer", website="https://employer.example/", website_verified=True
+        ),
         name="Example",
         adapter="greenhouse",
         url=URL,
@@ -130,7 +138,8 @@ def test_closed_vacancy_board_repost_does_not_reopen(monkeypatch):
     monkeypatch.setattr("jobs.services.ingestion.fetch_public", lambda url: data)
     ingest(source.pk)
     job.refresh_from_db()
-    assert Job.objects.count() == 1
+    assert Job.objects.count() == 2
+    assert Job.objects.exclude(pk=job.pk).get().company_profile_id is None
     assert not job.active and job.verification == "closed"
 
 

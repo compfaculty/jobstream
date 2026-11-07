@@ -76,9 +76,7 @@ def job_list(request):
         if request.headers.get("HX-Request") == "true"
         else "jobs/list.html"
     )
-    companies = Company.objects.filter(
-        Exists(Job.objects.filter(company_profile=OuterRef("pk")))
-    ).select_related("source")
+    companies = Company.objects.filter(Exists(Job.objects.filter(company_profile=OuterRef("pk"))))
     return render(
         request,
         template,
@@ -98,7 +96,9 @@ def job_list(request):
 
 @login_required
 def job_detail(request, pk):
-    job = get_object_or_404(Job.objects.select_related("company_profile"), pk=pk)
+    job = get_object_or_404(
+        Job.objects.select_related("company_profile").prefetch_related("origins__source"), pk=pk
+    )
     executions = list(
         request.user.agentexecution_set.filter(job=job)
         .select_related("document", "profile")
@@ -123,7 +123,7 @@ def job_detail(request, pk):
 
 @login_required
 def company_detail(request, pk):
-    company = get_object_or_404(Company.objects.select_related("source"), pk=pk)
+    company = get_object_or_404(Company.objects.all(), pk=pk)
     page = Paginator(search_jobs(company=str(company.pk)), 25).get_page(request.GET.get("page"))
     return render(request, "jobs/company.html", {"company": company, "page": page})
 

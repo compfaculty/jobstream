@@ -65,11 +65,29 @@ def reserve(campaign: EmployerDiscoveryCampaign, kind: str, *, amount: int = 1) 
         cursor.execute("SELECT pg_advisory_xact_lock(720316014)")
     day = timezone.now().astimezone(UTC).date()
     bucket, _ = EmployerDiscoveryBudget.objects.get_or_create(campaign=campaign, day=day)
-    totals = EmployerDiscoveryBudget.objects.filter(day=day).aggregate(
-        searches=Sum("searches"), candidates=Sum("candidates")
+    buckets = EmployerDiscoveryBudget.objects.filter(day=day)
+    search_buckets = (
+        buckets.filter(campaign__provider="brave")
+        if campaign.provider == "brave"
+        else buckets.exclude(campaign__provider="brave")
     )
+    totals = buckets.aggregate(searches=Sum("searches"), candidates=Sum("candidates"))
     limit = campaign.daily_search_limit if kind == "searches" else campaign.daily_candidate_limit
-    global_limit = 30 if kind == "searches" else 100
+    global_limit = (30 if campaign.provider == "brave" else 500) if kind == "searches" else 100
+    if kind == "searches":
+        totals[kind] = search_buckets.aggregate(total=Sum("searches"))["total"] or 0
+        if campaign.provider != "brave":
+            provider_limit = {"pituchim": 100, "arbeitnow": 200, "himalayas": 200}[
+                campaign.provider
+            ]
+            provider_total = (
+                buckets.filter(campaign__provider=campaign.provider).aggregate(
+                    total=Sum("searches")
+                )["total"]
+                or 0
+            )
+            if provider_total + amount > provider_limit:
+                return False
     if getattr(bucket, kind) + amount > limit or (totals[kind] or 0) + amount > global_limit:
         return False
     setattr(bucket, kind, getattr(bucket, kind) + amount)
@@ -79,8 +97,15 @@ def reserve(campaign: EmployerDiscoveryCampaign, kind: str, *, amount: int = 1) 
 
 @transaction.atomic
 def promote(lead_id: int) -> bool:
+    # New identities coordinate before locking the lead; existing-company inspections
+    # already hold provenance/lead locks and never need the identity-creation lock.
+    if EmployerDiscoveryLead.objects.filter(pk=lead_id, company__isnull=True).exists():
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT pg_advisory_xact_lock(720316015)")
     lead = (
-        EmployerDiscoveryLead.objects.select_for_update().select_related("campaign").get(pk=lead_id)
+        EmployerDiscoveryLead.objects.select_for_update(of=("self",))
+        .select_related("campaign")
+        .get(pk=lead_id)
     )
     if lead.status == "rejected":
         raise ValidationError("Rejected leads cannot be promoted.")
@@ -130,14 +155,22 @@ def promote(lead_id: int) -> bool:
             raise ValueError("Unsupported external career endpoint requires operator attestation")
     except (ValueError, UnicodeError) as exc:
         raise ValidationError("Invalid employer/vacancy relationship URLs.") from exc
+    if lead.company_id:
+        from .catalogue import candidate
+
+        company = lead.company
+        if not company.website or domain(company.website) != domain(lead.website):
+            raise ValidationError("Review the company website before proposing an endpoint.")
+        candidate(company, lead.career_url, evidence=lead.relationship_url)
+        lead.status, lead.diagnostic = "confirmed", ""
+        lead.save(update_fields=["status", "diagnostic"])
+        return False
     stream = StringIO()
     writer = csv.writer(stream)
     writer.writerow(["name", "website", "career_url"])
     writer.writerow([lead.name, lead.website, lead.career_url])
     stream.seek(0)
-    # Serialize name/domain catalogue imports with other discovery promotions.
-    with connection.cursor() as cursor:
-        cursor.execute("SELECT pg_advisory_xact_lock(720316015)")
+    # The identity-creation lock was acquired before the lead lock.
     created, _ = import_companies(stream)
     company = Company.objects.filter(official_domain=domain(lead.website)).first()
     if company is None:
@@ -227,6 +260,32 @@ def prepare_step(run_id, token):
         run.finished_at = timezone.now()
         release(run)
         return None
+    if campaign.catalogue_mode:
+        if campaign.query_pages.get("catalogue_complete"):
+            campaign.query_pages = {}
+            campaign.directory_page = 1
+            campaign.save(update_fields=["query_pages", "directory_page"])
+            complete(run, campaign, "CatalogueCycleComplete")
+            release(run)
+            return None
+        if not reserve(campaign, "searches"):
+            complete(run, campaign, "DailyBudgetExhausted")
+            release(run)
+            return None
+        run.searched += 1
+        run.save(update_fields=["searched"])
+        if campaign.provider == "pituchim":
+            rules_fresh = (
+                campaign.query_pages.get("pituchim_robots_page") == campaign.directory_page
+                and campaign.query_pages.get("pituchim_robots_until", 0)
+                > timezone.now().timestamp()
+            )
+            return (
+                ("directory" if rules_fresh else "directory_rules"),
+                campaign.directory_page,
+                None,
+            )
+        return "feed", campaign.provider, campaign.query_pages
     if (
         campaign.provider == "pituchim"
         and not run.pending_leads
@@ -487,9 +546,25 @@ def step(run_id: int) -> None:
             elif kind == "directory_rules":
                 pituchim.check_robots(value)
                 save_directory_rules(run_id, token, value)
+            elif kind == "feed":
+                raise ValueError("Job boards must use job ingestion, not company discovery")
             elif kind == "directory":
-                companies, more = pituchim.fetch(value, robots_approved=True)
-                save_directory(run_id, token, value, companies, more)
+                if _campaign.catalogue_mode:
+                    from . import catalogue_discovery
+
+                    companies, more = pituchim.fetch(
+                        value,
+                        robots_approved=True,
+                        hiring_only=_campaign.hiring_only,
+                    )
+                    catalogue_discovery.save_page(
+                        run_id,
+                        token,
+                        catalogue_discovery.directory_page(companies, value, more),
+                    )
+                else:
+                    companies, more = pituchim.fetch(value, robots_approved=True)
+                    save_directory(run_id, token, value, companies, more)
             else:
                 if _campaign.provider == "pituchim":
                     evidence, diagnostic = inspect(

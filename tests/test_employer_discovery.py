@@ -1,4 +1,3 @@
-import importlib
 import json
 from concurrent.futures import ThreadPoolExecutor
 from datetime import timedelta
@@ -6,7 +5,6 @@ from unittest.mock import Mock
 
 import httpx
 import pytest
-from django.apps import apps
 from django.contrib import admin
 from django.contrib.auth.models import Permission, User
 from django.core.exceptions import PermissionDenied, ValidationError
@@ -30,7 +28,7 @@ from jobs.services import brave_search
 from jobs.services import employer_discovery as discovery
 from jobs.services import employer_evidence as evidence
 from jobs.services.crawl import CrawlDeferred, collection_context
-from jobs.services.employer_defaults import discovery_queries, technology_roles
+from jobs.services.employer_defaults import technology_roles
 from jobs.services.network import HTTPStatusError, UnsafeURL
 
 pytestmark = pytest.mark.django_db
@@ -109,16 +107,15 @@ def ready(run):
     EmployerDiscoveryRun.objects.filter(pk=run.pk).update(next_attempt_at=timezone.now())
 
 
-def test_seed_disabled_and_defaults():
-    migration = importlib.import_module("jobs.migrations.0049_seed_employer_discovery")
-    migration.seed(apps, Mock(connection=connection))
-    migration.seed(apps, Mock(connection=connection))
-    seed = EmployerDiscoveryCampaign.objects.get(name="Regional technology employers")
-    assert not seed.enabled
-    assert seed.queries == discovery_queries()
-    assert seed.technology_roles == technology_roles()
-    assert len(seed.queries) == 29
-    assert not EmployerDiscoveryRun.objects.exists()
+def test_seed_disabled_and_defaults(settings):
+    settings.DEBUG = True
+    from django.core.management import call_command
+
+    call_command("bootstrap_development")
+    call_command("bootstrap_development")
+    seed = EmployerDiscoveryCampaign.objects.get(name="Company directory discovery")
+    assert not seed.enabled and seed.catalogue_mode and not seed.hiring_only
+    assert seed.provider == "pituchim" and not EmployerDiscoveryRun.objects.exists()
 
 
 def test_full_worker_promotes_without_activation(campaign, monkeypatch):

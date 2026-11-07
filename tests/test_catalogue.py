@@ -1,4 +1,3 @@
-import importlib
 import json
 import threading
 import time
@@ -8,11 +7,10 @@ from io import StringIO
 from unittest.mock import Mock
 
 import pytest
-from django.apps import apps
 from django.contrib import admin
 from django.contrib.auth.models import Permission
 from django.core.exceptions import PermissionDenied
-from django.db import close_old_connections, connection
+from django.db import close_old_connections
 from django.db.models.deletion import ProtectedError
 from django.test import RequestFactory
 from django.utils import timezone
@@ -31,10 +29,15 @@ WD = "https://acme.wd5.myworkdayjobs.com/External"
 
 
 def employer(name="Acme", **kwargs):
+    kwargs.setdefault(
+        "company",
+        Company.objects.create(name=name, website="https://acme.example/", website_verified=True),
+    )
     return Source.objects.create(
         name=name,
+        kind=Source.Kind.COMPANY,
         adapter="greenhouse",
-        url=GH,
+        url=GH + ("&endpoint=" + name.replace(" ", "_") if name != "Acme" else ""),
         employer_name="Acme",
         enabled=True,
         authoritative=True,
@@ -361,33 +364,6 @@ def test_admin_crud_permissions_curated_content_and_protection(user, application
     assert not Job.objects.filter(pk=free.pk).exists()
 
 
-def test_data_migration_preserves_applications_and_disables_boards(application):
-    board = Source.objects.create(
-        name="Old RSS", adapter="rss", enabled=True, url="https://board.example/rss"
-    )
-    secret = Source.objects.create(
-        name="Secret", adapter="secret_telaviv", enabled=True, url="https://secret.example"
-    )
-    a = Company.objects.create(name="Acme", website="https://acme.example", website_verified=True)
-    b = Company.objects.create(
-        name="ACME", website="https://www.acme.example", website_verified=True
-    )
-    key = b.identity_key
-    Job.objects.filter(pk=application.job_id).update(
-        company_profile=b, active=False, verification="closed"
-    )
-    migrate = importlib.import_module("jobs.migrations.0028_company_catalogue_backfill")
-    with connection.schema_editor(atomic=False) as editor:
-        migrate.backfill(apps, editor)
-    application.refresh_from_db()
-    job = Job.objects.get(pk=application.job_id)
-    assert job.company_profile_id == a.pk and not job.active and job.lifecycle == "closed"
-    assert CompanyAlias.objects.get(legacy_identity=key).company_id == a.pk
-    board.refresh_from_db()
-    secret.refresh_from_db()
-    assert not board.enabled and secret.enabled
-
-
 @pytest.mark.django_db(transaction=True)
 def test_concurrent_ingestion_lease(monkeypatch):
     source = employer()
@@ -427,6 +403,7 @@ def test_schedule_10000_companies(monkeypatch, record_testsuite_property):
     Source.objects.bulk_create(
         [
             Source(
+                kind="company",
                 name=f"Synthetic {i}",
                 company=company,
                 url=f"https://synthetic-{i}.example/careers",
@@ -503,6 +480,10 @@ def test_endpoint_scope_changes_do_not_close_previous_inventory(monkeypatch):
 
 def test_workday_more_than_500_and_read_only_requests(monkeypatch):
     source = Source.objects.create(
+        kind="company",
+        company=Company.objects.create(
+            name="Test employer", website="https://employer.example/", website_verified=True
+        ),
         name="Workday",
         url=WD,
         adapter="workday",

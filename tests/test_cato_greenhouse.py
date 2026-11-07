@@ -70,6 +70,7 @@ def cato_job(job):
         official_domain="catonetworks.com",
     )
     source = Source.objects.create(
+        kind=Source.Kind.COMPANY,
         name="Cato official",
         company=company,
         adapter="greenhouse",
