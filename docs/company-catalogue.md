@@ -24,7 +24,9 @@ store jobs → prepare an application through a separately supported delivery ad
 tailoring may emphasize verified CV facts and generate a PDF; it must not invent
 qualifications or bypass approval.
 
-Current limits: company entry is manual/CSV, not general web-wide employer discovery.
+Company entry supports manual/CSV input and an opt-in, bounded Brave-backed employer
+discovery worker. See [Employer discovery](employer-discovery.md) for configuration,
+evidence requirements, budgets and review. Its seeded campaign ships disabled.
 Collection support does not imply application submission support. Greenhouse/Ashby
 delivery is integration-specific; Workday and Akeyless/Comeet are not generally
 automated delivery routes. Unsupported routes require manual action. CV PDF

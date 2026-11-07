@@ -835,3 +835,136 @@ class NormalizationTarget(models.Model):
 
     class Meta:
         constraints = [models.UniqueConstraint(fields=["work", "job"], name="normalization_target")]
+
+
+class EmployerDiscoveryCampaign(models.Model):
+    name = models.CharField(max_length=200, unique=True)
+    enabled = models.BooleanField(default=False)
+    queries = models.JSONField(default=list, help_text="Public search queries, up to 200 strings.")
+    technology_roles = models.JSONField(
+        default=list, help_text="Case-insensitive job title phrases."
+    )
+    daily_search_limit = models.PositiveSmallIntegerField(
+        default=30, validators=[MinValueValidator(1), MaxValueValidator(30)]
+    )
+    daily_candidate_limit = models.PositiveSmallIntegerField(
+        default=100, validators=[MinValueValidator(1), MaxValueValidator(100)]
+    )
+    next_run_at = models.DateTimeField(default=timezone.now, db_index=True)
+    query_cursor = models.PositiveIntegerField(default=0, editable=False)
+    query_pages = models.JSONField(default=dict, editable=False)
+
+    def clean(self):
+        super().clean()
+        for field, maximum, length in (("queries", 200, 400), ("technology_roles", 100, 80)):
+            values = getattr(self, field)
+            if (
+                not isinstance(values, list)
+                or not 1 <= len(values) <= maximum
+                or any(
+                    not isinstance(value, str) or not value.strip() or len(value) > length
+                    for value in values
+                )
+            ):
+                raise ValidationError({field: "Provide a bounded nonempty list of strings."})
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(daily_search_limit__range=(1, 30)), name="employer_search_limit"
+            ),
+            models.CheckConstraint(
+                condition=models.Q(daily_candidate_limit__range=(1, 100)),
+                name="employer_candidate_limit",
+            ),
+        ]
+
+    def __str__(self):
+        return self.name
+
+
+class EmployerDiscoveryRun(models.Model):
+    campaign = models.ForeignKey(EmployerDiscoveryCampaign, on_delete=models.PROTECT)
+    status = models.CharField(
+        max_length=12,
+        default="active",
+        choices=[("active", "Active"), ("complete", "Complete"), ("failed", "Failed")],
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    finished_at = models.DateTimeField(null=True, blank=True)
+    next_attempt_at = models.DateTimeField(default=timezone.now, db_index=True)
+    next_dispatch_at = models.DateTimeField(default=timezone.now)
+    lease_token = models.UUIDField(null=True, editable=False)
+    lease_until = models.DateTimeField(null=True, editable=False)
+    pending_leads = models.JSONField(default=list, editable=False)
+    retries = models.PositiveSmallIntegerField(default=0)
+    searched = models.PositiveIntegerField(default=0)
+    inspected = models.PositiveIntegerField(default=0)
+    confirmed = models.PositiveIntegerField(default=0)
+    unresolved = models.PositiveIntegerField(default=0)
+    duplicate = models.PositiveIntegerField(default=0)
+    rejected = models.PositiveIntegerField(default=0)
+    failed = models.PositiveIntegerField(default=0)
+    diagnostic = models.CharField(max_length=80, blank=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["campaign"],
+                condition=models.Q(status="active"),
+                name="one_active_employer_discovery",
+            )
+        ]
+
+
+class EmployerDiscoveryBudget(models.Model):
+    campaign = models.ForeignKey(EmployerDiscoveryCampaign, on_delete=models.PROTECT)
+    day = models.DateField()
+    searches = models.PositiveIntegerField(default=0)
+    candidates = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["campaign", "day"], name="employer_campaign_daily_budget"
+            )
+        ]
+
+
+class EmployerDiscoveryLead(models.Model):
+    campaign = models.ForeignKey(EmployerDiscoveryCampaign, on_delete=models.PROTECT)
+    run = models.ForeignKey(EmployerDiscoveryRun, on_delete=models.PROTECT)
+    key = models.CharField(max_length=64, editable=False)
+    candidate_url = models.URLField(max_length=2048)
+    search_query = models.CharField(max_length=400)
+    search_offset = models.PositiveSmallIntegerField(default=0)
+    name = models.CharField(max_length=250, blank=True)
+    website = models.URLField(max_length=2048, blank=True)
+    career_url = models.URLField(max_length=2048, blank=True)
+    vacancy_title = models.CharField(max_length=300, blank=True)
+    vacancy_location = models.CharField(max_length=500, blank=True)
+    vacancy_url = models.URLField(max_length=2048, blank=True)
+    relationship_url = models.URLField(max_length=2048, blank=True)
+    observed_at = models.DateTimeField(null=True, blank=True)
+    evidence_kind = models.CharField(max_length=20, blank=True)
+    valid_until = models.DateTimeField(null=True, blank=True)
+    status = models.CharField(
+        max_length=12,
+        default="unresolved",
+        choices=[
+            ("unresolved", "Unresolved"),
+            ("confirmed", "Confirmed"),
+            ("rejected", "Rejected"),
+        ],
+    )
+    diagnostic = models.CharField(max_length=80, blank=True)
+    company = models.ForeignKey(Company, null=True, blank=True, on_delete=models.SET_NULL)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["campaign", "key"], name="employer_campaign_lead")
+        ]
+
+    def __str__(self):
+        return self.name or self.candidate_url

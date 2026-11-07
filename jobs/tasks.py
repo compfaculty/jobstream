@@ -278,3 +278,17 @@ def poll_normalization_batches():
         "created_at"
     )[:20]:
         poll(batch)
+
+
+@shared_task
+def discover_employers(run_id):
+    from jobs.services.employer_discovery import step
+
+    step(run_id)
+
+
+@shared_task
+def schedule_employer_discovery():
+    from jobs.services.employer_discovery import dispatch
+
+    dispatch()

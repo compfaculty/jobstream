@@ -331,3 +331,11 @@ CELERY_TASK_ROUTES.update(
         "jobs.tasks.poll_normalization_batches": {"queue": "ingestion"},
     }
 )
+
+# Public company discovery ships disabled in its database campaign.
+BRAVE_SEARCH_API_KEY = os.getenv("BRAVE_SEARCH_API_KEY", "")
+CELERY_BEAT_SCHEDULE["employer-discovery"] = {
+    "task": "jobs.tasks.schedule_employer_discovery",
+    "schedule": 60.0,
+}
+CELERY_TASK_ROUTES["jobs.tasks.discover_employers"] = {"queue": "ingestion"}

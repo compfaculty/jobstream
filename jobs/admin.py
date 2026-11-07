@@ -355,3 +355,7 @@ class JobAdmin(admin.ModelAdmin):
                     setattr(job, field, value)
             job.content_overrides = {}
             job.save()
+
+
+# Register the independent employer-discovery review screens.
+from . import admin_discovery  # noqa: E402, F401
