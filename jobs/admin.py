@@ -13,6 +13,7 @@ from .models import (
     Company,
     CompanyAlias,
     CompanyProvenance,
+    EmployerDiscoveryLead,
     IngestionRun,
     Invitation,
     Job,
@@ -240,6 +241,16 @@ class CompanyAdmin(admin.ModelAdmin):
     inlines = (CompanyAliasInline, CareerSourceInline, CompanyProvenanceInline)
     change_list_template = "admin/jobs/company/change_list.html"
     actions = ("verify_official_websites", "schedule_career_discovery")
+
+    def get_deleted_objects(self, objs, request):
+        deleted, counts, permissions, protected = super().get_deleted_objects(objs, request)
+        # These admins forbid standalone deletion. Company cleanup may remove their
+        # dependent records, but still requires each model's explicit delete permission.
+        for model in (IngestionRun, AuditEvent, EmployerDiscoveryLead, CompanyProvenance):
+            opts = model._meta
+            if request.user.has_perm(f"{opts.app_label}.delete_{opts.model_name}"):
+                permissions.discard(opts.verbose_name)
+        return deleted, counts, permissions, protected
 
     def save_model(self, request, obj, form, change):
         if not obj.identity_key:

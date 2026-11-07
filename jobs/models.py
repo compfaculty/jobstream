@@ -52,7 +52,7 @@ class Source(models.Model):
         AUDIOCODES = "audiocodes", "AudioCodes careers"
 
     company = models.ForeignKey(
-        "Company", null=True, blank=True, on_delete=models.PROTECT, related_name="career_sources"
+        "Company", null=True, blank=True, on_delete=models.CASCADE, related_name="career_sources"
     )
     closure_enabled = models.BooleanField(
         default=False, help_text="Enable after shadow validation."
@@ -299,7 +299,7 @@ class Job(models.Model):
     title = models.CharField(max_length=300)
     company = models.CharField("Employer name from posting", max_length=250, blank=True)
     company_profile = models.ForeignKey(
-        Company, related_name="jobs", null=True, blank=True, on_delete=models.SET_NULL
+        Company, related_name="jobs", null=True, blank=True, on_delete=models.CASCADE
     )
     location = models.CharField(max_length=250, blank=True, db_index=True)
     description = models.TextField(blank=True)
@@ -453,7 +453,7 @@ class Application(models.Model):
         UNKNOWN = "unknown", "Outcome unknown — do not resend"
 
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    job = models.ForeignKey(Job, on_delete=models.PROTECT)
+    job = models.ForeignKey(Job, on_delete=models.CASCADE)
     channel = models.CharField(
         max_length=20, default="email", choices=[("email", "Email"), ("portal", "Employer portal")]
     )
@@ -506,7 +506,7 @@ class Application(models.Model):
 
 class AuditEvent(models.Model):
     actor = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL)
-    application = models.ForeignKey(Application, null=True, on_delete=models.SET_NULL)
+    application = models.ForeignKey(Application, null=True, on_delete=models.CASCADE)
     details = models.JSONField(default=dict, blank=True)
     event = models.CharField(max_length=80)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -617,8 +617,8 @@ class ApplicationBatch(models.Model):
 
 class BatchItem(models.Model):
     batch = models.ForeignKey(ApplicationBatch, related_name="items", on_delete=models.CASCADE)
-    job = models.ForeignKey(Job, on_delete=models.PROTECT)
-    application = models.ForeignKey(Application, null=True, blank=True, on_delete=models.PROTECT)
+    job = models.ForeignKey(Job, on_delete=models.CASCADE)
+    application = models.ForeignKey(Application, null=True, blank=True, on_delete=models.CASCADE)
     job_snapshot = models.JSONField(default=dict)
     provenance = models.JSONField(default=dict)
     lease_token = models.UUIDField(null=True, blank=True)
@@ -1064,7 +1064,7 @@ class EmployerDiscoveryLead(models.Model):
         ],
     )
     diagnostic = models.CharField(max_length=80, blank=True)
-    company = models.ForeignKey(Company, null=True, blank=True, on_delete=models.SET_NULL)
+    company = models.ForeignKey(Company, null=True, blank=True, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
