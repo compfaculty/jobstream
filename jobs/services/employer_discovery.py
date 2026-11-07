@@ -21,6 +21,7 @@ from jobs.models import (
     EmployerDiscoveryLead,
     EmployerDiscoveryRun,
 )
+from jobs.observability.events import phase
 
 from . import brave_search, pituchim
 from .catalogue import domain, import_companies
@@ -529,6 +530,7 @@ def failure(run_id, token, exc):
     release(run)
 
 
+@phase("discovery_step")
 def step(run_id: int) -> None:
     claimed = claim(run_id)
     if claimed is None:

@@ -1,12 +1,18 @@
 """Versioned runtime contract. No Infinity classes cross this boundary."""
 
 from dataclasses import dataclass
+from functools import partial
 from typing import Literal
 from urllib.parse import urlsplit
 from uuid import UUID
 
 import httpx
 from django.conf import settings
+
+from jobs.observability.http import payload as observe_payload
+from jobs.observability.http import stream
+
+observed_stream = partial(stream, provider="infinity")
 
 VERSION = 1
 TERMINAL = {"completed", "failed", "cancelled"}
@@ -103,7 +109,8 @@ class AgentGateway:
         path = f"/v1/executions/{execution_id}/{attempt_id}"
         try:
             with httpx.Client(timeout=10, follow_redirects=False, trust_env=False) as client:
-                with client.stream(
+                with observed_stream(
+                    client,
                     method,
                     settings.INFINITY_URL.rstrip("/") + path,
                     headers={"Authorization": f"Bearer {settings.INFINITY_SERVICE_TOKEN}"},
@@ -119,6 +126,7 @@ class AgentGateway:
                         raise GatewayError("agent_request_rejected")
                     chunks, size = [], 0
                     for chunk in response.iter_bytes():
+                        observe_payload("infinity", len(chunk))
                         size += len(chunk)
                         if size > 256000:
                             raise GatewayError("agent_response_too_large")
@@ -162,7 +170,8 @@ class AgentGateway:
             raise GatewayError("agent_not_configured")
         try:
             with httpx.Client(timeout=2, follow_redirects=False, trust_env=False) as client:
-                with client.stream(
+                with observed_stream(
+                    client,
                     "GET",
                     settings.INFINITY_URL.rstrip("/")
                     + f"/v1/operations/executions/{execution_id}/calls",
@@ -172,6 +181,7 @@ class AgentGateway:
                         raise GatewayError("agent_metadata_unavailable")
                     chunks, size = [], 0
                     for chunk in response.iter_bytes():
+                        observe_payload("infinity", len(chunk))
                         size += len(chunk)
                         if size > 256000:
                             raise GatewayError("agent_response_too_large")

@@ -49,3 +49,22 @@ infinity-logs:
 infinity-benchmark:
 	uv run python manage.py benchmark_evaluations --iterations 1000
 	$(MAKE) infinity-smoke
+
+# Explicit overlay keeps ordinary development unchanged.
+MONITOR = docker compose -f compose.yaml -f compose.monitoring.yaml --profile monitoring
+MONITOR_SERVICES = prometheus grafana loki alloy snapshot-exporter
+.PHONY: monitoring-setup monitoring-up monitoring-stop monitoring-check
+monitoring-setup:
+	$(MONITOR) build web
+	uv run python scripts/setup_monitoring.py $(ARGS)
+monitoring-up:
+	$(MONITOR) up -d --build web worker ingestion-worker preparation-worker delivery-worker browser-worker beat $(MONITOR_SERVICES)
+monitoring-stop:
+	$(MONITOR) stop $(MONITOR_SERVICES)
+monitoring-check:
+	$(MONITOR) config --quiet
+	$(MONITOR) run --rm --no-deps --entrypoint promtool prometheus check config /etc/prometheus/prometheus.yml
+	$(MONITOR) run --rm --no-deps --entrypoint promtool prometheus check rules /etc/prometheus/alerts.yml
+	$(MONITOR) run --rm --no-deps --entrypoint promtool prometheus test rules /etc/prometheus/alerts.test.yml
+	$(MONITOR) run --rm --no-deps alloy validate /etc/alloy/config.alloy
+	$(MONITOR) run --rm --no-deps loki -config.file=/etc/loki/config.yaml -verify-config

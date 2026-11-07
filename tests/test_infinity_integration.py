@@ -48,6 +48,14 @@ def runtime(live_server, settings, agent_settings, tmp_path, request):
     with socket.socket() as sock:
         sock.bind(("127.0.0.1", 0))
         port = sock.getsockname()[1]
+    with socket.socket() as sock:
+        sock.bind(("127.0.0.1", 0))
+        metrics_port = sock.getsockname()[1]
+    token_file = tmp_path / "scrape-token"
+    token_file.write_text(secrets.token_urlsafe(48))
+    token_file.chmod(0o600)
+    settings.INFINITY_TEST_METRICS_URL = f"http://127.0.0.1:{metrics_port}/metrics"
+    settings.INFINITY_TEST_METRICS_TOKEN = token_file.read_text()
     settings.INFINITY_URL = f"http://127.0.0.1:{port}"
     env = {
         **os.environ,
@@ -58,6 +66,9 @@ def runtime(live_server, settings, agent_settings, tmp_path, request):
         "OPENAI_API_KEY": "",
         "INFINITY_FAKE_DELAY_MS": "0",
         "RUST_LOG": "info",
+        "INFINITY_METRICS_BIND": f"127.0.0.1:{metrics_port}",
+        "JOBSTREAM_SCRAPE_TOKEN_FILE": str(token_file),
+        "JOBSTREAM_LOG_DIR": str(tmp_path / "rust-logs"),
     }
     if request.node.name == "test_real_provider_opt_in":
         assert os.environ.get("OPENAI_API_KEY"), "OPENAI_API_KEY required for opt-in provider test"
@@ -342,12 +353,15 @@ def test_provider_call_deadline_timeout(user, job, evaluation_profile, runtime):
 
 
 def test_runtime_reports_ready_and_idle_without_inference(runtime, tmp_path, settings):
+    import json
+
     log = tmp_path / "runtime.log"
-    until(lambda: "runtime heartbeat" in log.read_text())
+    until(lambda: '"event":"runtime_heartbeat"' in log.read_text())
     output = log.read_text()
-    assert "runtime starting" in output
-    assert "runtime ready; waiting for evaluations" in output
-    assert "active_evaluations=0" in output
+    events = [json.loads(line) for line in output.splitlines()]
+    assert any(event["event"] == "runtime_starting" for event in events)
+    assert any(event["event"] == "runtime_ready" for event in events)
+    assert any(event.get("active_evaluations") == 0 for event in events)
     assert settings.INFINITY_SERVICE_TOKEN not in output
 
 
@@ -388,3 +402,81 @@ def test_uploaded_pdf_evaluation_without_reviewed_profile(user, job, runtime, se
     assert record.result["ai_selection"]["assessments"][0]["evidence_fact_id"] == "fact-1"
     assert not ResumeProfile.objects.exists()
     assert not user.application_set.exists()
+
+
+@pytest.mark.parametrize("runtime", [True], indirect=True)
+def test_correlated_workflow_and_private_metrics(
+    user, job, evaluation_profile, runtime, settings, tmp_path
+):
+    import json
+    from types import SimpleNamespace
+
+    from django.http import HttpResponse
+    from django.test import RequestFactory
+
+    from jobs.observability.context import context
+    from jobs.observability.middleware import TelemetryMiddleware
+    from jobs.task_telemetry import (
+        finished,
+        metric_finished,
+        metric_started,
+        publish_context,
+        started,
+    )
+
+    headers = {}
+
+    def enqueue(request):
+        publish_context(headers=headers)
+        return HttpResponse("queued")
+
+    TelemetryMiddleware(enqueue)(RequestFactory().post("/fake-dispatch"))
+    assert not context.get()
+    record = evaluations.start(user, job, evaluation_profile.pk)
+    task = SimpleNamespace(
+        name="jobs.tasks.evaluate_vacancy",
+        request=SimpleNamespace(headers=headers, delivery_info={"routing_key": "preparation"}),
+    )
+    task_id = str(uuid.uuid4())
+    started(sender=task, task_id=task_id, args=(str(record.pk),), kwargs={})
+    metric_started(sender=task, task_id=task_id)
+    try:
+        evaluations.process(record.pk)
+        publish_context(headers=headers)
+        assert headers["workflow_id"] == context.get()["workflow_id"]
+    finally:
+        finished(sender=task, task_id=task_id, state="RETRY")
+        metric_finished(sender=task, state="RETRY")
+    assert not context.get()
+    finish(record)
+    assert httpx.get(settings.INFINITY_TEST_METRICS_URL).status_code == 401
+    metrics = httpx.get(
+        settings.INFINITY_TEST_METRICS_URL,
+        headers={"Authorization": "Bearer " + settings.INFINITY_TEST_METRICS_TOKEN},
+    )
+    assert metrics.status_code == 200
+    assert "jobstream_infinity_provider_calls_total" in metrics.text
+    assert 'model="fake"' in metrics.text
+    for secret in (
+        str(record.pk),
+        str(record.attempt_id),
+        headers["workflow_id"],
+        "Python and Linux",
+        settings.INFINITY_SERVICE_TOKEN,
+    ):
+        assert secret not in metrics.text
+
+    def logs_ready():
+        lines = (tmp_path / "runtime.log").read_text().splitlines()
+        return [
+            json.loads(line)
+            for line in lines
+            if line.startswith("{") and headers["workflow_id"] in line
+        ]
+
+    events = until(logs_ready)
+    assert any(
+        e["event"] == "provider_call" and e["execution_id"] == str(record.pk) for e in events
+    )
+    assert all("Python and Linux" not in json.dumps(e) for e in events)
+    assert all(settings.INFINITY_SERVICE_TOKEN not in json.dumps(e) for e in events)

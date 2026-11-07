@@ -2,6 +2,7 @@
 
 import hashlib
 import json
+import logging
 import random
 import uuid
 from datetime import timedelta
@@ -13,10 +14,14 @@ from django.utils import timezone
 from googleapiclient.errors import HttpError
 
 from jobs.models import Application, AuditEvent, GmailConnection
+from jobs.observability.context import context
+from jobs.observability.events import phase
 
 from . import gmail
 from .retries import RetryWindowTooLong, retry_after_seconds
 from .secret_telaviv import PortalRateLimited, PortalRejected, PortalUnknown
+
+logger = logging.getLogger(__name__)
 
 
 class InvalidTransition(ValidationError):
@@ -99,6 +104,7 @@ def validate_content(application: Application, *, for_send: bool = True) -> None
         raise ValidationError("Document does not belong to applicant.")
 
 
+@phase("approval")
 def approve(user, pk: int, *, assisted: bool = False) -> Application:
     candidate = Application.objects.get(pk=pk, owner=user)
     if candidate.channel == "portal":
@@ -139,6 +145,8 @@ def approve(user, pk: int, *, assisted: bool = False) -> Application:
         application.error_code = ""
         application.save()
         AuditEvent.objects.create(actor=user, application=application, event="application.approved")
+        fields = {**context.get(), "outcome": "approved"}
+        transaction.on_commit(lambda: logger.info("approval_granted", extra=fields), robust=True)
         return application
 
 
@@ -186,6 +194,7 @@ def attachment_bytes(application: Application) -> bytes | None:
     return content
 
 
+@phase("delivery")
 def submit(pk: int, *, assisted_owner_id: int | None = None, on_human_verification=None) -> None:
     with transaction.atomic():
         from django.contrib.auth import get_user_model
@@ -214,12 +223,15 @@ def submit(pk: int, *, assisted_owner_id: int | None = None, on_human_verificati
                     "Approve this GitLab application for local assisted delivery."
                 )
         elif application.assisted_delivery:
+            logger.info("delivery_skipped", extra={"reason": "assisted_only"})
             return
         if application.status != Application.Status.APPROVED:
             if assisted_owner_id is not None:
                 raise InvalidTransition("Application must be approved and not already claimed.")
+            logger.info("delivery_skipped", extra={"reason": "not_approved_or_duplicate"})
             return
         if application.retry_not_before and application.retry_not_before > timezone.now():
+            logger.info("delivery_deferred", extra={"reason": "retry_window"})
             return
         try:
             connection = None
@@ -232,6 +244,7 @@ def submit(pk: int, *, assisted_owner_id: int | None = None, on_human_verificati
                 raise ValidationError("Approval no longer matches content.")
             attachment = attachment_bytes(application)
         except GmailConnection.DoesNotExist, ValidationError, OSError:
+            logger.warning("delivery_preflight_failed", extra={"error_category": "validation"})
             application.status = Application.Status.FAILED
             application.error_code = "preflight_failed"
             application.save()
@@ -244,6 +257,7 @@ def submit(pk: int, *, assisted_owner_id: int | None = None, on_human_verificati
         from .throttles import reserve
 
         if not reserve(connection, application):
+            logger.info("delivery_deferred", extra={"reason": "capacity"})
             return
         application.send_attempts += 1
         application.status = Application.Status.SUBMITTING
@@ -295,6 +309,7 @@ def submit(pk: int, *, assisted_owner_id: int | None = None, on_human_verificati
         finish(pk, Application.Status.CONFIRMED, provider_id=provider_id)
 
 
+@phase("delivery_transition")
 def finish(
     pk: int, status: str, provider_id: str = "", error_code: str = "", receipt_url: str = ""
 ) -> None:
@@ -326,6 +341,11 @@ def finish(
         application.save()
         AuditEvent.objects.create(
             actor=application.owner, application=application, event=f"application.{status}"
+        )
+        state = status if status in Application.Status.values else "other"
+        fields = {**context.get(), "outcome": state}
+        transaction.on_commit(
+            lambda: logger.info("delivery_state_changed", extra=fields), robust=True
         )
 
 

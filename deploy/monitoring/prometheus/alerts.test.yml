@@ -1,0 +1,101 @@
+rule_files: [alerts.yml]
+evaluation_interval: 1m
+tests:
+  - interval: 1m
+    input_series:
+      - series: 'up{job="jobstream",service="web"}'
+        values: '1 0 0 0 1 1'
+    alert_rule_test:
+      - eval_time: 3m
+        alertname: JobstreamTargetDown
+        exp_alerts:
+          - exp_labels: {job: jobstream, service: web, severity: warning}
+            exp_annotations: {summary: "An enabled application telemetry target is unavailable"}
+      - eval_time: 4m
+        alertname: JobstreamTargetDown
+        exp_alerts: []
+  - interval: 1m
+    input_series:
+      - series: 'jobstream_queue_consumers{queue="ingestion"}'
+        values: '0 0 0 0 1'
+    alert_rule_test:
+      - eval_time: 3m
+        alertname: JobstreamConsumerMissing
+        exp_alerts:
+          - exp_labels: {queue: ingestion, severity: warning}
+            exp_annotations: {summary: "A configured queue has no observed consumer"}
+      - eval_time: 4m
+        alertname: JobstreamConsumerMissing
+        exp_alerts: []
+  - interval: 1m
+    input_series: []
+    alert_rule_test:
+      - eval_time: 10m
+        alertname: JobstreamTargetDown
+        exp_alerts: []
+  - interval: 1m
+    input_series:
+      - series: 'jobstream_snapshot_timestamp_seconds'
+        values: '0 0 0 0 0 300 360'
+      - series: 'jobstream_snapshot_exporter_success'
+        values: '1+0x6'
+      - series: 'jobstream_scheduler_publication_timestamp_seconds'
+        values: '0 0 0 0 0 300 360'
+    alert_rule_test:
+      - eval_time: 4m
+        alertname: JobstreamSnapshotStale
+        exp_alerts:
+          - exp_labels: {severity: warning}
+            exp_annotations: {summary: "Operational snapshot is stale or cannot be read"}
+      - eval_time: 5m
+        alertname: JobstreamSnapshotStale
+        exp_alerts: []
+      - eval_time: 4m
+        alertname: JobstreamSchedulerMissing
+        exp_alerts:
+          - exp_labels: {severity: warning}
+            exp_annotations: {summary: "No recent scheduler publication"}
+      - eval_time: 5m
+        alertname: JobstreamSchedulerMissing
+        exp_alerts: []
+  - interval: 1m
+    input_series:
+      - series: 'jobstream_http_requests_total{status="200"}'
+        values: '0+54x16'
+      - series: 'jobstream_http_requests_total{status="500"}'
+        values: '0+6x10 60+0x6'
+    alert_rule_test:
+      - eval_time: 10m
+        alertname: JobstreamHttpErrors
+        exp_alerts:
+          - exp_labels: {severity: warning}
+            exp_annotations: {summary: "Sustained HTTP failure rate above 5% with sufficient traffic"}
+      - eval_time: 16m
+        alertname: JobstreamHttpErrors
+        exp_alerts: []
+  - interval: 1m
+    input_series:
+      - series: 'jobstream_queue_depth{queue="ingestion"}'
+        values: '30+3x20 90+0x30'
+    alert_rule_test:
+      - eval_time: 20m
+        alertname: JobstreamBacklogGrowing
+        exp_alerts:
+          - exp_labels: {queue: ingestion, severity: warning}
+            exp_annotations: {summary: "Queue backlog has grown for fifteen minutes"}
+      - eval_time: 50m
+        alertname: JobstreamBacklogGrowing
+        exp_alerts: []
+  - interval: 1m
+    input_series:
+      - series: 'jobstream_monitoring_disk_available_bytes{volume="loki"}'
+        values: '1000000000+0x6 4000000000'
+    alert_rule_test:
+      - eval_time: 5m
+        alertname: JobstreamMonitoringDiskLow
+        exp_alerts:
+          - exp_labels: {severity: warning}
+            exp_annotations: {summary: "Monitoring filesystem has less than 2 GiB free"}
+      - eval_time: 7m
+        alertname: JobstreamMonitoringDiskLow
+        exp_alerts: []

@@ -19,6 +19,8 @@ pub struct Call {
     pub input_tokens: Option<u64>,
     pub output_tokens: Option<u64>,
     pub provider_request_id: Option<String>,
+    #[serde(skip)]
+    pub metric: Option<std::sync::Arc<std::sync::Mutex<crate::metrics::ProviderCall>>>,
 }
 impl Call {
     pub fn new(execution: &str, attempt: &str, model: &str) -> Self {
@@ -35,13 +37,16 @@ impl Call {
             input_tokens: None,
             output_tokens: None,
             provider_request_id: None,
+            metric: Some(std::sync::Arc::new(std::sync::Mutex::new(
+                crate::metrics::ProviderCall::new(model),
+            ))),
         }
     }
     pub async fn persist(&self, db: Option<&Client>) {
         tracing::info!(execution_id=%self.execution_id, attempt_id=%self.attempt_id,
             call_id=%self.call_id, model=%self.model, outcome=%self.outcome,
-            latency_ms=?self.latency_ms, error_code=%self.error_code,
-            input_tokens=?self.input_tokens, output_tokens=?self.output_tokens,
+            latency_ms=self.latency_ms, error_code=%self.error_code,
+            input_tokens=self.input_tokens, output_tokens=self.output_tokens,
             "provider_call");
         if let Some(db) = db {
             let result = tokio::time::timeout(std::time::Duration::from_secs(1), async {
@@ -64,6 +69,11 @@ impl Call {
         }
         .into();
         self.error_code = code.into();
+        if let Some(metric) = &self.metric
+            && let Ok(mut metric) = metric.lock()
+        {
+            metric.finish(&self.outcome, code, self.input_tokens, self.output_tokens);
+        }
     }
 }
 
@@ -108,5 +118,11 @@ mod tests {
         assert_eq!(call.outcome, "failed");
         assert!(call.finished_at.is_some());
         assert!(call.latency_ms.unwrap() >= 0);
+    }
+    #[test]
+    fn reading_metadata_never_creates_a_provider_attempt() {
+        let call = Call::new("execution", "attempt", "fake");
+        let restored: Call = serde_json::from_value(serde_json::to_value(&call).unwrap()).unwrap();
+        assert!(restored.metric.is_none());
     }
 }

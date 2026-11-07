@@ -1,4 +1,6 @@
 mod assessment;
+mod logging;
+mod metrics;
 mod provider;
 mod store;
 mod telemetry;
@@ -83,6 +85,7 @@ impl Response {
     }
 }
 struct Entry {
+    workflow_id: Uuid,
     request: Request,
     response: Response,
     cancel: Arc<Notify>,
@@ -197,6 +200,12 @@ async fn start(
         Entry {
             request: request.clone(),
             response: response.clone(),
+            workflow_id: headers
+                .get("x-jobstream-workflow-id")
+                .and_then(|h| h.to_str().ok())
+                .filter(|s| s.len() == 36)
+                .and_then(|s| Uuid::parse_str(s).ok())
+                .unwrap_or(id),
             cancel: Arc::new(Notify::new()),
             cancelled: Arc::new(AtomicBool::new(false)),
         },
@@ -593,6 +602,19 @@ fn final_result(history: &[infinity_agent_core::message::InfinityMessage]) -> Op
     None
 }
 async fn run(app: App, request: Request) {
+    use tracing::Instrument;
+    let workflow_id = app
+        .entries
+        .lock()
+        .await
+        .get(&request.attempt_id)
+        .map(|e| e.workflow_id)
+        .unwrap_or(request.correlation_id);
+    let span = tracing::info_span!("evaluation", %workflow_id, execution_id=%request.execution_id, attempt_id=%request.attempt_id);
+    run_inner(app, request).instrument(span).await;
+}
+async fn run_inner(app: App, request: Request) {
+    let mut metric_guard = metrics::Evaluation::new();
     let (notify, cancelled) = {
         let entries = app.entries.lock().await;
         let entry = &entries[&request.attempt_id];
@@ -656,12 +678,24 @@ async fn run(app: App, request: Request) {
             tracing::error!(execution_id=%request.execution_id,"runtime persistence failed; refusing result");
             std::process::exit(1);
         }
+        metric_guard.finish(&response.status);
         entry.response = response;
     }
     tracing::info!(execution_id=%request.execution_id,attempt_id=%request.attempt_id,"evaluation finished");
 }
 #[tokio::main]
-async fn main() -> Result<(), Error> {
+async fn main() {
+    std::panic::set_hook(Box::new(|_| {
+        // Panic payloads and source snippets may contain provider/user content.
+        tracing::error!(event = "runtime_panic");
+    }));
+    if runtime().await.is_err() {
+        tracing::error!(event = "runtime_startup_failed");
+        std::process::exit(1);
+    }
+}
+
+async fn runtime() -> Result<(), Error> {
     // Upstream runtime traces can include private content. Only our metadata logger
     // is configurable, even when a developer requests debug-level logging.
     let level = std::env::var("RUST_LOG")
@@ -671,7 +705,15 @@ async fn main() -> Result<(), Error> {
     tracing_subscriber::fmt()
         .with_env_filter(format!("off,jobstream_infinity_agent={level}"))
         .with_ansi(false)
+        .json()
+        .flatten_event(true)
+        .with_writer(logging::WriterFactory::new())
         .init();
+    tokio::spawn(async {
+        if metrics::serve().await.is_err() {
+            tracing::error!(event = "metrics_listener_failed");
+        }
+    });
     tracing::info!("runtime starting");
     let provider = std::env::var("INFINITY_PROVIDER").unwrap_or_else(|_| "openai".into());
     if !matches!(provider.as_str(), "fake" | "openai") {
@@ -776,6 +818,7 @@ async fn main() -> Result<(), Error> {
             app.entries.lock().await.insert(
                 request.attempt_id,
                 Entry {
+                    workflow_id: request.correlation_id,
                     request,
                     response,
                     cancel: Arc::new(Notify::new()),
@@ -784,12 +827,14 @@ async fn main() -> Result<(), Error> {
             );
         }
     }
+    metrics::metrics().recovered.inc_by(recover.len() as u64);
     let router = Router::new()
         .route("/v1/operations/executions/{id}/calls", get(provider_calls))
         .route(
             "/v1/executions/{id}/{attempt}",
             get(status).put(start).delete(cancel),
         )
+        .layer(axum::middleware::from_fn(metrics::http))
         .layer(DefaultBodyLimit::max(8192))
         .with_state(app.clone());
     let bind = std::env::var("INFINITY_BIND").unwrap_or_else(|_| "127.0.0.1:8091".into());

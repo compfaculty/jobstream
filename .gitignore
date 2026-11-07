@@ -20,3 +20,5 @@ coverage.json
 services/infinity-agent/target/
 
 /private-backups/
+
+.monitoring-secrets/

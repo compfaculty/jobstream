@@ -18,6 +18,7 @@ tokio-postgres = { version = "0.7", features = ["with-serde_json-1"] }
 uuid = { version = "1", features = ["v4", "serde"] }
 subtle = "2"
 tracing = "0.1"
-tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
 chrono = "0.4"
 httpdate = "1"
+prometheus-client = "0.24"

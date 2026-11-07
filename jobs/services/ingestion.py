@@ -76,12 +76,16 @@ def ingest(source_id: int) -> None:
         run = IngestionRun.objects.create(
             source=source, queue_delay_seconds=max(0, (now - source.next_run_at).total_seconds())
         )
+    new_jobs = 0
     request_stats = {"requests": 0}
+    logger.info("ingestion_started", extra={"source_id": source_id, "run_id": run.pk})
     try:
         source.full_clean()
         if source.authoritative and not source.employer_name.strip():
             raise ValueError("Authoritative source requires an employer name")
-        with collection_context() as request_stats:
+        from jobs.observability.metrics import integration
+
+        with integration(source.adapter), collection_context() as request_stats:
             result, _data = collect(source, source.inventory_cursor, fetch=fetch_public)
             run.scope = result.scope[:300]
             prepared = []
@@ -189,10 +193,11 @@ def ingest(source_id: int) -> None:
                 # Board observations never attach or create catalogue employers.
                 if source.kind == Source.Kind.BOARD:
                     values["employer_source"] = None
-                job, _ = Job.objects.update_or_create(
+                job, job_created = Job.objects.update_or_create(
                     canonical_url=existing.canonical_url if existing else url,
                     defaults={**values, "company_profile": profile, "last_seen_at": timezone.now()},
                 )
+                new_jobs += int(job_created)
                 if settings.JOB_NORMALIZATION_BATCH_ENABLED and (
                     source.ai_normalization or settings.JOB_AI_NORMALIZATION_ENABLED
                 ):
@@ -289,6 +294,7 @@ def ingest(source_id: int) -> None:
     except Exception as exc:
         # A failed persistence transaction must not report rolled-back imports or closures.
         run.imported = 0
+        new_jobs = 0
         run.would_close = 0
         run.complete = False
         run.status = "deferred" if isinstance(exc, CrawlDeferred) else "failed"
@@ -331,3 +337,23 @@ def ingest(source_id: int) -> None:
         run.duration_seconds = time.monotonic() - started
         run.finished_at = timezone.now()
         run.save()
+        from jobs.observability.metrics import INGESTION, NEW_JOBS, OBSERVATIONS
+        from jobs.observability.metrics import observe as observe_metric
+
+        outcome = (
+            run.status if run.status in {"success", "partial", "deferred", "failed"} else "other"
+        )
+        observe_metric(lambda: INGESTION.labels(outcome).inc())
+        observe_metric(lambda: NEW_JOBS.inc(new_jobs))
+        observe_metric(lambda: OBSERVATIONS.inc(run.imported))
+        logger.info(
+            "ingestion_completed",
+            extra={
+                "source_id": source_id,
+                "run_id": run.pk,
+                "outcome": outcome,
+                "imported": run.imported,
+                "rejected": run.rejected,
+                "duration_seconds": run.duration_seconds,
+            },
+        )

@@ -252,3 +252,315 @@ attempt. It can be retried immediately when capacity is available; provider cool
 are unchanged. If one evaluation's allowance exceeds the entire configured daily
 budget, the UI explains that waiting alone cannot resolve it. The configured daily
 limit is never raised automatically.
+
+## Local monitoring and investigations
+
+The opt-in stack is Prometheus, Grafana, Loki, and Alloy. Native dashboards are
+provisioned from `deploy/monitoring/dashboards/`: **Mission control**, **Django &
+collection**, **Infinity runtime**, and **Investigations**. No plugins, community
+imports, signup, paid services, or external alert receivers are required.
+
+The explicit Compose overlay enables instrumentation; a plain `docker compose up`
+continues to use the original development configuration. Application data and
+migration history are unchanged.
+
+```sh
+make monitoring-setup       # Builds the app and initializes only telemetry volumes/secrets.
+make monitoring-check       # Compose, Prometheus rules/tests, Alloy, and Loki validation.
+make monitoring-up          # Starts normal app workers/Beat too: normal scheduled work resumes.
+make monitoring-stop        # Stops only monitoring services; retains every volume.
+```
+
+`monitoring-up` resumes the existing application queues, including enabled sources.
+For a web-only validation that must not trigger scheduled/provider work, use:
+
+```sh
+docker compose -f compose.yaml -f compose.monitoring.yaml --profile monitoring \
+  up -d --no-deps web prometheus grafana loki alloy snapshot-exporter
+```
+
+Grafana is at **http://localhost:3000**, username `admin`. The initial password is
+in `.monitoring-secrets/grafana-admin`; retrieve it locally without copying it into
+chat, logs, screenshots, shell history, or command arguments. Host credential files
+are `0600` inside a `0700` ignored directory. Initialization transfers credentials
+over stdin into separate read-only container volumes, owned by UID 10001 with
+`0400` files. Application containers cannot read the Grafana credential volume.
+Grafana has its own authentication; Django MFA does not protect it.
+
+Only Grafana publishes a monitoring port, bound to `127.0.0.1`. Its dedicated
+non-internal ingress bridge is needed for Docker Desktop localhost forwarding.
+Prometheus, Loki, Alloy, and scrape endpoints have no published ports. Loki has no
+HTTP authentication and is isolated on a backend network shared only by trusted
+monitoring services. Application metrics require a dedicated bearer credential,
+independent of Infinity's execution credential. Do not attach unrelated containers
+to these networks or publish internal listeners.
+
+### Optional Infinity and normal operation
+
+Infinity remains opt-in. Enable its target only when that runtime is intended to
+be running; otherwise the target is absent and no target-loss alert fires for it.
+
+```sh
+uv run python scripts/setup_monitoring.py --infinity
+# At a safe runtime restart boundary, apply the same overlay to Infinity:
+docker compose -f compose.yaml -f compose.monitoring.yaml \
+  --profile monitoring --profile infinity up -d --build --no-deps infinity
+```
+
+Restarting Infinity can recover existing work; this is not a synthetic test command.
+`--without-infinity` disables its target. Repeated setup preserves existing target
+selection and passwords. Normal application processes use private per-container
+multiprocess directories under bounded `/tmp`; no metric files are shared between
+containers. The entrypoint clears them once before fresh startup, supervises the
+app, and retries failed exposition three times without terminating business work.
+Gunicorn and Celery parent/child hooks remove dead live-gauge files. Counters and
+histograms retain dead-worker contributions until the container restarts. They are
+operational counters, not durable accounting.
+
+Use `GRAFANA_URL=http://localhost:3000` (set by the overlay) for staff-visible links
+on `/operations/` and execution details. Only an HTTP(S) origin without credentials,
+query, fragment, or path is accepted. Execution links contain a validated UUID and
+an escaped correlation filter. Existing staff/MFA restrictions still apply, and
+page rendering does not query Grafana.
+
+### Metric meanings and coverage
+
+- HTTP labels are installed route names, fixed methods, and status. Unknown routes
+  collapse to `unknown`; paths and query strings are never exported. Liveness is
+  shown separately. Durations include response lifetime; streaming close/exhaustion
+  releases in-progress gauges without buffering the body. Streaming payload sizes
+  remain unknown.
+- Outbound attempts include pinned public HTTPS fetches/redirects/robots, Brave,
+  Python AI Responses and Batch endpoints, and Django-to-Infinity calls. Bodies are
+  counted only at existing bounded reads. These are **observed decoded payload
+  bytes**, not compressed wire bytes, TLS overhead, or total network traffic.
+  Failed/unread bodies increment unknown-size counters. Redirects are attempts,
+  not invented retry counts; Celery retry outcomes count task attempts separately.
+- Rust provider metrics use the aliases `fake`/`configured`, fixed error categories,
+  known input/output tokens, and an explicit unknown-usage counter. A dropped
+  provider future counts cancellation. Reading provider metadata never creates an
+  inference metric. Existing execution/provider-call records remain authoritative
+  for per-execution investigation.
+- Celery start/outcome/duration/running metrics count execution attempts, including
+  `RETRY`, rather than publications or exactly-once business outcomes. Periodic
+  empty poll tasks keep metrics but suppress routine INFO lifecycle noise.
+- The separate snapshot exporter reads three aggregate queries every 15 seconds in
+  a read-only PostgreSQL transaction with statement and connection timeouts. It
+  never inspects Celery, probes providers, publishes tasks, or writes records during
+  scrapes. Company review backlog means `review_required=True`; source review
+  backlog means `discovery_pending=True`; enabled sources are a current stock.
+  Queue/consumer/scheduler gauges are the **stored snapshot**, with explicit
+  timestamp/presence/success metrics. Stale snapshots are not fresh broker probes.
+- Finalized ingestion outcome/new-job counters are process counters. They are not
+  database inventory totals and do not backfill historical runs.
+- Browser-managed traffic, portal submission/upload transports in
+  `secret_telaviv.py`/`ashby_browser.py`, Google/Gmail SDK traffic, SMTP, and S3 SDK
+  traffic are outside HTTP body coverage. Shared public fetches used by these
+  adapters remain covered. No container-wide traffic claim is made.
+
+Each enabled app container has one authenticated exporter on internal port 9100.
+Scrapes are serial and socket-time-bounded; the business collector has its own
+registry. There are no Redis increments or monitoring HTTP calls in request paths.
+Optional tracing configuration is preserved; valid existing trace/span IDs are
+included when available. No Tempo or new tracing exporter is enabled.
+
+### Log privacy, retention, and loss
+
+Application handlers emit bounded JSON with a versioned schema, UTC timestamp,
+service/environment/severity, stable event, safe outcome/error metadata, and
+validated correlation fields. Arbitrary exception messages, locals, arguments,
+results, provider bodies, CVs, prompts, cookies, credentials, and raw URLs are
+excluded. Python errors include safe code frames and a type fingerprint. Rust
+startup errors/panics exclude payloads. Models are aliases. Existing durable audit
+and approval records remain the authority for sends and state transitions.
+
+Request/workflow IDs pass through Celery headers and the Django-to-Infinity
+boundary. Retries retain workflow identity; task/execution/attempt/call IDs remain
+separate fields. Context is restored after requests, stream iterations, and tasks.
+Runtime recovery can be joined through the persistent execution/attempt ID even
+when its earlier in-memory workflow span is unavailable after restart.
+
+Stdout remains available through `docker compose logs`. Docker's local log driver
+is non-blocking with a 1 MiB buffer and three 10 MiB files per container; driver
+buffer loss is not measurable without Docker API access. Quiet Celery startup
+suppresses broker banners; static process-manager shutdown text may still appear
+on stdout, but is never ingested as a raw fallback log.
+
+Each process also has a non-blocking 512-event file queue, 2 MiB rotating files,
+and two backups on a dedicated service volume. Dead-process history is pruned to
+64 MiB/24 hours; live process files add at most 6 MiB per configured process.
+Pruning runs at startup and during event delivery, so idle stopped services need
+not immediately remove expired files. A queue/disk failure drops file events and
+increments a drop counter; stdout delivery continues. File buffers are best effort
+and may lose recent events on abrupt termination.
+
+Alloy has no Docker socket or host mounts. It tails these volumes read-only,
+persists positions, rejects malformed/oversized/non-schema events, reconstructs an
+allowlisted JSON document, and limits forwarding to 200 events/second with a
+400-event burst. Its push batches are bounded to 256 KiB with five retries. There
+is no infinite collector spool: outages can cause drops, rotation loss, delay, or
+duplicates. Infrastructure container logs are deliberately not collected.
+
+Loki index labels are only service/environment/severity. Automatic service-name
+label discovery is disabled. IDs are searchable JSON fields, never index or metric
+labels. Early local validation streams created before that setting may retain the
+bounded automatic `service_name` label until normal retention removes them.
+
+Prometheus retains at most seven days or 2 GiB of retained blocks, whichever wins;
+WAL/head/compaction need additional disk space. Loki's compactor uses seven-day
+retention, with a two-hour deletion delay and periodic compaction. Retention is not
+an exact wall-clock erasure guarantee or a hard disk quota. Physical seven-day
+expiry has not been time-accelerated in local tests.
+
+Use **5 GiB as the local Loki operational ceiling**, keep at least 2 GiB free on
+its backing filesystem, and inspect growth with `docker compose ... exec -T loki /health/busybox du
+-sh /loki`. The snapshot exporter exposes available filesystem bytes on only the
+three mounted monitoring storage volumes; on Docker Desktop this is shared Linux
+VM filesystem headroom, not macOS host/container network metrics. A local alert
+fires below 2 GiB for five minutes. Review ingestion volume before increasing
+retention or capacity. The ceiling is an operator policy, not a filesystem quota.
+
+If disk pressure occurs, stop Alloy and Loki with the monitoring overlay; leave
+application services and PostgreSQL volumes alone. Inspect monitoring growth and
+provide storage or reduce retention before restarting. Do not delete live Loki
+files, reset the application database, or use `down --volumes`. Back up stopped
+monitoring volumes separately with read-only mounts and UID 10001; restrict and
+encrypt backups because logs and Grafana configuration are operational private data.
+
+### Investigation recipes and local alerts
+
+The Investigation dashboard supports service/severity/event filters and an optional
+correlation UUID. Follow metric panel links for the same service/time range, or
+execution links for an exact UUID query. Useful LogQL patterns:
+
+```logql
+# Why no new jobs? Use the internal source ID, not a URL or applicant identifier.
+{service="ingestion-worker"} | json | event="ingestion_completed" | source_id="42"
+# Where did a task stop? Paste its UUID.
+{service=~".+"} | json | task_id="00000000-0000-0000-0000-000000000001"
+# Follow an evaluation and its provider outcomes/recovery across services.
+{service=~".+"} | json | execution_id="00000000-0000-0000-0000-000000000002"
+# Follow one logical request/workflow chain across tasks and runtime calls.
+{service=~".+"} | json | workflow_id="00000000-0000-0000-0000-000000000003"
+```
+
+Use the relevant time range before declaring an event missing. Check target health,
+snapshot freshness, application file drops, collector drops, and enabled collection.
+Logs may have expired or never arrived; absence does not prove work did not occur.
+No-data percentiles remain gaps. Infinity disabled, an unhealthy enabled runtime,
+and a stale snapshot are distinct states. Alerts are local Prometheus rules only;
+there is no Alertmanager receiver or email/Slack notification integration.
+
+### Credentials, edits, validation, and rollback
+
+```sh
+# Explicit rotations: values travel over stdin and remain outside command arguments.
+uv run python scripts/setup_monitoring.py --rotate grafana
+uv run python scripts/setup_monitoring.py --rotate scrape
+```
+
+Grafana rotation updates the existing admin password through its CLI, not just the
+bootstrap setting. Scrape rotation requires a controlled restart of instrumented
+app exporters, Infinity if enabled, and Prometheus; until those processes reload
+credentials, affected targets may report unauthorized. Restart only at an approved
+work boundary. Existing Django/OAuth/Infinity execution credentials are untouched.
+
+Edit `scripts/generate_dashboards.py`, regenerate the committed dashboard JSON, and
+let Grafana provisioning reload it. UI dashboard edits are intentionally disabled.
+Run `uv run python scripts/check_monitoring_runtime.py` for datasource health,
+provisioning, and every provisioned PromQL/LogQL query. It never prints credentials
+or log bodies. The repository CI runs process tests on Linux and validates the
+monitoring configuration/rules in the existing web-image job; remote CI execution
+still requires the normal PR workflow.
+
+Focused verification commands:
+
+```sh
+DEBUG=1 OBSERVABILITY_PROCESS_TESTS=1 uv run pytest tests/test_observability_processes.py
+cargo build --locked --manifest-path services/infinity-agent/Cargo.toml
+DEBUG=1 INFINITY_INTEGRATION=1 uv run pytest tests/test_infinity_integration.py
+DEBUG=1 uv run pytest tests/test_observability.py tests/test_operations.py
+DEBUG=1 make check
+make infinity-check
+make monitoring-check
+```
+
+Process checks use unique test queues/key prefixes, mocked inference, loopback HTTP,
+and a test PostgreSQL database. They do not start business workers or send anything.
+The Linux image can run `python scripts/observability_lifecycle.py` with
+`PROBE_BROKER=redis://redis:6379/15` to exercise real prefork behavior without pytest.
+
+A synthetic, warmed 10,000-request `/health/` comparison on local macOS measured
+9,117.5 requests/s and 0.238 ms p95 from the unchanged HEAD snapshot, versus 6,400.6
+requests/s and 0.283 ms p95 with metrics/JSON completion events. CPU was 1.097 versus
+1.559 seconds; max RSS was about 131 MiB in both processes. This test used local
+in-memory metrics and console output redirected to `/dev/null`; it excludes file
+shipping, real endpoint/database/provider work, and multi-container contention.
+It demonstrates measurable overhead, not a representative production acceptance
+benchmark. No regression threshold has been agreed, and no negligible-overhead
+claim is made. Repeat with representative authorized workloads before production.
+
+Pinned releases were checked against official release metadata on 2026-11-07:
+Prometheus 3.13.5 LTS, Grafana 13.3.0, Loki 3.7.9, Alloy 1.21.3. Manifest digests are
+in the overlay and derived Loki Dockerfile. Review upstream patches regularly. References:
+[Prometheus multiprocess limitations](https://prometheus.github.io/client_python/multiprocess/),
+[Prometheus LTS support](https://prometheus.io/docs/introduction/release-cycle/),
+[Grafana release support](https://grafana.com/docs/grafana/latest/upgrade-guide/when-to-upgrade/).
+
+Rollback monitoring with `make monitoring-stop`; application instrumentation keeps
+working without the backend. To disable instrumentation too, recreate desired app
+services using only `compose.yaml` at a safe work boundary. This removes the
+monitoring environment/listeners/file mounts while retaining all application and
+monitoring volumes. No migration reversal or data deletion is needed.
+
+Local verification checkpoint (2026-11-07): the final non-browser run with fake
+Infinity and real process tests enabled reported **708 passed, 1 skipped**, with
+one pre-existing failure: `test_search_query_budget` expects two queries but the
+unchanged `search_jobs` prefetch performs three. The same failure was reproduced
+from a temporary clean HEAD snapshot; its implementation/test were not changed.
+`make check`, Rust fmt/clippy, 14 Cargo tests, locked dependency audit, and Gitleaks
+passed. All seven alert rules have firing/recovery tests. Grafana provisioning,
+datasource health, dashboard PromQL/LogQL, and native browser rendering were checked.
+A canary request was absent from captured Docker stdout and queried Loki data;
+correlated events were present. Actual Loki index labels were checked separately
+from LogQL's temporary extracted fields. Stopping/restarting Alloy left Django
+available and recovered the file-buffered event while retaining earlier logs.
+
+An idle local sample measured Grafana 271 MiB, Prometheus 69 MiB, Loki 90 MiB,
+Alloy 59 MiB, and the snapshot exporter 56 MiB, within their configured limits.
+This is an idle sample, not a load-capacity guarantee. Physical disk exhaustion,
+week-long retention expiry, external alert delivery, and production traffic were
+not exercised. Browser-driven application workflows were not rerun for this
+backend change. During safe validation, only Django web and monitoring were
+started; existing collection/delivery workers and Beat were left stopped. Their
+unavailable/stale indicators are expected until normal application work resumes.
+Optional Infinity instrumentation is implemented and fake-provider-tested but its
+existing live container was not rebuilt/restarted for this rollout.
+
+`jobstream_ingestion_new_jobs_total` counts newly committed `Job` rows only.
+`jobstream_ingestion_observations_total` counts accepted observations, including
+existing jobs; the older `IngestionRun.imported` field retains that original meaning.
+Repeat observations and rolled-back transactions do not inflate the new-job counter.
+Pre-connection pinned-fetch policy/DNS/capacity rejections appear in run/task
+outcomes rather than the HTTP attempt counter. The native collector scrape uses a
+metric-family allowlist to exclude per-file/PID label families.
+
+Phase `*_finished` events with `outcome=returned` mean the function returned, not
+that a business operation succeeded. Explicit approval/delivery state events are
+emitted after commit with robust callbacks; expected validation rejection uses
+INFO. Durable audit records still determine the actual application state. Console
+and file logging failures have safe handlers that do not print logging's original
+message/argument fallback.
+
+
+Loki's pinned minimal upstream image has no wget. The local derived image copies
+only the static BusyBox binary from the already pinned Prometheus image to perform
+an actual `/ready` HTTP probe; it does not install packages or add privileges.
+The exporter uses the existing local application database role. Read-only
+transactions constrain normal scrapes, not that role's database privileges; no
+generic PostgreSQL statistics exporter or additional database role was introduced.
+The actual collector boundary was also checked with a synthetic JSON event carrying
+an unknown private field and a malformed line: required state survived, the private
+field was stripped, and the malformed line was dropped before Loki. The temporary
+probe file was removed. All four dashboards were validated with their actual All
+filters; Loki selectors require non-empty matchers, unlike PromQL selectors.

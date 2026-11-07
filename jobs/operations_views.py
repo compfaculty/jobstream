@@ -156,6 +156,7 @@ def index(request):
             "normalization_model": settings.JOB_NORMALIZATION_MODEL,
             "evaluation_model": settings.INFINITY_MODEL,
             "infrastructure": snapshot_context(),
+            "grafana_url": grafana_link(),
             "page": page,
             "rows": rows,
             "kind": kind,
@@ -208,7 +209,38 @@ def execution(request, pk):
             "execution": record,
             "calls": calls,
             "provider_unavailable": unavailable,
+            "grafana_logs_url": grafana_link(str(record.pk)),
             "input_tokens": record.usage.get("input_tokens"),
             "output_tokens": record.usage.get("output_tokens"),
         },
     )
+
+
+def grafana_link(correlation=None):
+    from urllib.parse import urlencode, urlsplit
+
+    from jobs.observability.context import identifier
+
+    value = settings.GRAFANA_URL
+    try:
+        parts = urlsplit(value)
+        _port = parts.port  # Validate malformed ports without breaking operations pages.
+    except ValueError:
+        return ""
+    if (
+        parts.scheme in {"http", "https"}
+        and parts.hostname
+        and not parts.username
+        and not parts.password
+        and not parts.query
+        and not parts.fragment
+        and parts.path in {"", "/"}
+    ):
+        if identifier(correlation):
+            return (
+                value.rstrip("/")
+                + "/d/jobstream-investigations?"
+                + urlencode({"var-correlation": correlation, "from": "now-24h", "to": "now"})
+            )
+        return value.rstrip("/") + "/d/jobstream-overview"
+    return ""

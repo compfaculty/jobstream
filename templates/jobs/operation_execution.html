@@ -5,6 +5,7 @@
 <script src="{% static 'operations.js' %}" defer></script>
 <a href="{% url 'operations' %}">← Operations</a>
 <h1>Evaluation {{ execution.pk }}</h1>
+{% if grafana_logs_url %}<p><a href="{{ grafana_logs_url }}" target="_blank" rel="noopener noreferrer">Investigate this execution in Grafana ↗</a></p>{% endif %}
 <p>{{ execution.status }} · {{ execution.model }} · Attempt {{ execution.attempt }}</p>
 <dl><dt>Attempt ID</dt><dd>{{ execution.attempt_id }}</dd><dt>Created / updated</dt><dd>{{ execution.created_at }} / {{ execution.updated_at }}</dd><dt>Deadline</dt><dd>{{ execution.deadline|default_if_none:'Unknown' }}</dd><dt>Lease</dt><dd>{{ execution.lease_until|default_if_none:'None' }}</dd><dt>Next dispatch</dt><dd>{{ execution.next_dispatch_at }}</dd><dt>Retryable</dt><dd>{{ execution.retryable|yesno:'Yes,No' }}</dd><dt>Error category</dt><dd>{{ execution.error_code|default:'None' }}</dd><dt>Reported execution tokens</dt><dd>Input {{ input_tokens|default_if_none:'Unknown' }} · Output {{ output_tokens|default_if_none:'Unknown' }}</dd></dl>
 <h2>Infinity / OpenAI calls</h2>

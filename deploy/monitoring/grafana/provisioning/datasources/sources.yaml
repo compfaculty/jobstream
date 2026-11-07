@@ -1,0 +1,17 @@
+apiVersion: 1
+datasources:
+  - name: Prometheus
+    uid: jobstream-prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: true
+    editable: false
+    jsonData: {timeInterval: 15s, httpMethod: POST}
+  - name: Loki
+    uid: jobstream-loki
+    type: loki
+    access: proxy
+    url: http://loki:3100
+    editable: false
+    jsonData: {maxLines: 500}

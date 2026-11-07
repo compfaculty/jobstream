@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     "jobs",
 ]
 MIDDLEWARE = [
+    "jobs.observability.middleware.TelemetryMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -176,19 +177,28 @@ if not DEBUG and (not TOKEN_ENCRYPTION_KEY or not os.getenv("S3_BUCKET")):
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
-    "formatters": {
-        "json": {
-            "()": "pythonjsonlogger.json.JsonFormatter",
-            "format": "%(asctime)s %(levelname)s %(name)s %(message)s",
-        }
+    "formatters": {"json": {"()": "jobs.observability.logging.SafeFormatter"}},
+    "handlers": {
+        "console": {"class": "jobs.observability.logging.SafeStreamHandler", "formatter": "json"},
+        "file": {"class": "jobs.observability.logging.AsyncFileHandler", "formatter": "json"},
     },
-    "handlers": {"console": {"class": "logging.StreamHandler", "formatter": "json"}},
-    "root": {"handlers": ["console"], "level": "INFO"},
+    "root": {"handlers": ["console", "file"], "level": "INFO"},
     "loggers": {
-        "django.server": {"handlers": ["console"], "level": "WARNING", "propagate": False},
-        "django.request": {"handlers": ["console"], "level": "CRITICAL", "propagate": False},
+        name: {"handlers": ["console", "file"], "level": level, "propagate": False}
+        for name, level in {
+            "django.server": "WARNING",
+            "django.request": "CRITICAL",
+            "celery": "WARNING",
+            "celery.app.trace": "WARNING",
+            "gunicorn.error": "INFO",
+            "gunicorn.access": "CRITICAL",
+            "httpx": "WARNING",
+            "httpcore": "WARNING",
+        }.items()
     },
 }
+CELERY_WORKER_HIJACK_ROOT_LOGGER = False
+GRAFANA_URL = os.getenv("GRAFANA_URL", "")
 
 
 def scrub_event(event, hint):

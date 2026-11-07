@@ -1,3 +1,4 @@
+import logging
 from datetime import timedelta
 
 from celery import shared_task
@@ -45,6 +46,10 @@ def schedule_sources():
         Source.objects.bulk_update(sources, ["next_dispatch_at"])
     for source in sources:
         ingest_source.delay(source.pk)
+    if sources:
+        logging.getLogger(__name__).info(
+            "scheduler_dispatched", extra={"queue": "ingestion", "inspected": len(sources)}
+        )
 
 
 @shared_task

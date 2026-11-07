@@ -35,7 +35,7 @@ jobs:
       - run: cargo test --locked --manifest-path services/infinity-agent/Cargo.toml
       - run: make infinity-check
       - run: uv run pytest -m 'not browser' --cov=jobs --cov-report=json --cov-report=term-missing
-        env: {INFINITY_INTEGRATION: '1'}
+        env: {INFINITY_INTEGRATION: '1', OBSERVABILITY_PROCESS_TESTS: '1'}
       - run: uv run python scripts/check_coverage.py
       - run: uv run playwright install --with-deps chromium
       - run: uv run pytest -m browser
@@ -62,6 +62,13 @@ jobs:
       - if: matrix.name == 'web'
         run: python3 scripts/scan_secrets.py
       - run: docker build --target ${{ matrix.target }} -t jobstream-${{ matrix.name }}:${{ github.sha }} ${{ matrix.context }}
+      - if: matrix.name == 'web'
+        name: Validate monitoring configuration and alert rules
+        run: |
+          docker tag jobstream-web:${{ github.sha }} jobstream:local
+          cp .env.example .env
+          python3 scripts/setup_monitoring.py
+          make monitoring-check
       - uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1 # 0.35.0
         with:
           image-ref: jobstream-${{ matrix.name }}:${{ github.sha }}

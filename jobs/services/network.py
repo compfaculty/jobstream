@@ -8,6 +8,8 @@ import ssl
 from contextlib import closing
 from urllib.parse import parse_qsl, urlencode, urljoin, urlsplit, urlunsplit
 
+from jobs.observability.metrics import outbound, remote_provider
+
 MAX_BYTES = 2 * 1024 * 1024
 
 
@@ -108,7 +110,11 @@ def request_public_document(
         if host is None:
             raise UnsafeURL("Missing hostname")
         addresses = public_addresses(host)
-        with request_slot(host), closing(PinnedHTTPSConnection(host, addresses[0])) as connection:
+        with (
+            request_slot(host),
+            outbound(remote_provider(url)) as telemetry,
+            closing(PinnedHTTPSConnection(host, addresses[0])) as connection,
+        ):
             target = parts.path + ("?" + parts.query if parts.query else "")
             headers = {"User-Agent": "Jobstream/0.1", "Accept-Encoding": "identity"}
             if payload is not None:
@@ -120,6 +126,7 @@ def request_public_document(
                 headers=headers,
             )
             response = connection.getresponse()
+            telemetry.status = response.status
             if response.status in {301, 302, 303, 307, 308}:
                 if payload is not None:
                     raise UnsafeURL("Search POST redirect refused")
@@ -134,6 +141,7 @@ def request_public_document(
                     cooldown(host, retry_after_seconds(retry, 60))
                 raise HTTPStatusError(response.status, retry)
             data = response.read(max_bytes + 1)
+            telemetry.size = len(data)
             if len(data) > max_bytes:
                 raise ValueError("Source response exceeds limit")
             return data, url

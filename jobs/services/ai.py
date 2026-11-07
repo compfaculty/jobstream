@@ -5,6 +5,7 @@ import json
 import logging
 import time
 from datetime import timedelta
+from functools import partial
 
 import httpx
 from django.conf import settings
@@ -13,11 +14,15 @@ from django.db.models import F
 from django.utils import timezone
 
 from jobs.models import AIQuota, AIResult
+from jobs.observability.http import payload as observe_payload
+from jobs.observability.http import stream
 
 from .ai_costs import BudgetUnavailable
 from .ai_costs import reserve as reserve_cost
 from .ai_costs import settle as settle_cost
 from .retries import RetryWindowTooLong, retry_after_seconds
+
+observed_stream = partial(stream, provider="ai")
 
 VERSION = "fact-selection-v1"
 logger = logging.getLogger(__name__)
@@ -129,7 +134,8 @@ def request_json(
         with httpx.Client(
             timeout=timeout_seconds, follow_redirects=False, trust_env=False
         ) as client:
-            with client.stream(
+            with observed_stream(
+                client,
                 "POST",
                 "https://api.openai.com/v1/responses",
                 headers={
@@ -148,6 +154,7 @@ def request_json(
                 chunks = []
                 size = 0
                 for chunk in response.iter_bytes():
+                    observe_payload("ai", len(chunk))
                     size += len(chunk)
                     if size > 256000:
                         raise AIUnavailable("ai_response_too_large")

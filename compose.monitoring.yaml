@@ -1,0 +1,260 @@
+# Opt-in overlay: docker compose -f compose.yaml -f compose.monitoring.yaml --profile monitoring ...
+x-runtime-logs: &runtime-logs
+  driver: local
+  options:
+    mode: non-blocking
+    max-buffer-size: 1m
+    max-size: 10m
+    max-file: "3"
+
+x-telemetry: &telemetry
+  JOBSTREAM_METRICS_ENABLED: "1"
+  PROMETHEUS_MULTIPROC_DIR: /tmp/prometheus
+  JOBSTREAM_SCRAPE_TOKEN_FILE: /run/scrape/credential
+  JOBSTREAM_LOG_DIR: /var/log/jobstream
+  GRAFANA_URL: http://localhost:3000
+
+x-monitor: &monitor
+  logging: *runtime-logs
+  profiles: [monitoring]
+  restart: unless-stopped
+  read_only: true
+  cap_drop: [ALL]
+  security_opt: ["no-new-privileges:true"]
+  pids_limit: 128
+  tmpfs: ["/tmp:size=32m,mode=1777"]
+  networks: [monitoring]
+
+services:
+  web:
+    logging: *runtime-logs
+    environment:
+      <<: *telemetry
+      JOBSTREAM_SERVICE: web
+    networks: [default, telemetry]
+    volumes:
+      - web-logs:/var/log/jobstream
+      - scrape-credential:/run/scrape:ro
+    command: ["gunicorn", "config.wsgi:application", "--config", "config/gunicorn.py", "--bind", "0.0.0.0:8000", "--workers", "2", "--timeout", "60", "--no-control-socket"]
+  worker:
+    logging: *runtime-logs
+    command: [celery, -A, config, --quiet, worker, --loglevel=INFO, --queues=celery, --concurrency=1]
+    environment:
+      <<: *telemetry
+      JOBSTREAM_SERVICE: worker
+    networks: [default, telemetry]
+    volumes:
+      - worker-logs:/var/log/jobstream
+      - scrape-credential:/run/scrape:ro
+  ingestion-worker:
+    logging: *runtime-logs
+    command: [celery, -A, config, --quiet, worker, --loglevel=INFO, --queues=ingestion, --concurrency=2]
+    environment:
+      <<: *telemetry
+      JOBSTREAM_SERVICE: ingestion-worker
+    networks: [default, telemetry]
+    volumes:
+      - ingestion-worker-logs:/var/log/jobstream
+      - scrape-credential:/run/scrape:ro
+  preparation-worker:
+    logging: *runtime-logs
+    command: [celery, -A, config, --quiet, worker, --loglevel=INFO, --queues=preparation, --concurrency=2]
+    environment:
+      <<: *telemetry
+      JOBSTREAM_SERVICE: preparation-worker
+    networks: [default, telemetry]
+    volumes:
+      - preparation-worker-logs:/var/log/jobstream
+      - scrape-credential:/run/scrape:ro
+  delivery-worker:
+    logging: *runtime-logs
+    command: [celery, -A, config, --quiet, worker, --loglevel=INFO, --queues=delivery, --concurrency=1]
+    environment:
+      <<: *telemetry
+      JOBSTREAM_SERVICE: delivery-worker
+    networks: [default, telemetry]
+    volumes:
+      - delivery-worker-logs:/var/log/jobstream
+      - scrape-credential:/run/scrape:ro
+  browser-worker:
+    logging: *runtime-logs
+    command: [celery, -A, config, --quiet, worker, --loglevel=INFO, --queues=browser-delivery, --concurrency=1]
+    environment:
+      <<: *telemetry
+      JOBSTREAM_SERVICE: browser-worker
+    networks: [default, telemetry]
+    volumes:
+      - browser-worker-logs:/var/log/jobstream
+      - scrape-credential:/run/scrape:ro
+  beat:
+    logging: *runtime-logs
+    command: [celery, -A, config, --quiet, beat, --loglevel=INFO, --schedule=/tmp/celerybeat-schedule]
+    environment:
+      <<: *telemetry
+      JOBSTREAM_SERVICE: beat
+    networks: [default, telemetry]
+    volumes:
+      - beat-logs:/var/log/jobstream
+      - scrape-credential:/run/scrape:ro
+  infinity:
+    logging: *runtime-logs
+    environment:
+      INFINITY_METRICS_BIND: 0.0.0.0:9100
+      JOBSTREAM_SCRAPE_TOKEN_FILE: /run/scrape/credential
+      JOBSTREAM_LOG_DIR: /var/log/jobstream
+    networks: [default, telemetry]
+    volumes:
+      - infinity-logs:/var/log/jobstream
+      - scrape-credential:/run/scrape:ro
+  monitoring-init:
+    <<: *monitor
+    image: jobstream:local
+    user: "0:0"
+    cap_add: [CHOWN, FOWNER]
+    restart: "no"
+    entrypoint: [python, scripts/init_monitoring_volumes.py]
+    volumes:
+      - prometheus-data:/monitoring-volumes/prometheus
+      - grafana-data:/monitoring-volumes/grafana
+      - loki-data:/monitoring-volumes/loki
+      - alloy-data:/monitoring-volumes/alloy
+      - web-logs:/monitoring-volumes/web-logs
+      - worker-logs:/monitoring-volumes/worker-logs
+      - ingestion-worker-logs:/monitoring-volumes/ingestion-worker-logs
+      - preparation-worker-logs:/monitoring-volumes/preparation-worker-logs
+      - delivery-worker-logs:/monitoring-volumes/delivery-worker-logs
+      - browser-worker-logs:/monitoring-volumes/browser-worker-logs
+      - beat-logs:/monitoring-volumes/beat-logs
+      - infinity-logs:/monitoring-volumes/infinity-logs
+      - scrape-credential:/scrape-secret
+      - grafana-credential:/grafana-secret
+  snapshot-exporter:
+    <<: *monitor
+    image: jobstream:local
+    environment:
+      DJANGO_SETTINGS_MODULE: jobs.observability.snapshot_settings
+      DATABASE_URL: postgresql://jobstream:local-only@db:5432/jobstream
+      JOBSTREAM_SERVICE: snapshot-exporter
+      JOBSTREAM_SCRAPE_TOKEN_FILE: /run/scrape/credential
+    entrypoint: [python, -m, jobs.observability.exporter]
+    networks: [default, telemetry]
+    volumes:
+      - scrape-credential:/run/scrape:ro
+      - prometheus-data:/monitoring-storage/prometheus:ro
+      - loki-data:/monitoring-storage/loki:ro
+      - alloy-data:/monitoring-storage/alloy:ro
+    mem_limit: 192m
+    healthcheck:
+      test: [CMD, python, -c, "import socket; socket.create_connection(('127.0.0.1',9100),2).close()"]
+      interval: 15s
+      timeout: 3s
+      retries: 3
+  prometheus:
+    <<: *monitor
+    image: prom/prometheus:v3.13.5@sha256:aafa9d694e6a883c02db516d9f6e5b84e14195f49a2a6456a4cca815edda72b9
+    user: "10001:10001"
+    command: ["--config.file=/etc/prometheus/prometheus.yml", "--storage.tsdb.path=/prometheus", "--storage.tsdb.retention.time=7d", "--storage.tsdb.retention.size=2147483648B"]
+    networks: [telemetry, monitoring]
+    volumes:
+      - ./deploy/monitoring/prometheus:/etc/prometheus:ro
+      - scrape-credential:/run/scrape:ro
+      - ./.monitoring-secrets/infinity-targets.json:/etc/prometheus/infinity-targets.json:ro
+      - prometheus-data:/prometheus
+    mem_limit: 512m
+    healthcheck:
+      test: [CMD, wget, -q, -O, /dev/null, http://127.0.0.1:9090/-/ready]
+      interval: 15s
+      timeout: 3s
+      retries: 5
+  grafana:
+    <<: *monitor
+    image: grafana/grafana:13.3.0@sha256:488984b716c0862639f91a698adbe2862677a5a07bad42da5f03f3030883b205
+    user: "10001:10001"
+    networks: [monitoring, grafana-ingress]
+    pids_limit: 256
+    ports: ["127.0.0.1:3000:3000"]
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD__FILE: /run/grafana/credential
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+      GF_ANALYTICS_CHECK_FOR_UPDATES: "false"
+      GF_ANALYTICS_CHECK_FOR_PLUGIN_UPDATES: "false"
+      GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /var/lib/grafana/dashboards/overview.json
+      GF_USERS_DEFAULT_THEME: dark
+      GF_SECURITY_COOKIE_SAMESITE: strict
+      GF_PLUGINS_PREINSTALL_DISABLED: "true"
+      GF_PLUGINS_DISABLE_PLUGINS: cloudwatch,grafana-azure-monitor-datasource,stackdriver,mssql,mysql,postgres,elasticsearch,influxdb,graphite,opentsdb,jaeger,zipkin
+    volumes:
+      - grafana-credential:/run/grafana:ro
+      - ./deploy/monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./deploy/monitoring/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana-data:/var/lib/grafana
+    mem_limit: 384m
+    healthcheck:
+      test: [CMD, wget, -q, -O, /dev/null, http://127.0.0.1:3000/api/health]
+      interval: 15s
+      timeout: 3s
+      retries: 5
+  loki:
+    <<: *monitor
+    image: jobstream-loki:local
+    build: deploy/monitoring/loki
+    pull_policy: build
+    user: "10001:10001"
+    command: ["-config.file=/etc/loki/config.yaml"]
+    volumes:
+      - ./deploy/monitoring/loki.yaml:/etc/loki/config.yaml:ro
+      - loki-data:/loki
+    mem_limit: 384m
+    healthcheck:
+      test: [CMD, /health/busybox, wget, -q, -O, /dev/null, http://127.0.0.1:3100/ready]
+      interval: 15s
+      timeout: 3s
+      retries: 10
+  alloy:
+    <<: *monitor
+    image: grafana/alloy:v1.21.3@sha256:8ab871206bd2d8f89277f53abffee5f452a293980788d52f85fa183a87a505a4
+    user: "10001:10001"
+    command: [run, /etc/alloy/config.alloy, --storage.path=/var/lib/alloy, --server.http.listen-addr=0.0.0.0:12345, --disable-reporting]
+    volumes:
+      - ./deploy/monitoring/config.alloy:/etc/alloy/config.alloy:ro
+      - alloy-data:/var/lib/alloy
+      - web-logs:/logs/web:ro
+      - worker-logs:/logs/worker:ro
+      - ingestion-worker-logs:/logs/ingestion-worker:ro
+      - preparation-worker-logs:/logs/preparation-worker:ro
+      - delivery-worker-logs:/logs/delivery-worker:ro
+      - browser-worker-logs:/logs/browser-worker:ro
+      - beat-logs:/logs/beat:ro
+      - infinity-logs:/logs/infinity:ro
+    mem_limit: 256m
+    healthcheck:
+      test: [CMD, /bin/bash, -ec, 'exec 3<>/dev/tcp/127.0.0.1/12345; printf "GET /-/ready HTTP/1.0\r\n\r\n" >&3; read -r status <&3; [[ "$$status" == *"200"* ]]']
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+networks:
+  grafana-ingress:
+    # Docker Desktop needs a non-internal bridge for localhost port forwarding.
+  telemetry:
+    internal: true
+  monitoring:
+    internal: true
+
+volumes:
+  web-logs:
+  worker-logs:
+  ingestion-worker-logs:
+  preparation-worker-logs:
+  delivery-worker-logs:
+  browser-worker-logs:
+  beat-logs:
+  infinity-logs:
+  prometheus-data:
+  grafana-data:
+  loki-data:
+  alloy-data:
+  scrape-credential:
+  grafana-credential:

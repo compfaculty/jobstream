@@ -1,0 +1,38 @@
+groups:
+  - name: jobstream
+    rules:
+      - alert: JobstreamTargetDown
+        expr: up{job=~"jobstream|infinity"} == 0
+        for: 2m
+        labels: {severity: warning}
+        annotations: {summary: "An enabled application telemetry target is unavailable"}
+      - alert: JobstreamSnapshotStale
+        expr: time() - jobstream_snapshot_timestamp_seconds > 90 or jobstream_snapshot_exporter_success == 0
+        for: 2m
+        labels: {severity: warning}
+        annotations: {summary: "Operational snapshot is stale or cannot be read"}
+      - alert: JobstreamSchedulerMissing
+        expr: time() - jobstream_scheduler_publication_timestamp_seconds > 90
+        for: 2m
+        labels: {severity: warning}
+        annotations: {summary: "No recent scheduler publication"}
+      - alert: JobstreamConsumerMissing
+        expr: jobstream_queue_consumers == 0
+        for: 3m
+        labels: {severity: warning}
+        annotations: {summary: "A configured queue has no observed consumer"}
+      - alert: JobstreamHttpErrors
+        expr: sum(rate(jobstream_http_requests_total{status=~"5.."}[5m])) / sum(rate(jobstream_http_requests_total[5m])) > 0.05 and sum(increase(jobstream_http_requests_total[5m])) >= 100
+        for: 5m
+        labels: {severity: warning}
+        annotations: {summary: "Sustained HTTP failure rate above 5% with sufficient traffic"}
+      - alert: JobstreamBacklogGrowing
+        expr: deriv(jobstream_queue_depth[15m]) > 0 and jobstream_queue_depth > 20
+        for: 15m
+        labels: {severity: warning}
+        annotations: {summary: "Queue backlog has grown for fifteen minutes"}
+      - alert: JobstreamMonitoringDiskLow
+        expr: min(jobstream_monitoring_disk_available_bytes) < 2 * 1024 * 1024 * 1024
+        for: 5m
+        labels: {severity: warning}
+        annotations: {summary: "Monitoring filesystem has less than 2 GiB free"}

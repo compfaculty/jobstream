@@ -1,0 +1,73 @@
+logging {
+  level = "warn"
+  format = "json"
+}
+local.file_match "application" {
+  path_targets = [{__path__ = "/logs/*/events-*.jsonl*"}]
+  sync_period = "5s"
+}
+loki.source.file "application" {
+  targets = local.file_match.application.targets
+  forward_to = [loki.process.safe.receiver]
+}
+loki.process "safe" {
+  forward_to = [loki.write.local.receiver]
+  stage.drop {
+    longer_than = "16KiB"
+    drop_counter_reason = "oversized_event"
+  }
+  stage.json {
+    expressions = {schema = "schema_version", service = "service", environment = "environment", severity = "severity", timestamp = "timestamp", event = "event", safe = "{schema_version: schema_version, timestamp: timestamp, service: service, environment: environment, severity: severity, event: event, outcome: outcome, state: state, reason: reason, purpose: purpose, model: model, retry_seconds: retry_seconds, workflow_id: workflow_id, request_id: request_id, task_id: task_id, execution_id: execution_id, attempt_id: attempt_id, call_id: call_id, source_id: source_id, run_id: run_id, task_name: task_name, queue: queue, provider: provider, route: route, method: method, status: status, duration_seconds: duration_seconds, imported: imported, rejected: rejected, error_category: error_category, error_code: error_code, error_fingerprint: error_fingerprint, trace_id: trace_id, span_id: span_id, build_revision: build_revision, input_tokens: input_tokens, output_tokens: output_tokens}"}
+    drop_malformed = true
+  }
+  stage.labels {
+    values = {service = "", environment = "", severity = "", schema = ""}
+  }
+  stage.match {
+    selector = "{schema!=\"1\"}"
+    action = "drop"
+    drop_counter_reason = "invalid_schema"
+  }
+  stage.output {
+    source = "safe"
+  }
+  stage.match {
+    selector = "{service!~\"web|worker|ingestion-worker|preparation-worker|delivery-worker|browser-worker|beat|infinity\"}"
+    action = "drop"
+    drop_counter_reason = "invalid_service"
+  }
+  stage.match {
+    selector = "{severity!~\"DEBUG|INFO|WARNING|ERROR|CRITICAL\"}"
+    action = "drop"
+    drop_counter_reason = "invalid_severity"
+  }
+  stage.match {
+    selector = "{environment!~\"development|production\"}"
+    action = "drop"
+    drop_counter_reason = "invalid_environment"
+  }
+  stage.timestamp {
+    source = "timestamp"
+    format = "RFC3339Nano"
+    action_on_failure = "skip"
+  }
+  stage.label_keep {
+    values = ["service", "environment", "severity"]
+  }
+  stage.limit {
+    rate = 200
+    burst = 400
+    drop = true
+  }
+}
+loki.write "local" {
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+    batch_size = "256KiB"
+    batch_wait = "1s"
+    remote_timeout = "5s"
+    min_backoff_period = "500ms"
+    max_backoff_period = "10s"
+    max_backoff_retries = 5
+  }
+}

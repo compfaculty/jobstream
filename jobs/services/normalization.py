@@ -5,6 +5,8 @@ import re
 from bs4 import BeautifulSoup
 from django.conf import settings
 
+from jobs.observability.events import phase
+
 VERSION = "sections-v3"
 HEADINGS = {
     "requirements": (
@@ -197,6 +199,7 @@ def section_schema() -> dict:
     }
 
 
+@phase("normalization")
 def normalize_with_ai(description: str, deterministic: dict) -> dict:
     """Classify exact source lines in difficult postings; never manufacture requirements."""
     from .ai import request_json

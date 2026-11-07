@@ -13,3 +13,5 @@ staticfiles
 services/infinity-agent/target/
 
 private-backups/
+
+.monitoring-secrets/

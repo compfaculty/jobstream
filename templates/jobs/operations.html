@@ -16,6 +16,7 @@
 <ul>{% for task in infrastructure.payload.active_tasks %}<li>{{ task.task_name }} · {{ task.task_id }} · {{ task.worker }}</li>{% empty %}<li>No running tasks observed. Worker inspection is a point-in-time sample.</li>{% endfor %}</ul>
 <h2>Workflow states</h2>
 <p class="muted">All retained records; history and token totals below use the selected time window.</p>
+{% if grafana_url %}<p><a href="{{ grafana_url }}" target="_blank" rel="noopener noreferrer">Open monitoring in Grafana ↗</a></p>{% endif %}
 <div class="operations-summary">{% for label, summary in summaries.items %}<article><h3>{{ label }}</h3><p>{% for item in summary %}{{ item.label }}: {{ item.count }}{% if not forloop.last %} · {% endif %}{% empty %}No records{% endfor %}</p></article>{% endfor %}
 </div>
 <h2>Recent history</h2>

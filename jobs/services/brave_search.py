@@ -1,13 +1,19 @@
 """Fixed-destination, bounded Brave search client. Never follow authenticated redirects."""
 
 import json
+from functools import partial
 
 import httpx
 from django.conf import settings
 
+from jobs.observability.http import payload as observe_payload
+from jobs.observability.http import stream
+
 from .crawl import cooldown, request_slot
 from .network import HTTPStatusError
 from .retries import retry_after_seconds
+
+observed_stream = partial(stream, provider="brave")
 
 HOST = "api.search.brave.com"
 ENDPOINT = f"https://{HOST}/res/v1/web/search"
@@ -40,7 +46,8 @@ def search(query: str, offset: int) -> tuple[list[str], bool]:
             timeout=httpx.Timeout(20, connect=10), follow_redirects=False, trust_env=False
         ) as client,
     ):
-        with client.stream(
+        with observed_stream(
+            client,
             "GET",
             ENDPOINT,
             params={"q": query, "count": 20, "offset": offset, "safesearch": "moderate"},
@@ -52,6 +59,7 @@ def search(query: str, offset: int) -> tuple[list[str], bool]:
                 raise HTTPStatusError(response.status_code, str(rate_pause(response.headers, 60)))
             body = bytearray()
             for chunk in response.iter_bytes():
+                observe_payload("brave", len(chunk))
                 body.extend(chunk)
                 if len(body) > MAX_BYTES:
                     raise ValueError("Search response exceeds limit")

@@ -12,6 +12,8 @@ from django.db import connection, transaction
 from django.utils import timezone
 
 from jobs.models import Job, NormalizationBatch, NormalizationTarget, NormalizationWork
+from jobs.observability.http import payload as observe_payload
+from jobs.observability.http import stream as observed_stream
 
 from .ai import AIUnavailable
 from .ai_costs import BudgetUnavailable, reserve, settle
@@ -92,9 +94,11 @@ def api(method, path, *, content=False, **kwargs):
     started = time.monotonic()
     try:
         with httpx.Client(timeout=20, follow_redirects=False, trust_env=False) as client:
-            with client.stream(
+            with observed_stream(
+                client,
                 method,
                 "https://api.openai.com/v1" + path,
+                provider="ai",
                 headers={"Authorization": f"Bearer {settings.OPENAI_API_KEY}"},
                 **kwargs,
             ) as response:
@@ -102,6 +106,7 @@ def api(method, path, *, content=False, **kwargs):
                     raise AIUnavailable("ai_batch_http_error")
                 chunks, size = [], 0
                 for chunk in response.iter_bytes():
+                    observe_payload("ai", len(chunk))
                     if time.monotonic() - started > 20:
                         raise AIUnavailable("ai_batch_timeout")
                     size += len(chunk)

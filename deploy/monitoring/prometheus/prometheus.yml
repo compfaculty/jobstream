@@ -1,0 +1,43 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  scrape_timeout: 5s
+rule_files: [/etc/prometheus/alerts.yml]
+scrape_configs:
+  - job_name: jobstream
+    authorization:
+      credentials_file: /run/scrape/credential
+    static_configs:
+      - targets: [web:9100]
+        labels: {service: web}
+      - targets: [worker:9100]
+        labels: {service: worker}
+      - targets: [ingestion-worker:9100]
+        labels: {service: ingestion-worker}
+      - targets: [preparation-worker:9100]
+        labels: {service: preparation-worker}
+      - targets: [delivery-worker:9100]
+        labels: {service: delivery-worker}
+      - targets: [browser-worker:9100]
+        labels: {service: browser-worker}
+      - targets: [beat:9100]
+        labels: {service: beat}
+      - targets: [snapshot-exporter:9100]
+        labels: {service: snapshot-exporter}
+  # Infinity is discovered only when explicitly enabled by monitoring setup.
+  - job_name: infinity
+    authorization:
+      credentials_file: /run/scrape/credential
+    file_sd_configs:
+      - files: [/etc/prometheus/infinity-targets.json]
+  - job_name: collector
+    metric_relabel_configs:
+      # Avoid per-file/PID series and unreviewed native collector label families.
+      - source_labels: [__name__]
+        regex: 'loki_(process_dropped_lines_total|write_dropped_(entries|bytes)_total|write_sent_(entries|bytes)_total|discarded_(samples|bytes)_total)|process_(resident_memory_bytes|cpu_seconds_total)|go_goroutines'
+        action: keep
+    static_configs:
+      - targets: [alloy:12345]
+        labels: {service: alloy}
+      - targets: [loki:3100]
+        labels: {service: loki}

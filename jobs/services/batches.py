@@ -18,6 +18,7 @@ from jobs.models import (
     Job,
     ResumeProfile,
 )
+from jobs.observability.events import phase
 
 from .submissions import approve
 
@@ -93,6 +94,7 @@ def create(
     return batch
 
 
+@phase("preparation")
 def prepare(item_id):
     from .ai import AIUnavailable
     from .resumes import tailor
