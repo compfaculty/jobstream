@@ -151,7 +151,9 @@ def links(soup, page):
     return result
 
 
-def inspect(candidate_url: str, roles: list[str]) -> tuple[Evidence, str]:
+def inspect(
+    candidate_url: str, roles: list[str], *, company_hint: str = "", website_hint: str = ""
+) -> tuple[Evidence, str]:
     """At most five public fetch operations; never persist jobs or invoke ingestion."""
     pages = {}
     remaining = 5
@@ -184,8 +186,10 @@ def inspect(candidate_url: str, roles: list[str]) -> tuple[Evidence, str]:
     initial, initial_url = fetch(candidate_url)
     queue = [(initial, initial_url)]
     seen = set()
-    name = ""
-    website = ""
+    name = plain(company_hint)[:250]
+    website = canonical_url(website_hint) if website_hint else ""
+    if website and domain(initial_url) != domain(website):
+        return Evidence(name=name, website=website), "EmployerDomainRedirect"
     while queue and len(seen) < 5:
         body, page = queue.pop(0)
         if page in seen:

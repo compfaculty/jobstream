@@ -22,7 +22,7 @@ from jobs.models import (
     EmployerDiscoveryRun,
 )
 
-from . import brave_search
+from . import brave_search, pituchim
 from .catalogue import domain, import_companies
 from .crawl import CrawlDeferred, collection_context
 from .discovery import ats_endpoint
@@ -59,7 +59,7 @@ def start(campaign_id: int, *, manual: bool = False) -> EmployerDiscoveryRun | N
 
 
 @transaction.atomic
-def reserve(campaign: EmployerDiscoveryCampaign, kind: str) -> bool:
+def reserve(campaign: EmployerDiscoveryCampaign, kind: str, *, amount: int = 1) -> bool:
     """Reserve before I/O, including retries; one lock bounds all campaigns together."""
     with connection.cursor() as cursor:
         cursor.execute("SELECT pg_advisory_xact_lock(720316014)")
@@ -70,9 +70,9 @@ def reserve(campaign: EmployerDiscoveryCampaign, kind: str) -> bool:
     )
     limit = campaign.daily_search_limit if kind == "searches" else campaign.daily_candidate_limit
     global_limit = 30 if kind == "searches" else 100
-    if getattr(bucket, kind) >= limit or (totals[kind] or 0) >= global_limit:
+    if getattr(bucket, kind) + amount > limit or (totals[kind] or 0) + amount > global_limit:
         return False
-    setattr(bucket, kind, getattr(bucket, kind) + 1)
+    setattr(bucket, kind, getattr(bucket, kind) + amount)
     bucket.save(update_fields=[kind])
     return True
 
@@ -222,13 +222,32 @@ def prepare_step(run_id, token):
         run.finished_at = timezone.now()
         release(run)
         return None
-    if not settings.BRAVE_SEARCH_API_KEY:
+    if campaign.provider == "brave" and not settings.BRAVE_SEARCH_API_KEY:
         run.status, run.diagnostic = "failed", "Configure BRAVE_SEARCH_API_KEY"
         run.finished_at = timezone.now()
         release(run)
         return None
+    if (
+        campaign.provider == "pituchim"
+        and not run.pending_leads
+        and campaign.query_pages.get("pituchim_complete")
+    ):
+        campaign.directory_page = 1
+        campaign.query_pages = {}
+        campaign.save(update_fields=["directory_page", "query_pages"])
+        complete(run, campaign, "DirectoryCycleComplete")
+        release(run)
+        return None
+    if run.pending_leads:
+        lead = EmployerDiscoveryLead.objects.get(pk=run.pending_leads[0], campaign=campaign)
+        if lead.status == "rejected":
+            run.pending_leads = run.pending_leads[1:]
+            run.rejected += 1
+            release(run)
+            return None
     kind = "candidates" if run.pending_leads else "searches"
-    if not reserve(campaign, kind):
+    amount = 1
+    if not reserve(campaign, kind, amount=amount):
         complete(run, campaign, "DailyBudgetExhausted")
         release(run)
         return None
@@ -237,6 +256,14 @@ def prepare_step(run_id, token):
         run.inspected += 1
         run.save(update_fields=["inspected"])
         return "candidate", lead, campaign.technology_roles
+    if campaign.provider == "pituchim":
+        run.searched += amount
+        run.save(update_fields=["searched"])
+        rules_fresh = (
+            campaign.query_pages.get("pituchim_robots_page") == campaign.directory_page
+            and campaign.query_pages.get("pituchim_robots_until", 0) > timezone.now().timestamp()
+        )
+        return ("directory" if rules_fresh else "directory_rules"), campaign.directory_page, None
     index = campaign.query_cursor % len(campaign.queries)
     query = campaign.queries[index]
     offset = campaign.query_pages.get(query, 0)
@@ -297,6 +324,71 @@ def save_search(run_id, token, query, offset, urls, more):
 
 
 @transaction.atomic
+def save_directory_rules(run_id, token, page):
+    pair = locked(run_id, token)
+    if not pair:
+        return
+    run, campaign = pair
+    if campaign.provider != "pituchim" or campaign.directory_page != page:
+        release(run)
+        return
+    campaign.query_pages = {
+        "pituchim_robots_page": page,
+        "pituchim_robots_until": (timezone.now() + timedelta(hours=1)).timestamp(),
+    }
+    campaign.save(update_fields=["query_pages"])
+    run.retries, run.diagnostic = 0, ""
+    release(run, delay=5)
+
+
+@transaction.atomic
+def save_directory(run_id, token, page, companies, more):
+    pair = locked(run_id, token)
+    if not pair:
+        return
+    run, campaign = pair
+    if campaign.provider != "pituchim" or campaign.directory_page != page:
+        release(run)
+        return
+    pending = []
+    for company in companies:
+        url = canonical_url(company.website)
+        key = hashlib.sha256(url.encode()).hexdigest()
+        lead, added = EmployerDiscoveryLead.objects.get_or_create(
+            campaign=campaign,
+            key=key,
+            defaults={
+                "run": run,
+                "candidate_url": url,
+                "search_query": pituchim.page_url(page),
+                "search_offset": 0,
+                "name": company.name,
+                "website": url,
+                "diagnostic": "DirectoryHiringBadgeUnverified",
+            },
+        )
+        if not added or lead.pk in pending:
+            run.duplicate += 1
+        if lead.pk in pending:
+            continue
+        if lead.status == "rejected":
+            run.rejected += 1
+            continue
+        if lead.observed_at and lead.observed_at >= timezone.now() - timedelta(days=1):
+            continue
+        lead.run = run
+        lead.search_query = pituchim.page_url(page)
+        lead.save(update_fields=["run", "search_query"])
+        pending.append(lead.pk)
+    run.pending_leads = pending
+    campaign.directory_page = page + 1 if more else page
+    campaign.query_pages = {} if more else {"pituchim_complete": True}
+    campaign.save(update_fields=["directory_page", "query_pages"])
+    run.retries, run.diagnostic = 0, ""
+    release(run, delay=5)
+
+
+@transaction.atomic
 def save_candidate(run_id, token, lead_id, evidence, diagnostic):
     pair = locked(run_id, token)
     if not pair:
@@ -307,6 +399,9 @@ def save_candidate(run_id, token, lead_id, evidence, diagnostic):
         run.rejected += 1
     else:
         for field, value in evidence.fields().items():
+            # Preserve directory identity hints when hiring verification is inconclusive.
+            if field in {"name", "website"} and not value:
+                continue
             setattr(lead, field, value)
         lead.status = "unresolved"
         lead.diagnostic = diagnostic
@@ -389,8 +484,22 @@ def step(run_id: int) -> None:
             if kind == "search":
                 urls, more = brave_search.search(value, arg)
                 save_search(run_id, token, value, arg, urls, more)
+            elif kind == "directory_rules":
+                pituchim.check_robots(value)
+                save_directory_rules(run_id, token, value)
+            elif kind == "directory":
+                companies, more = pituchim.fetch(value, robots_approved=True)
+                save_directory(run_id, token, value, companies, more)
             else:
-                evidence, diagnostic = inspect(value.candidate_url, arg)
+                if _campaign.provider == "pituchim":
+                    evidence, diagnostic = inspect(
+                        value.candidate_url,
+                        arg,
+                        company_hint=value.name,
+                        website_hint=value.website,
+                    )
+                else:
+                    evidence, diagnostic = inspect(value.candidate_url, arg)
                 save_candidate(run_id, token, value.pk, evidence, diagnostic)
     except Exception as exc:
         # Persist a visible failure, including unexpected parser errors, without leaking content.

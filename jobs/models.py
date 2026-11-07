@@ -838,9 +838,20 @@ class NormalizationTarget(models.Model):
 
 
 class EmployerDiscoveryCampaign(models.Model):
+    provider = models.CharField(
+        max_length=12,
+        default="brave",
+        choices=[
+            ("brave", "Brave Search API"),
+            ("pituchim", "Pituchim public directory"),
+        ],
+    )
+    directory_page = models.PositiveIntegerField(default=1, editable=False)
     name = models.CharField(max_length=200, unique=True)
     enabled = models.BooleanField(default=False)
-    queries = models.JSONField(default=list, help_text="Public search queries, up to 200 strings.")
+    queries = models.JSONField(
+        default=list, blank=True, help_text="Brave only: public search queries, up to 200 strings."
+    )
     technology_roles = models.JSONField(
         default=list, help_text="Case-insensitive job title phrases."
     )
@@ -858,6 +869,8 @@ class EmployerDiscoveryCampaign(models.Model):
         super().clean()
         for field, maximum, length in (("queries", 200, 400), ("technology_roles", 100, 80)):
             values = getattr(self, field)
+            if field == "queries" and self.provider == "pituchim":
+                continue
             if (
                 not isinstance(values, list)
                 or not 1 <= len(values) <= maximum

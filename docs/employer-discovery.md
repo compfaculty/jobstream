@@ -1,18 +1,20 @@
 # Employer discovery worker
 
 The worker finds **companies for operator review**, independently of job ingestion.
-It sends public queries to Brave Search API, checks bounded public employer pages,
+It uses Brave Search API or the no-key Pituchim public HTML directory, checks bounded public employer pages,
 and promotes companies only when a technology vacancy and employer relationship
 are evidenced. It never creates Jobs or Applications or activates career endpoints.
 
 ## Setup and operation
 
-1. Apply migrations 0048–0049 through the normal deployment workflow. They add
-   discovery tables and seed **Regional technology employers**, disabled. No existing
+1. Apply migrations 0048–0051 through the normal deployment workflow. They add
+   discovery tables and seed **Regional technology employers** (Brave) and
+   **Pituchim hiring companies** (no API key), both disabled. No existing
    companies, sources, jobs, or enabled source cohort are changed. Take the usual
    database backup before migrations. No migration has been applied to the application
    database as part of development verification; pytest uses an isolated database.
-2. Set `BRAVE_SEARCH_API_KEY` in the server/worker environment. Obtain a Brave Search
+2. For the **Brave** provider only, set `BRAVE_SEARCH_API_KEY` in the server/worker environment.
+   For **Pituchim**, leave that key blank and use the separate Pituchim campaign. Obtain a Brave Search
    API subscription separately and check its terms, retention rights and billing cap
    before enabling. Query/result metadata is persisted, so select a plan permitting
    the intended storage. The integration does not create accounts or subscriptions.
@@ -88,12 +90,12 @@ per-applicant discovery dataset exposed through public endpoints.
 
 Daily reservations are PostgreSQL records keyed by campaign and **UTC day**. Limits
 can be lowered per campaign, with hard shared ceilings across all campaigns of
-**30 search attempts and 100 candidate checks/day**. Manual runs, duplicate deliveries,
+**30 discovery request attempts and 100 candidate checks/day**. Manual runs, duplicate deliveries,
 retries and failed attempts cannot bypass those ceilings. A reservation can be spent
 without making a request if a worker is interrupted or a shared cooldown defers it.
 These conservative ceilings bound requests, not a promised monetary cost.
 
-Each task performs one search page or candidate check. A ten-minute lease with a
+Each task performs one search page, one robots check, one directory page, or one candidate check. A ten-minute lease with a
 unique fencing token prevents duplicate work from committing stale results; the
 existing five-minute hard task limit is unchanged. Query offsets and pending lead
 IDs are committed between tasks. Beat republishes lost queued work after five
@@ -103,8 +105,8 @@ when a budget is exhausted.
 Transient network failures, 429 and selected 5xx responses retry at most three times
 with exponential delay. Retry-After and Brave exhausted-window reset headers extend
 shared cooldowns. Permanent failures and exhausted retries remain visible by bounded
-error code, without response bodies or exception payloads. Missing credentials fail
-before spending budget. Fix configuration and request a fresh bounded run if needed.
+error code, without response bodies or exception payloads. Missing Brave credentials fail
+before spending budget; Pituchim never checks or uses a Brave credential. Fix configuration and request a fresh bounded run if needed.
 
 Disable a campaign to stop further dispatch and fence pending in-flight results.
 No provider operation already in flight can be recalled. Leads/evidence remain for
@@ -118,10 +120,58 @@ email is required to test this feature. Local PostgreSQL is required for reserva
 lease and concurrent promotion tests:
 
 ```sh
-DEBUG=1 uv run pytest tests/test_employer_discovery.py tests/test_catalogue.py \
+DEBUG=1 uv run pytest tests/test_pituchim.py tests/test_employer_discovery.py tests/test_catalogue.py \
   tests/test_discovery.py tests/test_tasks.py tests/test_network_sources.py -q --reuse-db
 ```
 
 Run `make check` and review migrations before rollout. Reversing the schema migrations
 removes discovery records, so disable the campaign to roll back behavior without
 losing evidence; do not reverse migrations against valuable data without approval.
+
+
+## Pituchim: no-key company source
+
+Source: [Pituchim startup directory](https://pituchim.com/startups), using its public
+server-rendered HTML only. Tracking parameters are removed. Its observed robots.txt
+allows `/startups` and disallows `/api/`; the worker checks robots.txt before each
+page and refuses a disallow or failed rules request (404 means no robots file).
+No private endpoints, embedded API credentials or browser sessions are used.
+
+**Hiring now** is implemented by filtering `.company-hiring` badges on the HTML cards.
+Inspection of the site's public JavaScript found that the UI control is client-side
+and does not encode the filter in a server-rendered URL. Consequently the worker
+still walks the ordinary `?page=N` pages but only queues cards marked Hiring.
+Pages with zero hiring badges are valid and advance the durable cursor. A hiring
+badge is a third-party claim, not proof of a current regional technology vacancy.
+
+Only card names and public website links are extracted. Descriptions, contact
+information, images and full directory datasets are not copied. The directory URL
+is retained in each lead's query/provenance field, providing Pituchim attribution.
+Company names/websites are identity hints for inspecting the linked site; they never
+attest an official domain or activate a career endpoint. Unresolved checks retain
+those hints so an operator can work through the companies later.
+
+Each directory page requires **two** separately checkpointed request attempts
+(robots.txt, then the HTML page), including failed attempts, against the same shared
+30/day ceiling. The initial campaign normally checks up to 15 directory pages/day,
+fewer when Brave also runs or candidate budget/backpressure intervenes. Robots
+approval is scoped to the pending page and expires after one hour. Separate tasks
+allow host-spacing cooldowns to defer the HTML request without fetching robots.txt
+again on each retry. A five-second host cooldown follows each successful
+page. Pages accept at most 60 company cards (currently observed: 48); pagination
+must remain on `/startups`, advance exactly one page, and match the displayed page
+count. Unexpected markup, redirects, challenges or missing pagination fail visibly;
+the worker does not infer the end of the directory from a parser failure.
+
+The final page is checkpointed before pending candidates are processed; after those
+checks, the run completes and the next daily cycle restarts from page one. Pending
+checks survive a daily budget stop. Campaign provider is read-only after its first
+run to avoid mixing cursors from different providers; create a separate campaign
+when switching providers. Existing Brave configuration and its disabled state are
+preserved.
+
+Live read-only inspection on 2026-11-07 confirmed robots rules and captured pages 1
+and 2. The parser found 48 usable company links and **zero Hiring badges on each of
+those two pages**; that is not evidence that later pages or the UI's filtered view
+have no hiring companies. No application database writes, paid requests, employer
+crawl or rollout were part of that inspection.

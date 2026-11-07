@@ -10,9 +10,23 @@ from .services.employer_discovery import promote, start
 
 @admin.register(EmployerDiscoveryCampaign)
 class EmployerDiscoveryCampaignAdmin(admin.ModelAdmin):
-    list_display = ("name", "enabled", "next_run_at", "daily_search_limit", "daily_candidate_limit")
-    list_filter = ("enabled",)
-    readonly_fields = ("query_cursor", "query_pages")
+    list_display = (
+        "name",
+        "provider",
+        "enabled",
+        "next_run_at",
+        "daily_search_limit",
+        "daily_candidate_limit",
+    )
+    list_filter = ("enabled", "provider")
+    readonly_fields = ("query_cursor", "query_pages", "directory_page")
+
+    def get_readonly_fields(self, request, obj=None):
+        fields = super().get_readonly_fields(request, obj)
+        if obj and EmployerDiscoveryRun.objects.filter(campaign=obj).exists():
+            return (*fields, "provider")
+        return fields
+
     actions = ("run_now",)
 
     @admin.action(
