@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib import admin
 from django.core.exceptions import ValidationError
+from django.core.files.base import ContentFile
 from django.http import HttpResponseRedirect
 from django.template.response import TemplateResponse
 from django.urls import path, reverse
@@ -213,8 +214,38 @@ class CompanyProvenanceInline(admin.TabularInline):
         return False
 
 
+class CompanyAdminForm(forms.ModelForm):
+    class Meta:
+        model = Company
+        fields = "__all__"
+
+    def clean_logo(self):
+        logo = self.cleaned_data.get("logo")
+        if not logo or "logo" not in self.changed_data:
+            return logo
+        from .services.companies import ENRICHMENT_ERRORS, normalize_logo
+
+        try:
+            data = normalize_logo(logo.read(2 * 1024 * 1024 + 1))
+        except ENRICHMENT_ERRORS as exc:
+            raise forms.ValidationError(
+                "Upload a valid PNG, JPEG, WebP, ICO or GIF under 2 MiB and 4 million pixels."
+            ) from exc
+        return ContentFile(data, name="company-logo.png")
+
+    def clean_logo_source_url(self):
+        url = self.cleaned_data.get("logo_source_url", "")
+        if url:
+            try:
+                return canonical_url(url)
+            except ValueError as exc:
+                raise forms.ValidationError("Use a public HTTPS URL.") from exc
+        return url
+
+
 @admin.register(Company)
 class CompanyAdmin(admin.ModelAdmin):
+    form = CompanyAdminForm
     list_display = (
         "name",
         "website",
@@ -232,8 +263,6 @@ class CompanyAdmin(admin.ModelAdmin):
         "official_domain",
         "website_verified",
         "discovery_error",
-        "logo",
-        "logo_source_url",
         "enriched_at",
         "enrichment_attempted_at",
         "enrichment_error",
