@@ -6,6 +6,7 @@ from django.http import HttpResponseRedirect
 from django.template.response import TemplateResponse
 from django.urls import path, reverse
 from django.utils import timezone
+from django.utils.html import format_html
 from two_factor.admin import AdminSiteOTPRequired
 
 from .admin_filters import CompanyFilter, LocationFilter, TechnologyFilter, TechnologyScopeFilter
@@ -248,6 +249,7 @@ class CompanyAdmin(admin.ModelAdmin):
     form = CompanyAdminForm
     list_display = (
         "name",
+        "logo_preview",
         "website",
         "application_email",
         "website_verified",
@@ -267,6 +269,17 @@ class CompanyAdmin(admin.ModelAdmin):
         "enrichment_attempted_at",
         "enrichment_error",
     )
+
+    @admin.display(description="Logo")
+    def logo_preview(self, obj):
+        if not obj.logo:
+            return "—"
+        return format_html(
+            '<img src="{}" alt="{}" width="40" height="40" '
+            'style="object-fit:contain" loading="lazy">',
+            reverse("company-logo", args=[obj.pk]),
+            f"{obj.name} logo",
+        )
 
     inlines = (CompanyAliasInline, CareerSourceInline, CompanyProvenanceInline)
     change_list_template = "admin/jobs/company/change_list.html"
