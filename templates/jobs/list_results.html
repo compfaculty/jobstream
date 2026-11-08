@@ -37,21 +37,26 @@
 <div class="results-heading"><h2>{% if job_mode == 'recommended' %}Recommended for you{% elif request.GET.saved == '1' %}Saved opportunities{% else %}Explore opportunities{% endif %}</h2><span class="count">{{ page.paginator.count }} job{{ page.paginator.count|pluralize }}</span></div>
 <div class="job-list">
 {% for job in page %}
-<article class="job-card">
+<article class="job-card job-list-card">
+<div class="job-details-section">
 <label class="job-selection"><input type="checkbox" name="jobs" value="{{ job.pk }}" aria-label="Select {{ job.title }}"{% if not job.active %} disabled{% endif %}></label>
   {% if job.company_profile.logo %}<img class="company-logo" src="{% url 'company-logo' job.company_profile_id %}" alt="" width="48" height="48" loading="lazy">{% endif %}
   <div class="job-card-content"><h2><a href="{% url 'job' job.pk %}">{{ job.title }}</a></h2><p class="company-name">{% if job.company_profile_id %}<a class="company-link" href="{% url 'company' job.company_profile_id %}">{{ job.company_profile.name }}</a>{% else %}{{ job.company|default:'Company not specified' }}{% endif %}</p><p class="job-meta"><span>{{ job.location|default:'Location not specified' }}</span><span>Added {{ job.discovered_at|date:'M j, Y' }}</span>{% if not job.active %}<span class="job-unavailable">{% if job.status_override %}{{ job.get_status_override_display }}{% else %}{{ job.get_lifecycle_display }}{% endif %}</span>{% endif %}{% if job_mode == 'recommended' %}<span class="job-fit">{{ job.recommendation_score }}% fit</span>{% endif %}</p></div>
-  {% if job.normalized.required_technologies %}<ul class="job-stack" aria-label="Required technologies">{% for technology in job.normalized.required_technologies|slice:":6" %}<li>{{ technology }}</li>{% endfor %}{% if job.normalized.required_technologies|length > 6 %}<li class="job-stack-more">+{{ job.normalized.required_technologies|length|add:"-6" }}</li>{% endif %}</ul>{% endif %}
+</div>
+  <div class="job-tech-section"><p class="job-section-label">Tech needed</p>
+  {% if job.normalized.required_technologies %}<ul class="job-stack" aria-label="Required technologies">{% for technology in job.normalized.required_technologies|slice:":6" %}<li>{{ technology }}</li>{% endfor %}{% if job.normalized.required_technologies|length > 6 %}<li class="job-stack-more">+{{ job.normalized.required_technologies|length|add:"-6" }}</li>{% endif %}</ul>{% else %}<p class="job-section-empty">Not specified</p>{% endif %}
+  </div>
   <div class="job-card-aside">
+    <p class="job-section-label">Source</p>
     <div class="job-sources" aria-label="Job sources">
     {% for origin in job.origins.all %}
       <a class="job-source" href="{{ origin.source_url }}" target="_blank" rel="noopener noreferrer" aria-label="Source: {{ origin.source.name }} (opens in new tab)">
         <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 3h7v7M21 3l-9 9"/><path d="M10 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-5"/></svg>
         <span>{{ origin.source.name }}</span>
       </a>
+    {% empty %}<span class="job-section-empty">Not available</span>
     {% endfor %}
     </div>
-    <span class="card-arrow" aria-hidden="true">↗</span>
   </div>
 </article>
 {% empty %}
