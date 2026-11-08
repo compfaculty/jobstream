@@ -158,7 +158,7 @@ def toggle_saved(request, pk):
 
 @login_required
 def application_create(request, pk):
-    job = get_object_or_404(Job, pk=pk)
+    job = get_object_or_404(Job.objects.select_related("company_profile"), pk=pk)
     existing = Application.objects.filter(owner=request.user, job=job).first()
     if existing:
         return redirect("application", pk=existing.pk)
@@ -167,13 +167,13 @@ def application_create(request, pk):
     draft = Application(owner=request.user, job=job)
     try:
         draft.portal_url = secret_url(job.apply_url or job.canonical_url)
-        if not job.apply_email:
+        if not job.preferred_application_email:
             draft.channel = "portal"
     except ValueError:
         pass
     from .services.cato_greenhouse import job_url
 
-    if not job.apply_email:
+    if not job.preferred_application_email:
         try:
             draft.portal_url = job_url(job)
             draft.channel = "portal"
@@ -181,7 +181,7 @@ def application_create(request, pk):
             pass
     from .services.camunda_ashby import job_url as camunda_url
 
-    if not job.apply_email:
+    if not job.preferred_application_email:
         try:
             draft.portal_url = camunda_url(job)
             draft.channel = "portal"
@@ -189,7 +189,7 @@ def application_create(request, pk):
             pass
     from .services.gitlab_greenhouse import job_url as gitlab_url
 
-    if not job.apply_email:
+    if not job.preferred_application_email:
         try:
             draft.portal_url = gitlab_url(job)
             draft.channel = "portal"
@@ -197,14 +197,17 @@ def application_create(request, pk):
             pass
     from .services.comeet import manual_url
 
-    if not job.apply_email and (handoff := manual_url(job)):
+    if not job.preferred_application_email and (handoff := manual_url(job)):
         draft.portal_url = handoff
         draft.channel = "portal"
     form = ApplicationForm(
         request.POST or None,
         owner=request.user,
         instance=draft,
-        initial={"recipient": job.apply_email, "subject": f"Application: {job.title}"[:250]},
+        initial={
+            "recipient": job.preferred_application_email,
+            "subject": f"Application: {job.title}"[:250],
+        },
     )
     if request.method == "POST" and form.is_valid():
         with transaction.atomic():

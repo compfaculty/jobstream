@@ -218,6 +218,7 @@ class CompanyAdmin(admin.ModelAdmin):
     list_display = (
         "name",
         "website",
+        "application_email",
         "website_verified",
         "enriched_at",
         "enrichment_error",
@@ -225,7 +226,7 @@ class CompanyAdmin(admin.ModelAdmin):
         "discovery_error",
     )
     list_filter = ("website_verified", "review_required", "discovery_enabled")
-    search_fields = ("name", "website", "official_domain", "aliases__name")
+    search_fields = ("name", "website", "application_email", "official_domain", "aliases__name")
     readonly_fields = (
         "identity_key",
         "official_domain",

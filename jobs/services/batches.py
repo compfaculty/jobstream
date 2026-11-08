@@ -40,7 +40,7 @@ def create(
         return existing
     document = Document.objects.filter(owner=owner, pk=document_id).first()
     ids = set(job_ids)
-    jobs = list(Job.objects.filter(pk__in=ids, active=True))
+    jobs = list(Job.objects.select_related("company_profile").filter(pk__in=ids, active=True))
     if not document or not ids or len(ids) > 100 or len(jobs) != len(ids):
         raise ValidationError("Select your CV and between 1 and 100 active jobs.")
     if portal_answers:
@@ -82,7 +82,7 @@ def create(
                     "description": job.description,
                     "normalized": job.normalized,
                     "location": job.location,
-                    "recipient": job.apply_email,
+                    "recipient": job.preferred_application_email,
                     "apply_url": job.apply_url,
                     "portal_access": job.portal_access,
                 },
@@ -105,7 +105,7 @@ def prepare(item_id):
     with transaction.atomic():
         item = (
             BatchItem.objects.select_for_update(of=("self",))
-            .select_related("batch__profile", "batch__document", "job")
+            .select_related("batch__profile", "batch__document", "job__company_profile")
             .get(pk=item_id)
         )
         now = timezone.now()
@@ -144,7 +144,7 @@ def prepare(item_id):
         "title": item.job.title,
         "company": item.job.company,
         "description": item.job.description,
-        "recipient": item.job.apply_email,
+        "recipient": item.job.preferred_application_email,
     }
     from .matching import FitResult
     from .preference_matching import evaluate, preferences_for

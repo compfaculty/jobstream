@@ -5,7 +5,7 @@ from unittest.mock import Mock
 import pytest
 from django.core.exceptions import ValidationError
 
-from jobs.models import BatchItem, Document
+from jobs.models import ApplicationBatch, BatchItem, Document
 from jobs.services.batches import approve_items, cancel, create, prepare
 
 pytestmark = pytest.mark.django_db
@@ -184,3 +184,24 @@ def test_portal_materials_can_be_edited_but_not_sent(user, job, document, connec
     )
     with pytest.raises(ValidationError, match="employer portal"):
         submissions.approve(user, app.pk)
+
+
+def test_company_hr_email_is_snapshotted_without_approval(user, job, document, other):
+    from jobs.models import Company
+
+    company = Company.objects.create(name="Employer", application_email="hr@example.com")
+    job.company_profile = company
+    job.apply_email = "posting@example.com"
+    job.save()
+    batch = create(user, document.pk, [job.pk], uuid.uuid4())
+    assert batch.items.get().job_snapshot["recipient"] == "hr@example.com"
+    company.application_email = "replacement@example.com"
+    company.save()
+    item = batch.items.get()
+    prepare(item.pk)
+    item.refresh_from_db()
+    assert item.application.recipient == "hr@example.com"
+    assert item.application.channel == "email"
+    assert item.application.status == "draft"
+    with pytest.raises(ApplicationBatch.DoesNotExist):
+        approve_items(other, batch.pk, [item.pk])

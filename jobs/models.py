@@ -213,6 +213,15 @@ class Company(models.Model):
     )
     name = models.CharField(max_length=250, db_index=True)
     website = models.URLField(max_length=2048, blank=True)
+    application_email = models.EmailField(
+        "HR / CV application email",
+        blank=True,
+        help_text=(
+            "Verified address published by the company for CV applications. "
+            "Preferred over job emails and portals for new drafts. "
+            "Sending still requires user approval."
+        ),
+    )
     website_verified = models.BooleanField(default=False)
     official_domain = models.CharField(max_length=253, null=True, blank=True, unique=True)
     review_required = models.BooleanField(default=True)
@@ -335,6 +344,13 @@ class Job(models.Model):
             GinIndex(fields=["search_document"], name="job_search_gin"),
             GinIndex(fields=["normalized"], name="job_normalized_gin"),
         ]
+
+    @property
+    def preferred_application_email(self) -> str:
+        """Operator-maintained company contact takes priority for new drafts only."""
+        if self.company_profile_id and self.company_profile.application_email:
+            return self.company_profile.application_email
+        return self.apply_email
 
     @classmethod
     def from_db(cls, db, field_names, values):
