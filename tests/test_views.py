@@ -284,16 +284,17 @@ def test_delete_referenced_resume(authenticated, evaluation_profile, application
     document.refresh_from_db()
 
 
-def test_job_cards_show_only_required_stack(authenticated, job):
+def test_job_cards_show_all_mentioned_technologies(authenticated, job):
     job.normalized = {
         "required_technologies": ["Python", "Django", "PostgreSQL"],
-        "technologies": ["Python", "Django", "PostgreSQL", "OptionalTech"],
+        "technologies": ["Python", "Django", "PostgreSQL", "Go", "Rust", "AWS", "Redis"],
     }
     job.save()
     response = authenticated.get("/")
-    assert b'aria-label="Required technologies"' in response.content
+    assert b'aria-label="Technologies mentioned"' in response.content
     assert b"<li>Python</li>" in response.content
-    assert b"OptionalTech" not in response.content
+    assert b"<li>Redis</li>" in response.content
+    assert b"job-stack-more" not in response.content
     job.normalized = {}
     job.save()
-    assert b'aria-label="Required technologies"' not in authenticated.get("/").content
+    assert b'aria-label="Technologies mentioned"' not in authenticated.get("/").content
