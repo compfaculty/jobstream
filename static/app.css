@@ -256,3 +256,7 @@ html { scrollbar-gutter: stable; }
   .job-card-content { flex-basis: 60%; }
   .job-card-aside { flex-basis: 100%; max-width: 100%; justify-content: flex-end; }
 }
+
+.job-stack { display: flex; flex-wrap: wrap; gap: 5px; padding: 0; margin: 10px 0 0; list-style: none; }
+.job-stack li { padding: 2px 8px; border: 1px solid #64735850; border-radius: 5px; background: #b9e88908; color: var(--muted); font-size: 12px; line-height: 1.5; }
+.job-stack .job-stack-more { border-color: transparent; background: transparent; }

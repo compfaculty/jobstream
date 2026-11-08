@@ -282,3 +282,18 @@ def test_delete_referenced_resume(authenticated, evaluation_profile, application
     assert response.status_code == 200
     assert b"cannot be deleted" in response.content
     document.refresh_from_db()
+
+
+def test_job_cards_show_only_required_stack(authenticated, job):
+    job.normalized = {
+        "required_technologies": ["Python", "Django", "PostgreSQL"],
+        "technologies": ["Python", "Django", "PostgreSQL", "OptionalTech"],
+    }
+    job.save()
+    response = authenticated.get("/")
+    assert b'aria-label="Required technologies"' in response.content
+    assert b"<li>Python</li>" in response.content
+    assert b"OptionalTech" not in response.content
+    job.normalized = {}
+    job.save()
+    assert b'aria-label="Required technologies"' not in authenticated.get("/").content
