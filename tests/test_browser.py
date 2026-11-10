@@ -500,3 +500,51 @@ def test_job_category_sidebar(page, live_server, settings, client, user):
         "link", name="All", exact=True
     ).click()
     expect(page.get_by_role("link", name="Frontend Developer", exact=True)).to_be_visible()
+
+@pytest.mark.parametrize("width", [1280, 390])
+def test_job_pagination_preserves_category_panel(page, live_server, settings, client, user, width):
+    settings.STORAGES = {
+        **settings.STORAGES,
+        "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
+    }
+    Job.objects.bulk_create(
+        [
+            Job(
+                canonical_url=f"https://example.com/pagination/{index}",
+                title=f"Backend Engineer {index}",
+                location="Remote",
+            )
+            for index in range(26)
+        ]
+    )
+    client.force_login(user)
+    page.context.add_cookies(
+        [
+            {
+                "name": settings.SESSION_COOKIE_NAME,
+                "value": client.cookies[settings.SESSION_COOKIE_NAME].value,
+                "url": live_server.url,
+            }
+        ]
+    )
+    page.set_viewport_size({"width": width, "height": 844})
+    page.goto(f"{live_server.url}/?category=backend&location=Remote&mode=all")
+    panel = page.locator("#category-panel")
+    visibility = "hidden"
+    expect(panel).to_have_css("visibility", visibility)
+    page.evaluate(
+        "window.paginationDocument = document; "
+        "window.paginationPanel = document.getElementById('category-panel')"
+    )
+    for label, number in [("Next", 2), ("Previous", 1)]:
+        page.get_by_role("navigation", name="Pages", exact=True).get_by_role(
+            "link", name=label, exact=True
+        ).click()
+        expect(page.locator(".pagination")).to_contain_text(f"Page {number} of 2")
+        assert page.evaluate("window.paginationDocument === document")
+        assert page.evaluate("window.paginationPanel === document.getElementById('category-panel')")
+        expect(panel).to_have_css("visibility", visibility)
+        expect(page.locator("#category-toggle")).to_have_attribute("aria-expanded", "false")
+        assert "category=backend" in page.url and "location=Remote" in page.url
+    page.locator("#category-toggle").click()
+    expect(panel).to_have_css("visibility", "visible")
