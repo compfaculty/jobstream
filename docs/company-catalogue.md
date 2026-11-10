@@ -199,3 +199,27 @@ Filters initialize through an external local script. Inline styles are permitted
 admin routes for Bootstrap/Select2; public routes retain their existing strict policy.
 Updating Jazzmin or its default mode requires checking the bootstrap hash; regression
 tests validate rendered inline scripts and Chromium checks for CSP violations.
+
+### Persistent company logos
+
+Company logo uploads and enrichment now store normalized PNG bytes in PostgreSQL's
+`CompanyLogoBlob` table, separately from company records so list queries do not load
+image bytes. Existing file/S3 references still work through the authenticated logo
+endpoint. Images retain the existing 2 MiB input / 4 million pixel limits, are resized
+to at most 256×256, and have source metadata removed. Database backups include new logos.
+
+After applying migrations, copy surviving legacy files without refetching websites:
+
+```sh
+uv run python manage.py cache_company_logos
+```
+
+The command is idempotent, retains original files, and reports unreadable/invalid
+images. Already missing files cannot be recovered from their database paths; restore
+storage from backup or run `enrich_companies --company ID --force` for an already
+verified official website.
+
+The local Compose LocalStack storage has no persistent data volume; recreating it
+can lose legacy media. Database-backed logos no longer depend on that storage.
+Other uploads still use the configured default storage. Do not reverse migration
+0007 without exporting database logos first: reversing drops their bytes.

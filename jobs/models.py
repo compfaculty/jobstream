@@ -9,6 +9,8 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils import timezone
 
+from .logo_storage import CompanyLogoStorage
+
 
 def private_path(instance, filename):
     return f"documents/{instance.owner_id}/{uuid.uuid4().hex}.pdf"
@@ -208,6 +210,13 @@ class IngestionRun(models.Model):
     would_close = models.PositiveIntegerField(default=0)
 
 
+class CompanyLogoBlob(models.Model):
+    """Normalized PNG bytes, kept separate from company/list queries."""
+
+    name = models.CharField(max_length=100, primary_key=True)
+    data = models.BinaryField()
+
+
 class Company(models.Model):
     # Unverified identities remain distinct; verified official domains can be consolidated.
     identity_key = models.CharField(
@@ -231,7 +240,7 @@ class Company(models.Model):
     next_discovery_at = models.DateTimeField(default=timezone.now, db_index=True)
     discovery_error = models.CharField(max_length=80, blank=True)
     description = models.TextField(blank=True)
-    logo = models.FileField(upload_to="companies/logos/", blank=True)
+    logo = models.FileField(upload_to="companies/logos/", storage=CompanyLogoStorage(), blank=True)
     logo_source_url = models.URLField(max_length=2048, blank=True)
     enriched_at = models.DateTimeField(null=True, blank=True)
     enrichment_attempted_at = models.DateTimeField(null=True, blank=True)
