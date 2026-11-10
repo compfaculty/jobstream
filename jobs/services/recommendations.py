@@ -1,6 +1,6 @@
 """Read-only recommendations from current, owner-scoped CV evaluations."""
 
-from django.db.models import CharField, F, Func, OuterRef, Subquery
+from django.db.models import BooleanField, CharField, Exists, F, Func, OuterRef, Q, Subquery, Value
 from django.db.models.functions import JSONObject
 
 from jobs.models import AgentExecution, Document, ResumeProfile
@@ -41,19 +41,22 @@ def sources_for(owner, selected: str = "") -> dict:
     }
 
 
-def recommended_jobs(jobs, owner, source):
+def evaluated_jobs(jobs, owner, source):
+    """Annotate current owned scores, retaining low scores and unevaluated jobs."""
     if source is None:
-        return jobs.none()
+        return jobs.annotate(
+            recommendation_score=Value(None, output_field=CharField()),
+            recommendation_status=Value("", output_field=CharField()),
+            recommendation_evaluated=Value(False, output_field=BooleanField()),
+        ).order_by("-discovered_at", "-pk")
     policy = preferences_for(owner.pk)
     current_policy = {name: getattr(policy, name) for name in POLICY_FIELDS}
     scores = AgentExecution.objects.filter(
         owner=owner,
         job_id=OuterRef("pk"),
-        status="completed",
         version=VERSION,
         snapshot__assessment_version=2,
         snapshot__preferences=current_policy,
-        snapshot__preference_blocks=[],
         snapshot__job=JSONObject(**{name: OuterRef(name) for name in JOB_FIELDS}),
     )
     if isinstance(source, Document):
@@ -69,13 +72,39 @@ def recommended_jobs(jobs, owner, source):
             profile=source, document_id=source.document_id, snapshot__facts=source.facts
         )
     # JSON type checks prevent strings such as "90" from sorting above numeric values.
-    scores = scores.annotate(
-        score_type=Func(F("result__match_score"), function="jsonb_typeof", output_field=CharField())
-    ).filter(score_type="number", result__match_score__gte=0, result__match_score__lte=100)
-    latest = scores.order_by("-created_at", "-pk").values("result__match_score")[:1]
-    return (
-        jobs.filter(active=True)
-        .annotate(recommendation_score=Subquery(latest))
-        .filter(recommendation_score__gte=MINIMUM_SCORE)
-        .order_by("-recommendation_score", "-discovered_at", "-pk")
+    current = scores
+    scores = (
+        scores.filter(status="completed")
+        .annotate(
+            score_type=Func(
+                F("result__match_score"), function="jsonb_typeof", output_field=CharField()
+            )
+        )
+        .filter(score_type="number", result__match_score__gte=0, result__match_score__lte=100)
     )
+    # A blocked result may only be displayed as zero, even if a stored score is corrupt.
+    scores = scores.filter(Q(snapshot__preference_blocks=[]) | Q(result__match_score=0))
+    latest = scores.order_by("-created_at", "-pk").values("result__match_score")[:1]
+    return jobs.annotate(
+        recommendation_score=Subquery(latest),
+        recommendation_evaluated=Exists(scores),
+        recommendation_status=Subquery(current.order_by("-created_at", "-pk").values("status")[:1]),
+    ).order_by("-recommendation_evaluated", "-discovered_at", "-pk")
+
+
+def recommended_jobs(jobs, owner, source):
+    if source is None:
+        return evaluated_jobs(jobs.none(), owner, source)
+    return evaluated_jobs(jobs.filter(active=True), owner, source)
+
+
+def evaluations_pending(owner, source):
+    """Polling also covers individual evaluations and retries outside a search run."""
+    if source is None:
+        return False
+    query = AgentExecution.objects.filter(owner=owner, status__in=["queued", "running"])
+    if isinstance(source, Document):
+        query = query.filter(document=source, profile__isnull=True)
+    else:
+        query = query.filter(profile=source, document_id=source.document_id)
+    return query.exists()

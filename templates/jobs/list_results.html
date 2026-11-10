@@ -1,26 +1,37 @@
+{% if recommendation_poll %}<div data-recommendation-poll hx-get="{{ request.get_full_path }}" hx-trigger="every 5s" hx-target="#results" hx-swap="innerHTML" hx-sync="#job-search:replace" aria-hidden="true"></div>{% endif %}
 <input type="hidden" name="mode" value="{{ job_mode }}" form="job-search">
 <nav class="job-modes" aria-label="Job views">
-  {% querystring mode="all" cv=None page=None as all_jobs_url %}
+  {% querystring mode="all" page=None as all_jobs_url %}
   <a href="{{ all_jobs_url }}" hx-get="{{ all_jobs_url }}" hx-target="#results" hx-push-url="true" hx-indicator="#loading" hx-sync="#job-search:replace"{% if job_mode == 'all' %} aria-current="page"{% endif %}>All jobs</a>
   {% querystring mode="recommended" page=None as recommended_jobs_url %}
   <a href="{{ recommended_jobs_url }}" hx-get="{{ recommended_jobs_url }}" hx-target="#results" hx-push-url="true" hx-indicator="#loading" hx-sync="#job-search:replace"{% if job_mode == 'recommended' %} aria-current="page"{% endif %}>Recommended for you</a>
 </nav>
-{% if job_mode == 'recommended' %}
-  {% if recommendation_documents or recommendation_profiles %}
-  <div class="recommendation-filter">
+{% if recommendation_documents or recommendation_profiles %}
+  <input type="hidden" name="cv" value="{{ selected_cv }}" form="job-search">
+  <form method="post" action="{% url 'recommendations-update' %}" class="recommendation-filter">
+    {% csrf_token %}
     <label for="recommendation-cv">CV for recommendations</label>
-    <select id="recommendation-cv" name="cv" form="job-search" required>
+    <select id="recommendation-cv" name="cv" required>
       {% if not selected_cv %}<option value="" selected>Choose one of your CVs</option>{% endif %}
       {% if recommendation_documents %}<optgroup label="Uploaded PDFs">{% for document in recommendation_documents %}<option value="{{ document.value }}"{% if selected_cv == document.value %} selected{% endif %}>{{ document.name }}</option>{% endfor %}</optgroup>{% endif %}
       {% if recommendation_profiles %}<optgroup label="Optional reviewed profiles">{% for profile in recommendation_profiles %}<option value="{{ profile.value }}"{% if selected_cv == profile.value %} selected{% endif %}>{{ profile.name }} · version {{ profile.pk }}</option>{% endfor %}</optgroup>{% endif %}
     </select>
-    <button type="submit" form="job-search" class="secondary">Update recommendations</button>
-  </div>
+    <button type="submit" class="secondary"{% if recommendation_poll or not evaluation_enabled %} disabled{% endif %}>Update recommendations</button>
+  </form>
   {% endif %}
-  <p class="muted">Jobs scoring {{ recommendation_minimum }}% or higher with this CV and your preferences, best fit first.</p>
-{% else %}
-  <p class="muted job-view-note">Every stored job, newest added first. Closed and archived jobs are labeled.</p>
-{% endif %}
+  <p class="muted">Update starts a search across up to 500 recent collected jobs and evaluates up to 20 candidates against your CV and preferences. Existing results are reused; new AI evaluations use your allowance. No application is sent.</p>
+  {% if not evaluation_enabled %}<p role="status">Vacancy evaluation is currently unavailable.</p>{% endif %}
+  {% if recommendation_run %}
+  <section role="status">
+    <p>Search {{ recommendation_run.status }} · {{ recommendation_run.scanned }} jobs screened · {{ recommendation_progress.selected }} selected · {{ recommendation_progress.completed }} evaluated · {{ recommendation_progress.pending }} pending · {{ recommendation_progress.failed }} failed · {{ recommendation_progress.rejected }} skipped.</p>
+    {% if recommendation_run.error_code %}<p>The search could not read your CV or evaluation is unavailable. Check your CV and configuration, then try again.</p>{% endif %}
+    {% if recommendation_progress.failed %}<p>Some evaluations failed or reached an AI limit. Open the job’s evaluation panel for details and retry options.</p>{% endif %}
+    {% if recommendation_executions %}<details><summary>Evaluation details</summary><ul>
+      {% for execution in recommendation_executions %}<li><a href="{% url 'job' execution.job_id %}#vacancy-evaluation">{{ execution.job.title }}</a> · {{ execution.status }}{% if execution.status == 'completed' %} · {{ execution.result.match_score }}% fit{% endif %}{% if execution.status == 'failed' %} · {{ execution.error_message }}{% endif %}</li>{% endfor %}
+    </ul></details>{% endif %}
+  </section>
+  {% endif %}
+<p class="muted job-view-note">Evaluated jobs first, newest added first within each group. Good for you: {{ recommendation_minimum }}% or higher. Lower scores are marked Bad for you. Unevaluated jobs remain visible.{% if job_mode == 'all' %} Closed and archived jobs are labeled.{% endif %}</p>
 <input type="hidden" name="category" value="{{ selected_category }}" form="job-search">
 <div class="job-browser">
   <aside class="category-sidebar" id="category-panel" hx-preserve>
@@ -41,7 +52,7 @@
 <div class="job-details-section">
 <label class="job-selection"><input type="checkbox" name="jobs" value="{{ job.pk }}" aria-label="Select {{ job.title }}"{% if not job.active %} disabled{% endif %}></label>
   {% if job.company_profile.logo %}<img class="company-logo" src="{% url 'company-logo' job.company_profile_id %}" alt="" width="48" height="48" loading="lazy">{% endif %}
-  <div class="job-card-content"><h2><a href="{% url 'job' job.pk %}">{{ job.title }}</a></h2><p class="company-name">{% if job.company_profile_id %}<a class="company-link" href="{% url 'company' job.company_profile_id %}">{{ job.company_profile.name }}</a>{% else %}{{ job.company|default:'Company not specified' }}{% endif %}</p><p class="job-meta"><span>{{ job.location|default:'Location not specified' }}</span><span>Added {{ job.discovered_at|date:'M j, Y' }}</span>{% if not job.active %}<span class="job-unavailable">{% if job.status_override %}{{ job.get_status_override_display }}{% else %}{{ job.get_lifecycle_display }}{% endif %}</span>{% endif %}{% if job_mode == 'recommended' %}<span class="job-fit">{{ job.recommendation_score }}% fit</span>{% endif %}</p></div>
+  <div class="job-card-content"><h2><a href="{% url 'job' job.pk %}">{{ job.title }}</a></h2><p class="company-name">{% if job.company_profile_id %}<a class="company-link" href="{% url 'company' job.company_profile_id %}">{{ job.company_profile.name }}</a>{% else %}{{ job.company|default:'Company not specified' }}{% endif %}</p><p class="job-meta"><span>{{ job.location|default:'Location not specified' }}</span><span>Added {{ job.discovered_at|date:'M j, Y' }}</span>{% if not job.active %}<span class="job-unavailable">{% if job.status_override %}{{ job.get_status_override_display }}{% else %}{{ job.get_lifecycle_display }}{% endif %}</span>{% endif %}{% if job.recommendation_evaluated %}<span class="job-fit{% if job.recommendation_score < recommendation_minimum %} job-fit-low{% endif %}">{% if job.recommendation_score >= recommendation_minimum %}Good for you{% else %}Bad for you{% endif %} · {{ job.recommendation_score }}% fit</span>{% elif job.recommendation_status == 'queued' or job.recommendation_status == 'running' %}<span class="job-evaluation-status">Evaluation {{ job.recommendation_status }}</span>{% elif job.recommendation_status == 'failed' %}<span class="job-evaluation-status">Evaluation failed</span>{% else %}<span class="job-evaluation-status">Not evaluated</span>{% endif %}</p></div>
 </div>
   <div class="job-tech-section"><p class="job-section-label">Technologies</p>
   {% if job.normalized.technologies %}<ul class="job-stack" aria-label="Technologies mentioned">{% for technology in job.normalized.technologies %}<li>{{ technology }}</li>{% endfor %}</ul>{% else %}<p class="job-section-empty">Not specified</p>{% endif %}
@@ -63,8 +74,8 @@
 <div class="empty-state"><span class="empty-symbol" aria-hidden="true">⌕</span>
 {% if job_mode == 'recommended' %}
   {% if recommendation_source_invalid %}<h2>Choose one of your CVs</h2><p class="muted">Select a CV from your account to view its recommendations.</p>
-  {% elif not recommendation_source %}<h2>Upload a CV to get started</h2><p class="muted">Upload your PDF, then evaluate vacancies with it. Jobs scoring at least {{ recommendation_minimum }}% will appear here.</p><a class="button secondary" href="{% url 'documents' %}">Upload a CV</a>
-  {% else %}<h2>No recommended jobs yet</h2><p class="muted">Evaluate jobs with the selected CV. Only current evaluations of {{ recommendation_minimum }}% or higher appear here. If the CV, job, or preferences change, evaluate again.</p>{% endif %}
+  {% elif not recommendation_source %}<h2>Upload a CV to get started</h2><p class="muted">Upload your PDF, then update recommendations to evaluate vacancies.</p><a class="button secondary" href="{% url 'documents' %}">Upload a CV</a>
+  {% else %}<h2>No matching jobs yet</h2><p class="muted">Try a broader keyword, location, or category.</p>{% endif %}
 {% else %}<h2>No matching jobs yet</h2><p class="muted">Try a different keyword or a broader location.</p>{% endif %}
 {% if q or location or request.GET.saved or request.GET.company or selected_category != 'all' %}{% querystring q=None location=None saved=None company=None category=None page=None as clear_filters_url %}<a class="button secondary" href="{{ clear_filters_url|default:'/' }}">Clear filters</a>{% endif %}
 <p class="helptext">Sources are managed by the operator.</p></div>

@@ -197,3 +197,29 @@ for (const group of document.querySelectorAll('[data-profile-group]')) {
     group.querySelector('[data-profile-entries]').lastElementChild.querySelector('input').focus();
   });
 }
+
+// Preserve user input during automatic score refreshes; server-disabled jobs stay disabled.
+let jobPollState = null;
+document.addEventListener('htmx:beforeSwap', event => {
+  if (event.detail.target?.id !== 'results') return;
+  jobPollState = null;
+  if (!event.detail.requestConfig?.elt?.hasAttribute('data-recommendation-poll')) return;
+  const root = event.detail.target;
+  jobPollState = {
+    selected: Array.from(root.querySelectorAll('input[name="jobs"]:checked'), input => input.value),
+    cv: root.querySelector('#recommendation-cv')?.value,
+    focusedJob: document.activeElement?.name === 'jobs' ? document.activeElement.value : null,
+  };
+});
+document.addEventListener('htmx:afterSwap', event => {
+  if (event.detail.target?.id !== 'results' || !jobPollState) return;
+  for (const input of event.detail.target.querySelectorAll('input[name="jobs"]')) {
+    if (!input.disabled && jobPollState.selected.includes(input.value)) input.checked = true;
+    if (input.value === jobPollState.focusedJob) input.focus({ preventScroll: true });
+  }
+  const cv = event.detail.target.querySelector('#recommendation-cv');
+  if (cv && Array.from(cv.options).some(option => option.value === jobPollState.cv)) {
+    cv.value = jobPollState.cv;
+  }
+  jobPollState = null;
+});

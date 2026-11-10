@@ -215,6 +215,8 @@ html { scrollbar-gutter: stable; }
 .recommendation-filter select { flex: 1; min-width: 0; max-width: 540px; }
 .recommendation-filter label { flex-basis: 100%; }
 .job-fit { color: var(--accent); font-weight: 650; }
+.job-fit-low { color: #f0aaaa; }
+.job-evaluation-status { color: var(--muted); }
 .job-unavailable { color: #edc390; }
 .job-view-note { margin-bottom: 20px; }
 @media (max-width: 760px) { .recommendation-filter select { flex-basis: 100%; } }

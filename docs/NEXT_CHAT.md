@@ -116,3 +116,32 @@ issues remain documented in the earlier verification notes.
 The latest proposal for handing a prefilled page to the user for their own final
 Submit is still a proposal. Current local assisted adapters own final submission;
 there is no hosted browser stream or automatic tab handoff to a normal user browser.
+
+## Recommendation workflow rollout — 2026-11-10
+
+Implemented persistent recommendation runs over collected jobs: bounded 500-job
+screening, up to 20 independent Infinity evaluations, existing AI budgets and
+input-key reuse, fenced coordinator leases and owner-level active-run uniqueness.
+Both job views now retain low scores and unevaluated jobs, display Good for you
+(70–100%) / Bad for you (0–69%), and order evaluated jobs first, newest added first
+within each group. Five-second progress polling preserves visible job selections
+and unsaved CV choices. Ownership, current-input checks and send approval remain.
+
+Verification: 78 focused backend tests and Chromium running-to-completed polling,
+score badges, selection preservation, navigation and mobile checks passed. Changed
+Python files passed Ruff; Django checks, migration consistency, JavaScript syntax
+and diff whitespace checks passed. No dependencies were changed.
+
+Both local application images were rebuilt. Migration `0006_recommendation_runs`
+applied successfully. Web, all Python workers, browser-worker, Beat and the snapshot
+exporter were recreated on the new images using the existing monitoring overlay;
+all 16 services remain running and infrastructure health checks are healthy.
+Health/login and a read-only authenticated recommendation render returned 200;
+the running backend is Infinity and the coordinator routes to preparation.
+
+A live run already present during verification screened 500 jobs and selected 20:
+1 completed, 16 failed `ai_daily_budget_exceeded`, 1 failed `agent_unsupported_claim`,
+and 2 were skipped. These are runtime limits/validation failures, not successful
+comparisons. No limits were raised, no failed evaluation was retried, and no search,
+application or email was manually triggered for verification. Existing schedules
+continue running. See `docs/ai-pilot.md` for search limits, retries and rollback.

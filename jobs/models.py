@@ -1144,3 +1144,29 @@ class CompanyProvenance(models.Model):
 
     def __str__(self):
         return f"{self.reported_name} ({self.provider})"
+
+
+class RecommendationRun(models.Model):
+    """Durable coordinator for independent, advisory vacancy evaluation agents."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    document = models.ForeignKey(Document, on_delete=models.CASCADE)
+    profile = models.ForeignKey(ResumeProfile, null=True, blank=True, on_delete=models.CASCADE)
+    status = models.CharField(max_length=20, default="queued", db_index=True)
+    job_ids = models.JSONField(default=list)
+    rejected_ids = models.JSONField(default=list)
+    executions = models.ManyToManyField(AgentExecution, blank=True)
+    scanned = models.PositiveIntegerField(default=0)
+    lease_until = models.DateTimeField(null=True, blank=True)
+    error_code = models.CharField(max_length=40, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["owner"],
+                condition=models.Q(status__in=["queued", "preparing", "evaluating"]),
+                name="one_active_recommendation_run",
+            )
+        ]

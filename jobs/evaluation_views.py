@@ -1,5 +1,7 @@
 """Owner-facing evaluation UI and capability-authenticated read-only runtime tool."""
 
+from urllib.parse import urlencode
+
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -106,3 +108,19 @@ def context(request, pk, attempt_id):
             "context": evaluations.runtime_context(execution.snapshot),
         }
     )
+
+
+@login_required
+@require_POST
+def update_recommendations(request):
+    from jobs.services import recommendation_runs
+
+    selection = request.POST.get("cv", "")[:80]
+    try:
+        run = recommendation_runs.start(request.user, selection)
+    except ValidationError as exc:
+        messages.error(request, "; ".join(exc.messages))
+    else:
+        selection = recommendation_runs.source_value(run)
+        messages.info(request, "Recommendation search started. Progress appears below.")
+    return redirect("/?" + urlencode({"mode": "recommended", "cv": selection}))

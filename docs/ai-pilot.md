@@ -116,16 +116,58 @@ cost and quality. Neither the monetary cap nor the daily token guard is raised b
 ## Job views
 
 The jobs page offers `/?mode=all` (the default) and `/?mode=recommended`.
-All jobs includes stored closed/archived vacancies, newest `discovered_at` first;
-search, categories, company, location and saved filters still apply. Unavailable
-vacancies are labeled and cannot be selected for bulk application from this list.
-Other search/API callers retain their existing active-only default.
+All jobs includes stored closed/archived vacancies; the recommendations view
+includes active jobs for the selected uploaded PDF or reviewed profile. Both views
+show evaluated jobs first, then unevaluated jobs, ordered by `discovered_at` descending
+within each group (PK breaks ties). Search, category, company, location, and saved
+filters still apply. Unavailable jobs are labeled and cannot be selected for bulk
+application. Other search/API callers retain their active-only contract.
 
-Recommendations show active jobs with the latest current completed evaluation of
-at least 70%, highest score first, for a selected uploaded PDF or optional reviewed
-profile. The newest uploaded PDF is selected initially. `cv=document:ID` or
-`cv=profile:ID` preserves selection in navigation; sources and scores are owner-scoped.
-Changed job content, CV hash/reviewed facts, preferences or evaluation policy invalidate
-reuse. A lower latest score replaces an older high score. Unknown or malformed scores,
-incomplete evaluations and hard preference blocks are excluded. Browsing never
-extracts a PDF, starts an evaluation, submits work or consumes AI allowance.
+Every valid current completed score from 0–100 is visible: **Good for you** at
+70% or higher and **Bad for you** below 70%. Unevaluated jobs remain visible,
+including queued/running/failed status where available. This replaces the former
+70%-only, highest-score-first feed. Hard-preference-blocked evaluations may display
+zero but never a positive score. Malformed scores and stale evaluations receive no
+fit badge. CV hash/reviewed facts, preferences, job content, and policy version must
+still match; owner and selected source scope all scores and statuses.
+
+The newest uploaded PDF is initially selected. `cv=document:ID` or `cv=profile:ID`
+preserves selection between views. While a search or selected-CV evaluation is active,
+the list polls every five seconds and updates as individual evaluations finish.
+Polling preserves visible job selections and unsaved CV choices; disabled jobs are
+never reselected. GET browsing never extracts PDFs, starts work or consumes allowance.
+
+### Explicit recommendation searches
+
+**Update recommendations** now POSTs to `/recommendations/update/`. It starts an
+owner-scoped `RecommendationRun`; ordinary GET browsing remains read-only. The
+coordinator screens up to **500 recent active collected jobs**, applies hard
+preferences, then prioritizes soft preferences and CV technology overlap. It
+selects at most **20 vacancies** for independent Infinity evaluation agents.
+Shortlisting is deterministic; these agents perform the existing evidence-backed
+CV/vacancy comparisons, rather than an agent debate or unrestricted web search.
+The existing runtime limits concurrent comparisons. This bounded shortlist does
+not establish that every stored job was evaluated or that excluded candidates
+are weaker fits. Repeated runs may select the same candidates and reuse results.
+
+Celery Beat dispatches the coordinator every ten seconds to the preparation queue.
+The existing evaluation dispatcher runs the selected comparisons. Durable run state,
+expiring fenced leases, an owner-level active-run uniqueness constraint and existing
+input-key evaluation deduplication recover interruptions and repeated clicks. No
+transaction is held across CV storage reads. Results remain owner-scoped and must
+satisfy the existing current-input checks. The page polls progress
+and provides links to all selected evaluations, including low scores and failures.
+A failed comparison is inspected/retried from its job page; failed cached executions
+are not automatically retried by clicking Update again.
+
+New comparisons retain the configured daily/monthly/token limits; a run does not
+reserve or promise an allowance for all 20 candidates. No limits are raised and no
+source is activated, crawled or discovered. The selected CV is read in the worker;
+changes before/during a run can invalidate results under the existing freshness
+checks. Application preparation and sending are separate, unchanged workflows.
+
+Rollout requires migration `0006_recommendation_runs` and updating web, preparation
+workers and Beat together. Keep workers/Beat on the previous version until the
+migration has applied. To roll back, disable the new schedule and restore the old
+button/view; retain the additive tables and existing evaluations. No live model call,
+source activation or application submission is needed for migration or verification.

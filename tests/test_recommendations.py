@@ -64,13 +64,24 @@ def test_threshold_current_cv_and_read_only(authenticated, user, job, source, mo
         == f"document:{source.document_id}"
     )
     assert AgentExecution.objects.count() == counts
-    assert b"70% fit" in response.content
+    assert b"Good for you \xc2\xb7 70% fit" in response.content
 
 
-@pytest.mark.parametrize("score", [69, 0, "90", None, 101, True])
-def test_low_or_invalid_score_is_not_recommended(authenticated, user, job, source, score):
+@pytest.mark.parametrize("score", [0, 15, 69, 70, 100])
+def test_all_valid_scores_are_labeled(authenticated, user, job, source, score):
     complete(user, job, source, score)
-    assert recommended(authenticated, source).context["page"].paginator.count == 0
+    response = recommended(authenticated, source)
+    assert response.context["page"][0].recommendation_score == score
+    assert (b"Good for you" if score >= 70 else b"Bad for you") in response.content
+    assert f"{score}% fit".encode() in response.content
+
+
+@pytest.mark.parametrize("score", ["90", None, 101, True, -1])
+def test_invalid_score_is_not_displayed(authenticated, user, job, source, score):
+    complete(user, job, source, score)
+    response = recommended(authenticated, source)
+    assert response.context["page"][0].recommendation_score is None
+    assert b"Not evaluated" in response.content
 
 
 @pytest.mark.parametrize("change", ["description", "normalized", "location", "title", "company"])
@@ -81,7 +92,7 @@ def test_changed_job_invalidates_score(authenticated, user, job, source, change)
         job, change, {"requirements": ["Rust"]} if change == "normalized" else "Changed content"
     )
     job.save()
-    assert recommended(authenticated, source).context["page"].paginator.count == 0
+    assert recommended(authenticated, source).context["page"][0].recommendation_score is None
 
 
 def test_preferences_profile_and_closed_job_invalidations(authenticated, user, job, source):
@@ -89,11 +100,11 @@ def test_preferences_profile_and_closed_job_invalidations(authenticated, user, j
     preferences = ApplicationPreferences.objects.create(
         owner=user, excluded_technologies=["Python"]
     )
-    assert recommended(authenticated, source).context["page"].paginator.count == 0
+    assert recommended(authenticated, source).context["page"][0].recommendation_score is None
     preferences.delete()
     source.facts = [{"id": "new", "text": "Rust"}]
     source.save()
-    assert recommended(authenticated, source).context["page"].paginator.count == 0
+    assert recommended(authenticated, source).context["page"][0].recommendation_score is None
     source.refresh_from_db()
     complete(user, job, source)
     assert recommended(authenticated, source).context["page"].paginator.count == 1
@@ -106,7 +117,7 @@ def test_current_pdf_hash_required(authenticated, user, job, source):
     complete(user, job, source, pdf=True)
     Document.objects.filter(pk=source.document_id).update(sha256="b" * 64)
     response = authenticated.get("/", {"mode": "recommended"})
-    assert response.context["page"].paginator.count == 0
+    assert response.context["page"][0].recommendation_score is None
 
 
 def test_other_users_scores_and_cv_selection_are_private(authenticated, user, other, job, source):
@@ -126,7 +137,7 @@ def test_other_users_scores_and_cv_selection_are_private(authenticated, user, ot
         assert response.context["recommendation_source_invalid"]
         assert b"Private other" not in response.content
     AgentExecution.objects.filter(owner=user).delete()
-    assert recommended(authenticated, source).context["page"].paginator.count == 0
+    assert recommended(authenticated, source).context["page"][0].recommendation_score is None
 
 
 def test_latest_current_evaluation_wins(authenticated, user, job, source):
@@ -143,7 +154,7 @@ def test_latest_current_evaluation_wins(authenticated, user, job, source):
         status="completed",
         result={"match_score": 50},
     )
-    assert recommended(authenticated, source).context["page"].paginator.count == 0
+    assert recommended(authenticated, source).context["page"][0].recommendation_score == 50
 
 
 def test_no_cv_and_no_scores_are_actionable(authenticated, user, job, agent_settings):
@@ -180,13 +191,13 @@ def test_only_completed_results_qualify(authenticated, user, job, source, status
     record = complete(user, job, source)
     record.status = status
     record.save()
-    assert recommended(authenticated, source).context["page"].paginator.count == 0
+    assert recommended(authenticated, source).context["page"][0].recommendation_score is None
 
 
 def test_hard_preferences_exclude_even_a_corrupted_high_score(authenticated, user, job, source):
     ApplicationPreferences.objects.create(owner=user, excluded_technologies=["Python"])
     complete(user, job, source, 99)
-    assert recommended(authenticated, source).context["page"].paginator.count == 0
+    assert recommended(authenticated, source).context["page"][0].recommendation_score is None
 
 
 @pytest.mark.browser
@@ -241,8 +252,32 @@ def test_feed_navigation_cv_filter_categories_and_mobile(
     expect(page.locator('input[name="mode"]')).to_have_value("recommended")
     page.get_by_label("CV for recommendations", exact=True).select_option(f"profile:{source.pk}")
     page.get_by_role("button", name="Update recommendations", exact=True).click()
-    expect(page.get_by_text("85% fit", exact=True)).to_be_visible()
-    expect(page.get_by_role("link", name=low.title, exact=True)).to_have_count(0)
+    from jobs.models import RecommendationRun
+
+    assert (
+        RecommendationRun.objects.filter(owner=user, profile=source, status="queued").count() == 1
+    )
+    expect(page.get_by_text("Search queued", exact=False)).to_be_visible()
+    expect(page.get_by_role("button", name="Update recommendations", exact=True)).to_be_disabled()
+    from jobs.services.recommendation_runs import process
+
+    AgentExecution.objects.filter(owner=user, job=low).update(status="running")
+    process(RecommendationRun.objects.get(owner=user).pk)
+    expect(page.get_by_text("Evaluation running", exact=True)).to_be_visible(timeout=10000)
+    page.get_by_label(f"Select {low.title}", exact=True).check()
+    AgentExecution.objects.filter(owner=user, job=low).update(status="completed")
+    process(RecommendationRun.objects.get(owner=user).pk)
+    expect(page.get_by_text("Search completed", exact=False)).to_be_visible(timeout=10000)
+    expect(page.get_by_role("button", name="Update recommendations", exact=True)).to_be_enabled()
+    expect(page.get_by_text("Good for you · 85% fit", exact=True)).to_be_visible()
+    expect(
+        page.locator(".job-list").get_by_role("link", name=low.title, exact=True)
+    ).to_be_visible()
+    expect(page.get_by_text("Bad for you · 40% fit", exact=True)).to_be_visible()
+    expect(page.get_by_label(f"Select {low.title}", exact=True)).to_be_checked()
+    expect(
+        page.locator(".job-list article").first.get_by_role("link", name=low.title)
+    ).to_be_visible()
     expect(page.get_by_role("link", name=closed.title, exact=True)).to_have_count(0)
     expect(page.get_by_label("CV for recommendations", exact=True)).to_have_value(
         f"profile:{source.pk}"
@@ -252,13 +287,13 @@ def test_feed_navigation_cv_filter_categories_and_mobile(
         "link", name="Backend", exact=True
     ).click()
     expect(page.locator('input[name="category"]')).to_have_value("backend")
-    expect(page.get_by_text("85% fit", exact=True)).to_be_visible()
+    expect(page.get_by_text("Good for you · 85% fit", exact=True)).to_be_visible()
     page.get_by_role("button", name="Close category panel", exact=True).click()
     page.locator('input[name="q"]').fill("Missing keyword")
     page.locator("#job-search").get_by_role("button", name="Search", exact=True).click()
-    expect(page.get_by_role("heading", name="No recommended jobs yet", exact=True)).to_be_visible()
+    expect(page.get_by_role("heading", name="No matching jobs yet", exact=True)).to_be_visible()
     page.get_by_role("link", name="Clear filters", exact=True).click()
-    expect(page.get_by_text("85% fit", exact=True)).to_be_visible()
+    expect(page.get_by_text("Good for you · 85% fit", exact=True)).to_be_visible()
     expect(page.locator('input[name="mode"]')).to_have_value("recommended")
     page.screenshot(path="/tmp/jobstream-recommended-feed.png", full_page=True)
     page.set_viewport_size({"width": 390, "height": 844})
@@ -266,7 +301,9 @@ def test_feed_navigation_cv_filter_categories_and_mobile(
     page.get_by_role("navigation", name="Job views").get_by_role(
         "link", name="All jobs", exact=True
     ).click()
-    expect(page.locator("#recommendation-cv")).to_have_count(0)
+    expect(page.get_by_label("CV for recommendations", exact=True)).to_have_value(
+        f"profile:{source.pk}"
+    )
     expect(page.get_by_role("link", name=closed.title, exact=True)).to_be_visible()
     assert AgentExecution.objects.count() == initial
 
@@ -278,3 +315,43 @@ def test_clear_all_filters_returns_to_root(authenticated, job):
     cleared = authenticated.get(href if href.startswith("/") else "/" + href)
     assert cleared.context["q"] == ""
     assert [item.pk for item in cleared.context["page"]] == [job.pk]
+
+
+@pytest.mark.parametrize("mode", ["all", "recommended"])
+def test_evaluated_first_date_order_not_score(authenticated, user, source, job, mode):
+    from datetime import timedelta
+
+    newer = Job.objects.create(
+        canonical_url="https://example.com/newer", title="Newer", description="Python"
+    )
+    pending = Job.objects.create(canonical_url="https://example.com/pending", title="Pending")
+    complete(user, job, source, 100)
+    complete(user, newer, source, 0)
+    Job.objects.filter(pk=job.pk).update(discovered_at=timezone.now() - timedelta(days=1))
+    response = authenticated.get("/", {"mode": mode, "cv": f"profile:{source.pk}"})
+    assert [j.pk for j in response.context["page"]] == [newer.pk, job.pk, pending.pk]
+    assert [j.recommendation_score for j in response.context["page"]] == [0, 100, None]
+
+
+def test_polling_standalone_evaluation_refreshes_score(authenticated, user, source, job):
+    execution = evaluations.start(user, job, source.pk)
+    response = recommended(authenticated, source)
+    assert response.context["recommendation_poll"]
+    assert b"Evaluation queued" in response.content
+    execution.status = "completed"
+    execution.result = {"match_score": 15}
+    execution.save()
+    response = authenticated.get(
+        "/", {"mode": "recommended", "cv": f"profile:{source.pk}"}, HTTP_HX_REQUEST="true"
+    )
+    assert not response.context["recommendation_poll"]
+    assert b"Bad for you" in response.content
+    assert b"15% fit" in response.content
+
+
+def test_hard_blocked_zero_is_visible(authenticated, user, source, job):
+    ApplicationPreferences.objects.create(owner=user, excluded_technologies=["Python"])
+    complete(user, job, source, 0)
+    response = recommended(authenticated, source)
+    assert response.context["page"][0].recommendation_score == 0
+    assert b"Bad for you" in response.content

@@ -18,12 +18,17 @@ from google_auth_oauthlib.flow import Flow
 
 from .forms import ApplicationForm, RegistrationForm, TrackingForm, UploadForm
 from .models import Application, AuditEvent, Company, GmailConnection, Invitation, Job, SavedJob
-from .services import submissions
+from .services import recommendation_runs, submissions
 from .services.authorization import owned_application, owned_document
 from .services.categories import CATEGORIES, category_filter, resolve_category
 from .services.documents import upload_document
 from .services.gmail import encrypt_credentials, gmail_client
-from .services.recommendations import recommended_jobs, sources_for
+from .services.recommendations import (
+    evaluated_jobs,
+    evaluations_pending,
+    recommended_jobs,
+    sources_for,
+)
 from .services.search import search_jobs
 
 
@@ -63,11 +68,17 @@ def job_list(request):
     jobs = search_jobs(query, location, company, include_inactive=mode == "all").filter(
         category_filter(category)
     )
-    if mode == "recommended":
-        recommendation_context = sources_for(request.user, request.GET.get("cv", "")[:80])
-        jobs = recommended_jobs(jobs, request.user, recommendation_context["recommendation_source"])
-    else:
-        jobs = jobs.order_by("-discovered_at", "-pk")
+    recommendation_context = sources_for(request.user, request.GET.get("cv", "")[:80])
+    source = recommendation_context["recommendation_source"]
+    jobs = (
+        recommended_jobs(jobs, request.user, source)
+        if mode == "recommended"
+        else evaluated_jobs(jobs, request.user, source)
+    )
+    recommendation_context.update(recommendation_runs.latest(request.user, source))
+    recommendation_context["recommendation_poll"] = recommendation_context.get(
+        "recommendation_poll", False
+    ) or evaluations_pending(request.user, source)
     if request.GET.get("saved") == "1":
         jobs = jobs.filter(savedjob__owner=request.user)
     page = Paginator(jobs, 25).get_page(request.GET.get("page"))

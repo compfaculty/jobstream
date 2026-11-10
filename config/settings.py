@@ -354,3 +354,10 @@ CELERY_BEAT_SCHEDULE["catalogue-inspections"] = {
     "schedule": 60.0,
 }
 CELERY_TASK_ROUTES["jobs.tasks.inspect_catalogue_company"] = {"queue": "ingestion"}
+
+
+CELERY_BEAT_SCHEDULE["recommendation-runs"] = {
+    "task": "jobs.tasks.dispatch_recommendation_runs",
+    "schedule": 10.0,
+}
+CELERY_TASK_ROUTES["jobs.tasks.coordinate_recommendations"] = {"queue": "preparation"}

@@ -311,3 +311,25 @@ def schedule_catalogue_inspections():
     from jobs.services.catalogue_inspections import dispatch
 
     dispatch()
+
+
+@shared_task
+def coordinate_recommendations(pk):
+    from jobs.services.recommendation_runs import process
+
+    process(pk)
+
+
+@shared_task
+def dispatch_recommendation_runs():
+    from jobs.models import RecommendationRun
+    from jobs.services.recommendation_runs import ACTIVE
+
+    now = timezone.now()
+    runs = (
+        RecommendationRun.objects.filter(status__in=ACTIVE)
+        .filter(Q(lease_until__isnull=True) | Q(lease_until__lte=now))
+        .order_by("created_at")[:20]
+    )
+    for pk in runs.values_list("pk", flat=True):
+        coordinate_recommendations.delay(str(pk))

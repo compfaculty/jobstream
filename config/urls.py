@@ -16,6 +16,11 @@ urlpatterns = [
     path(
         "operations/executions/<uuid:pk>/", operations_views.execution, name="operation-execution"
     ),
+    path(
+        "recommendations/update/",
+        evaluation_views.update_recommendations,
+        name="recommendations-update",
+    ),
     path("jobs/<int:pk>/evaluate/", evaluation_views.start, name="evaluation-start"),
     path("jobs/<int:pk>/evaluations/", evaluation_views.panel, name="evaluation-panel"),
     path(
