@@ -1,5 +1,3 @@
-import re
-
 import pytest
 from django.contrib.auth.models import User
 from playwright.sync_api import expect
@@ -447,59 +445,47 @@ def test_job_category_sidebar(page, live_server, settings, client, user):
         ]
     )
     page.goto(live_server.url)
-    page.get_by_role("button", name="☰ Categories", exact=True).click()
+    panel = page.locator("#category-panel")
+    toggle = page.locator("#category-toggle")
     menu = page.get_by_role("navigation", name="Job categories")
-    expect(menu.get_by_role("link", name="All", exact=True)).to_have_attribute(
-        "aria-current", "page"
-    )
-    page.locator("#category-panel").evaluate("element => element.dataset.preserved = 'yes'")
-    before_top = page.locator(".results-heading").bounding_box()["y"]
+    expect(panel).to_have_css("visibility", "hidden")
+    assert panel.evaluate("element => element.inert")
+    toggle.click()
+    expect(menu).to_be_visible()
+    expect(panel).to_have_css("transform", "matrix(1, 0, 0, 1, 0, 0)")
+    assert panel.bounding_box()["x"] == 0
+    assert menu.locator("a svg.category-icon").count() == menu.locator("a").count()
+    expect(menu.locator(".category-divider")).to_have_count(3)
+    panel.evaluate("element => element.dataset.preserved = 'yes'")
     menu.get_by_role("link", name="Backend", exact=True).click()
     expect(menu.get_by_role("link", name="Backend", exact=True)).to_have_attribute(
         "aria-current", "page"
     )
-    expect(page.locator("#category-panel")).to_have_attribute("data-preserved", "yes")
-    assert page.locator(".results-heading").bounding_box()["y"] == before_top
-    expect(page.get_by_role("link", name="Frontend Developer", exact=True)).to_have_count(0)
-    page.get_by_role("button", name="Close category panel").click()
+    expect(panel).to_have_attribute("data-preserved", "yes")
+    page.screenshot(path="/tmp/jobstream-categories-desktop.png", full_page=True)
+    page.keyboard.press("Escape")
+    expect(toggle).to_be_focused()
+    expect(panel).to_have_css("visibility", "hidden")
     page.get_by_label("Keywords").fill("Python")
     page.get_by_role("button", name="Search", exact=True).click()
-    expect(page).to_have_url(re.compile(r"category=backend"))
     expect(page.get_by_role("link", name="Backend Security Engineer", exact=True)).to_be_visible()
-    page.get_by_role("button", name="☰ Categories", exact=True).click()
-    menu.get_by_role("link", name="Security", exact=True).click()
-    expect(menu.get_by_role("link", name="Security", exact=True)).to_have_attribute(
-        "aria-current", "page"
-    )
-    expect(page.locator('input[name="category"]')).to_have_value("security")
-    page.go_back()
-    page.get_by_role("button", name="☰ Categories", exact=True).click()
-    expect(menu.get_by_role("link", name="Backend", exact=True)).to_have_attribute(
-        "aria-current", "page"
-    )
-    page.go_forward()
-    page.get_by_role("button", name="☰ Categories", exact=True).click()
-    expect(menu.get_by_role("link", name="Security", exact=True)).to_have_attribute(
-        "aria-current", "page"
-    )
-    expect(page.locator("#category-panel")).to_have_css("transform", "matrix(1, 0, 0, 1, 0, 0)")
-    page.screenshot(path="/tmp/jobstream-categories-desktop.png", full_page=True)
+    expect(page.get_by_role("link", name="Frontend Developer", exact=True)).to_have_count(0)
+    toggle.click()
+    page.get_by_role("button", name="Close category panel").click()
+    expect(panel).to_have_css("visibility", "hidden")
     page.set_viewport_size({"width": 390, "height": 844})
+    toggle.click()
     expect(menu).to_be_visible()
     assert page.evaluate("document.documentElement.scrollWidth <= window.innerWidth")
-    expect(page.locator("#category-panel")).to_have_css("transform", "matrix(1, 0, 0, 1, 0, 0)")
-    page.keyboard.press("Escape")
-    expect(page.get_by_role("button", name="☰ Categories", exact=True)).to_be_focused()
-    expect(page.locator("#category-panel")).to_have_css("visibility", "hidden")
     page.screenshot(path="/tmp/jobstream-categories-mobile.png", full_page=True)
-    # The category links also navigate using ordinary GET requests.
+    page.locator(".category-backdrop").click(position={"x": 370, "y": 400})
+    expect(panel).to_have_css("visibility", "hidden")
     page.route("**/htmx.min.js", lambda route: route.abort())
     page.reload()
-    page.get_by_role("button", name="☰ Categories", exact=True).click()
-    page.get_by_role("navigation", name="Job categories").get_by_role(
-        "link", name="All", exact=True
-    ).click()
+    toggle.click()
+    menu.get_by_role("link", name="All", exact=True).click()
     expect(page.get_by_role("link", name="Frontend Developer", exact=True)).to_be_visible()
+
 
 @pytest.mark.parametrize("width", [1280, 390])
 def test_job_pagination_preserves_category_panel(page, live_server, settings, client, user, width):

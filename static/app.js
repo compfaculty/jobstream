@@ -126,7 +126,7 @@ document.addEventListener('htmx:afterSwap', event => {
   }
 });
 
-// Preserve the drawer DOM during result swaps so navigation never flashes or loses focus.
+// Preserve the collapsible left-edge panel across result swaps.
 const categoryPanel = document.getElementById('category-panel');
 const categoryToggle = document.getElementById('category-toggle');
 if (categoryPanel && categoryToggle) {

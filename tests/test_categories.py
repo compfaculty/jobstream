@@ -81,7 +81,7 @@ def test_category_filters_and_links(authenticated, job, user, other):
     nav = soup.find("nav", attrs={"aria-label": "Job categories"})
     assert nav.find(attrs={"aria-current": "page"}).text == "Backend"
     assert soup.find("input", attrs={"name": "category"})["form"] == "job-search"
-    security = nav.find("a", string="Security")
+    security = nav.find("span", string="Security").find_parent("a")
     values = parse_qs(urlsplit(security["href"]).query)
     assert values == {key: [value] for key, value in params.items() if key != "page"} | {
         "category": ["security"],

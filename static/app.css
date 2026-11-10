@@ -180,7 +180,8 @@ html { scrollbar-gutter: stable; }
 .jobs-page main { max-width: none; margin: 0; padding: 32px clamp(20px, 3vw, 56px) 64px; }
 .jobs-page .site-header { padding-inline: clamp(20px, 3vw, 56px); }
 .jobs-page footer { max-width: none; margin-inline: clamp(20px, 3vw, 56px); }
-.jobs-toolbar { margin-top: 20px; }
+.jobs-toolbar { position: fixed; left: 0; top: 50%; z-index: 99; }
+.jobs-toolbar button { writing-mode: vertical-rl; border-radius: 0 12px 12px 0; padding: 18px 10px; gap: 10px; border-left: 0; border-color: #b9e88935; background: #222a2f; color: var(--accent); box-shadow: 4px 0 20px #0003; }
 .jobs-page #loading { display: block; visibility: hidden; height: 24px; margin: 8px 0; font-size: 14px; color: var(--muted); }
 .jobs-page #loading.htmx-request { visibility: visible; }
 .job-browser { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 28px; align-items: start; }
@@ -194,8 +195,17 @@ html { scrollbar-gutter: stable; }
 .category-results { min-width: 0; min-height: 65vh; }
 .category-results .results-heading { margin-top: 0; }
 .category-enhanced .job-browser { display: block; }
-.category-enhanced .category-sidebar { position: fixed; inset: 0 auto 0 0; width: min(300px, 86vw); z-index: 101; border-radius: 0 18px 18px 0; overflow-y: auto; overscroll-behavior: contain; transform: translateX(-105%); visibility: hidden; transition: transform 240ms ease, visibility 240ms; box-shadow: var(--shadow); }
+.category-enhanced .category-sidebar { position: fixed; inset: 0 auto 0 0; width: min(292px, 86vw); z-index: 101; border-radius: 0 20px 20px 0; overflow-y: auto; overscroll-behavior: contain; transform: translateX(-105%); visibility: hidden; transition: transform 220ms ease, visibility 220ms; box-shadow: 12px 0 48px #0005; background: linear-gradient(160deg, #242c31, #191f25); padding: 24px 16px; }
 .category-enhanced.category-open .category-sidebar { transform: translateX(0); visibility: visible; }
+.category-panel-heading { padding: 0 10px 18px; border-bottom: 1px solid var(--line); }
+.category-panel-heading h2 { font-size: 18px; letter-spacing: -.3px; }
+.category-panel-heading button { min-width: 36px; min-height: 36px; padding: 4px; border-radius: 9px; color: var(--muted); }
+.category-menu { gap: 5px; margin-top: 14px; }
+.category-menu a { display: flex; align-items: center; gap: 13px; min-height: 44px; padding: 10px 12px; border: 1px solid transparent; }
+.category-menu a[aria-current="page"] { border-color: #b9e88935; box-shadow: inset 3px 0 var(--accent); }
+.category-icon { width: 20px; height: 20px; flex: 0 0 20px; opacity: .85; }
+.category-menu a.category-divider { margin-top: 12px; position: relative; }
+.category-menu a.category-divider::before { content: ""; position: absolute; top: -9px; left: 12px; right: 12px; height: 1px; background: var(--line); }
 .category-backdrop { position: fixed; inset: 0; width: 100%; height: 100%; border: 0; border-radius: 0; background: #0008; z-index: 100; cursor: default; }
 .category-open { overflow: hidden; }
 @media (max-width: 760px) {

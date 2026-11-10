@@ -39,7 +39,7 @@
     <nav class="category-menu" aria-label="Job categories">
       {% for category in categories %}
       {% querystring category=category.slug page=None as category_url %}
-      <a href="{{ category_url }}" hx-get="{{ category_url }}" hx-target="#results" hx-push-url="true" hx-indicator="#loading" hx-sync="#job-search:replace"{% if selected_category == category.slug %} aria-current="page"{% endif %}>{{ category.label }}</a>
+      <a class="{% if category.slug == 'backend' or category.slug == 'product-design' or category.slug == 'other' %}category-divider{% endif %}" href="{{ category_url }}" hx-get="{{ category_url }}" hx-target="#results" hx-push-url="true" hx-indicator="#loading" hx-sync="#job-search:replace"{% if selected_category == category.slug %} aria-current="page"{% endif %}>{% include 'jobs/category_icon.html' with slug=category.slug %}<span>{{ category.label }}</span></a>
       {% endfor %}
     </nav>
   </aside>
