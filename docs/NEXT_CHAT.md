@@ -70,3 +70,49 @@ Final verification: 708 non-browser tests passed, one opt-in real-provider test
 skipped, and the single pre-existing query-budget failure remained. Security-sensitive
 coverage gates passed; 14 Cargo tests, fmt/clippy, make check/check-deploy,
 monitoring config/alert tests, locked dependency audit, and Gitleaks passed.
+
+## Local assisted-browser delivery checkpoint — 2026-11-10
+
+Current work also includes the collection adapters described in
+`docs/public-career-adapters.md` and separate fetch/application acceptance criteria
+in `docs/company-integration-workflow.md`. Preserve these uncommitted changes.
+
+Local assisted approval/delivery now supports Cato and Camunda in addition to
+GitLab. `assist_application` is the common command; the old GitLab command remains
+an alias. See `docs/browser-assisted-applications.md` for the implemented scope,
+usage, verification and remaining hosted-session work. No live applications,
+emails, deployments, runtime source activation or container restarts were performed.
+
+A new PostgreSQL concurrency regression exposed owner-quota row locks blocking
+completion audit foreign-key references. Owner coordination in submission, Camunda
+and batches now uses `FOR NO KEY UPDATE`, retaining serialization while allowing
+those references. Do not revert this to `FOR UPDATE` without rechecking the race.
+Existing nullable-company mypy errors and the earlier migration lint error remain
+outside this change. No commits have been made.
+
+
+## Authorized update, restart and commits — 2026-11-10
+
+This checkpoint supersedes earlier statements that changes were uncommitted or
+runtime rollout had not happened. The user requested container updates/restarts
+and separate task commits. Collection adapters, assisted-browser delivery and
+independent readiness criteria were committed separately, followed by rollout notes.
+
+Both application images were rebuilt. All 16 previously running services were
+restarted/recreated using `compose.yaml` + `compose.monitoring.yaml`, preserving
+volumes and existing configuration. All are running; infrastructure health checks
+are healthy. Existing workers and Beat are running again and normal schedules resume.
+`jobs.0005_public_career_adapters` applied. Nine reviewed sources are configured but
+remain disabled, non-authoritative and closure-disabled; only Flexor is still pending.
+Repeated configuration preview reports zero updates. No manual crawl was triggered.
+
+203 combined regression tests passed. Runtime Django checks and migration consistency
+passed. Health/login/Grafana return 200, admin redirects to login, all ten Prometheus
+targets are up, and sandboxed Chromium starts in the rebuilt browser container on a
+synthetic page. There were zero application records at rollout; no real application
+or email was sent. Nothing was pushed. Existing unrelated lint/type/query-budget
+issues remain documented in the earlier verification notes.
+
+The latest proposal for handing a prefilled page to the user for their own final
+Submit is still a proposal. Current local assisted adapters own final submission;
+there is no hosted browser stream or automatic tab handoff to a normal user browser.

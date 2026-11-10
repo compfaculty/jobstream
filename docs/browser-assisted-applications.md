@@ -173,7 +173,8 @@ challenge disappearing is not a delivery receipt. Do not rerun an uncertain send
 
 This milestone uses a dedicated local command process, not a Celery worker waiting
 for human input. No new database migration is required for assisted delivery. The
-separate collection-adapter migration remains unapplied to the runtime database.
+separate collection-adapter migration was applied during the authorized local rollout
+recorded below.
 
 Remaining work: provider-specific live compatibility checks without submission,
 user-approved real delivery validation when requested, additional employer adapters,
@@ -200,3 +201,20 @@ passed. The scoped mypy command still reports the two earlier nullable-company
 the earlier migration `0004` long line. No new dependencies were added. No live
 employer submissions, anti-bot acceptance tests, dependency audit, deployment checks,
 container restarts or production rollout were performed for this milestone.
+
+
+## Authorized local rollout — 2026-11-10
+
+The application and browser-worker images were rebuilt, and the existing local
+containers restarted with the monitoring overlay. `assist_application --help` is
+available in the running web image. Sandboxed Chromium launched successfully in
+the rebuilt browser worker on a synthetic page, with no employer connection.
+The combined collection and assisted-delivery suite passed 203 tests before restart.
+Runtime Django checks, migration consistency, service health and monitoring target
+checks passed. No approved applications existed, and no live application was sent.
+
+Local visible-browser handoff still runs from the user's graphical desktop; merely
+restarting headless Docker workers does not expose a browser tab in the user's
+normal browser. The proposed user-owned final-submit fallback is not implemented:
+the current assisted adapter owns final submission. Hosted handoff and that final-step
+ownership change remain separate implementation work.

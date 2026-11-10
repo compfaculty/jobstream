@@ -3,8 +3,8 @@
 Readiness is tracked independently under the
 [project integration criteria](company-integration-workflow.md):
 
-- **Fetching:** nine sources are **implemented**, awaiting runtime rollout and
-  controlled collection validation before being called **ready**.
+- **Fetching:** nine sources are **implemented** and configured in the local runtime;
+  controlled collection validation remains before being called **ready**.
 - **Applying:** **unassessed** for these nine integrations in this change. No new
   automatic or assisted application workflow was implemented or verified.
 - **Flexor fetching:** **blocked**, pending a verified accessible endpoint.
@@ -41,8 +41,8 @@ uv run --env-file .env python manage.py configure_career_adapters --apply
 The command changes only matching pending sources, runs atomically, rejects endpoint
 collisions, and never enables collection, authority, or automatic closure. It retains
 original career URLs as discovery evidence when absent. Repeated application is a no-op.
-No runtime configuration, migrations, container restarts, or crawls were performed as
-part of this implementation; the configuration command was exercised in preview only.
+At the implementation checkpoint, the command had only been previewed. The later
+authorized local rollout below applied the configuration without enabling collection.
 
 For rollback, disable any subsequently enabled source before restoring its previous
 URL/adapter and `needs_adapter=True`. Existing jobs and approval records are unaffected.
@@ -85,3 +85,23 @@ Full-project Ruff currently reports an existing long line in migration
   migration long line noted above. These were left outside the adapter change.
 - No dependency changes; no separate dependency audit or production deployment
   check was run for this collection-only change.
+
+
+## Local rollout — 2026-11-10
+
+At the user's explicit request, rebuilt the application and browser images and
+restarted the existing 16-service local stack with its monitoring overlay. All
+services are running; configured infrastructure health checks are healthy.
+Migration `0005_public_career_adapters` applied successfully. The configuration
+command updated nine sources, all still disabled, non-authoritative and with
+closure disabled. A second preview reports zero updates. Only Flexor remains
+`needs_adapter=True`. No new source was enabled or manually crawled.
+
+The combined collection/assisted-delivery regression suite passed 203 tests.
+Runtime Django checks and migration consistency passed. Web health and login
+returned 200, admin redirected to login, Grafana health returned 200, all ten
+Prometheus targets are up, and sandboxed Chromium launched in the rebuilt browser
+container using a local synthetic page. There were zero applications before and
+after configuration. Existing workers and Beat were restored to their prior running
+state; their normal scheduling resumes. No real application or email was sent by
+this rollout, and no database/storage volumes were reset or removed.
