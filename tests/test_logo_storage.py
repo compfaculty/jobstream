@@ -61,6 +61,9 @@ def test_legacy_backfill_is_idempotent_and_keeps_missing_files(settings, tmp_pat
     assert CompanyLogoBlob.objects.count() == 1
     missing.refresh_from_db()
     assert missing.logo.name == "companies/logos/missing.png"
+    response = authenticated.get(f"/companies/{missing.pk}/logo/")
+    assert response.status_code == 200 and response["Content-Type"] == "image/svg+xml"
+    assert response["Cache-Control"] == "no-store"
 
 
 def test_storage_rejects_active_content():
@@ -69,9 +72,40 @@ def test_storage_rejects_active_content():
     assert not CompanyLogoBlob.objects.exists()
 
 
+@pytest.mark.parametrize("code, fallback", [("NoSuchKey", True), ("AccessDenied", False)])
+def test_legacy_s3_errors(authenticated, monkeypatch, code, fallback):
+    from botocore.exceptions import ClientError
+
+    company = Company.objects.create(name="Legacy S3", logo="companies/logos/old.png")
+    error = ClientError({"Error": {"Code": code}}, "GetObject")
+    monkeypatch.setattr(default_storage, "open", Mock(side_effect=error))
+    if fallback:
+        response = authenticated.get(f"/companies/{company.pk}/logo/")
+        assert response.status_code == 200
+        assert response["Content-Type"] == "image/svg+xml"
+    else:
+        with pytest.raises(ClientError):
+            authenticated.get(f"/companies/{company.pk}/logo/")
+
+
 def test_admin_widget_can_render_database_logo():
     from jobs.admin import CompanyAdminForm
 
     company = Company.objects.create(name="Admin logo")
     company.logo.save("logo.png", ContentFile(image_bytes()))
     assert f"/companies/{company.pk}/logo/" in str(CompanyAdminForm(instance=company)["logo"])
+
+
+def test_missing_logo_renders_question_mark(authenticated, job):
+    company = Company.objects.create(name="No logo")
+    job.company_profile = company
+    job.save(update_fields=["company_profile"])
+    for path in ("/", f"/companies/{company.pk}/"):
+        response = authenticated.get(path)
+        assert response.status_code == 200
+        assert b'aria-label="Company logo unavailable">?</span>' in response.content
+
+
+def test_unknown_employer_renders_question_mark(authenticated, job):
+    response = authenticated.get("/")
+    assert b'aria-label="Company logo unavailable">?</span>' in response.content

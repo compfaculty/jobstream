@@ -142,6 +142,7 @@ img.bg-white[alt="QR Code"] { display: block; background: #fff; padding: 16px; b
 .company-link { position: relative; z-index: 1; color: var(--muted); text-decoration: none; }
 .company-link:hover { color: var(--accent); text-decoration: underline; }
 .company-logo { width: 48px; height: 48px; flex: 0 0 48px; object-fit: contain; padding: 6px; border-radius: 12px; background: #fff; border: 1px solid #dce2d8; }
+.company-logo-placeholder { display: inline-flex; align-items: center; justify-content: center; color: #687480; font-size: 1.6rem; font-weight: 700; }
 .company-intro { display: flex; align-items: center; gap: 24px; margin: 32px 0 24px; }
 .company-intro h1 { margin: 8px 0 16px; }
 .profile-logo { width: 80px; height: 80px; flex-basis: 80px; padding: 10px; border-radius: 18px; }

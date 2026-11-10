@@ -1,6 +1,7 @@
 import secrets
 import time
 
+from botocore.exceptions import ClientError
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import login, logout
@@ -146,8 +147,23 @@ def company_logo(request, pk):
         raise Http404
     try:
         response = FileResponse(company.logo.open("rb"), content_type="image/png")
-    except FileNotFoundError as exc:
-        raise Http404 from exc
+    except (FileNotFoundError, ClientError) as exc:
+        if isinstance(exc, ClientError) and exc.response.get("Error", {}).get("Code") not in {
+            "404",
+            "NoSuchKey",
+            "NotFound",
+        }:
+            raise
+        # A stale legacy reference should not render a broken image in the list.
+        response = HttpResponse(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" '
+            'viewBox="0 0 48 48"><rect width="48" height="48" rx="8" fill="#303842"/>'
+            '<text x="24" y="34" text-anchor="middle" font-family="sans-serif" '
+            'font-size="30" font-weight="bold" fill="#aab5bf">?</text></svg>',
+            content_type="image/svg+xml",
+        )
+        response["Cache-Control"] = "no-store"
+        return response
     response["Content-Disposition"] = 'inline; filename="company-logo.png"'
     return response
 

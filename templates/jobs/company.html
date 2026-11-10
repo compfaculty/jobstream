@@ -3,7 +3,7 @@
 {% block content %}
 <a class="text-link" href="/">← All opportunities</a>
 <section class="company-intro">
-  {% if company.logo %}<img class="company-logo profile-logo" src="{% url 'company-logo' company.pk %}" alt="" width="80" height="80">{% endif %}
+  {% if company.logo %}<img class="company-logo profile-logo" src="{% url 'company-logo' company.pk %}" alt="" width="80" height="80">{% else %}<span class="company-logo company-logo-placeholder profile-logo" role="img" aria-label="Company logo unavailable">?</span>{% endif %}
   <div><p class="eyebrow">COMPANY PROFILE</p><h1>{{ company.name }}</h1>
   {% if company.website and company.website_verified %}<a class="text-link" href="{{ company.website }}" target="_blank" rel="noopener noreferrer">Official website ↗</a>{% endif %}</div>
 </section>

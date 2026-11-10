@@ -217,7 +217,8 @@ uv run python manage.py cache_company_logos
 The command is idempotent, retains original files, and reports unreadable/invalid
 images. Already missing files cannot be recovered from their database paths; restore
 storage from backup or run `enrich_companies --company ID --force` for an already
-verified official website.
+verified official website. Missing legacy images and companies without a trustworthy logo render a neutral
+question-mark badge.
 
 The local Compose LocalStack storage has no persistent data volume; recreating it
 can lose legacy media. Database-backed logos no longer depend on that storage.
