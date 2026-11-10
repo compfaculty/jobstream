@@ -14,32 +14,34 @@ def criteria_for(job: dict) -> list[dict]:
     normalized = job.get("normalized")
     if not isinstance(normalized, dict) or not normalized.get("requirements"):
         normalized = normalize_description(job.get("description", ""))
-    criteria, seen = [], set()
+    # Score stack coverage only; prose qualifications are not independent criteria.
+    weights = {}
     for section in ("requirements", "preferred"):
         weight = 3 if section == "requirements" else 1
         for text in normalized.get(section, []):
             if not isinstance(text, str) or not text.strip():
                 continue
-            text = text.strip()
-            if text.casefold().rstrip(":") in {
+            if text.strip().casefold().rstrip(":") in {
                 "advantages",
                 "nice to have",
                 "preferred qualifications",
             }:
                 weight = 1
                 continue
-            if text in seen:
-                continue
-            seen.add(text)
-            criteria.append({"id": f"req-{len(criteria) + 1}", "text": text, "weight": weight})
-    if not criteria:
-        description = job.get("description", "").strip()
-        if not description:
-            raise ValidationError("This vacancy has no description to compare with your CV.")
-        criteria = [{"id": "req-1", "text": description, "weight": 3}]
-    if len(criteria) > 30:
-        raise ValidationError("This vacancy has too many requirements for a reliable evaluation.")
-    return criteria
+            for skill in technologies(text):
+                weights[skill] = max(weights.get(skill, 0), weight)
+    if not weights:
+        # Unsectioned postings still expose a stack, without inventing requirements.
+        for skill in technologies(job.get("description", "")):
+            weights[skill] = 3
+    if not weights:
+        raise ValidationError(
+            "This vacancy has no recognized technologies to compare with your CV."
+        )
+    return [
+        {"id": f"req-{index}", "text": skill, "weight": weights[skill]}
+        for index, skill in enumerate(sorted(weights), start=1)
+    ]
 
 
 def preference_blocks(job: dict, preferences: dict) -> list[str]:

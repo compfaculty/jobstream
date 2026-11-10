@@ -132,14 +132,46 @@ def test_invalid_or_ungrounded_output_rejected(mutation):
 def test_advantages_are_lower_weight_and_duplicate_requirements_removed():
     rows = criteria_for(
         {
-            "description": "Go leadership GPU",
+            "description": "Go leadership CUDA",
             "normalized": {
-                "requirements": ["Go", "Go", "Advantages", "GPU"],
-                "preferred": ["GPU"],
+                "requirements": ["Go", "Go", "Advantages", "CUDA"],
+                "preferred": ["CUDA"],
             },
         }
     )
     assert rows == [
-        {"id": "req-1", "text": "Go", "weight": 3},
-        {"id": "req-2", "text": "GPU", "weight": 1},
+        {"id": "req-1", "text": "CUDA", "weight": 1},
+        {"id": "req-2", "text": "Go", "weight": 3},
     ]
+
+
+def test_long_posting_scores_only_deduplicated_stack():
+    rows = criteria_for(
+        {
+            "normalized": {
+                "requirements": [
+                    f"Communication and leadership responsibility {i}" for i in range(40)
+                ]
+                + ["Build Python services", "Python and PostgreSQL", "Docker"],
+                "preferred": ["Python", "Kubernetes"],
+            }
+        }
+    )
+    assert [(row["text"], row["weight"]) for row in rows] == [
+        ("Docker", 3),
+        ("Kubernetes", 1),
+        ("PostgreSQL", 3),
+        ("Python", 3),
+    ]
+
+
+def test_unsectioned_stack_uses_local_technology_aliases():
+    rows = criteria_for({"description": "Build services with golang, k8s and postgres."})
+    assert {row["text"] for row in rows} == {"Go", "Kubernetes", "PostgreSQL"}
+
+
+def test_no_recognized_stack_does_not_invent_a_score():
+    from django.core.exceptions import ValidationError
+
+    with pytest.raises(ValidationError, match="no recognized technologies"):
+        criteria_for({"description": "Strong communication and leadership required."})

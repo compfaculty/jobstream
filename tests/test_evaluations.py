@@ -23,12 +23,13 @@ def output():
         "confidence": "medium",
         "assessments": [
             {
-                "requirement_id": "req-1",
+                "requirement_id": requirement_id,
                 "status": "met",
                 "evidence_fact_id": "f1",
-                "evidence_quote": "Python",
-                "explanation": "Python experience is documented.",
+                "evidence_quote": skill,
+                "explanation": "The CV lists this technology.",
             }
+            for requirement_id, skill in (("req-1", "Linux"), ("req-2", "Python"))
         ],
     }
 
@@ -53,7 +54,7 @@ def test_owner_snapshot_dedup_and_disabled(
 ):
     record = evaluations.start(user, job, evaluation_profile.pk)
     assert evaluations.start(user, job, evaluation_profile.pk).pk == record.pk
-    job.description = "changed"
+    job.description = "Python requirements changed"
     job.save()
     assert record.snapshot["job"]["description"] != job.description
     assert evaluations.start(user, job, evaluation_profile.pk).pk != record.pk
@@ -312,6 +313,7 @@ def test_capability_expiry_and_escaped_evidence(
     )
     result = output()
     result["summary"] = "<script>alert(1)</script>"
+    result["assessments"] = [{**result["assessments"][1], "requirement_id": "req-1"}]
     monkeypatch.setattr(AgentGateway, "start", lambda *args: response(record, result=result))
     monkeypatch.setattr(AgentGateway, "status", lambda *args: response(record, result=result))
     evaluations.process(record.pk)
@@ -400,3 +402,23 @@ def test_model_context_omits_duplicate_description_and_keeps_source_snapshot(
     assert record.snapshot["job"]["description"] == job.description
     legacy = {"facts": [], "job": {"description": "Legacy"}}
     assert runtime_context(legacy) == legacy
+
+
+def test_standalone_stack_match_needs_no_provider(
+    user, job, evaluation_profile, agent_settings, settings, monkeypatch
+):
+    settings.CV_REPRESENTATIONS_ENABLED = False
+    job.description = "Requirements\nPython"
+    job.save()
+    evaluation_profile.facts = [{"id": "f1", "text": "Python"}]
+    evaluation_profile.save()
+    provider = Mock(side_effect=AssertionError("Local match must not call provider"))
+    monkeypatch.setattr(AgentGateway, "start", provider)
+    record = evaluations.start(user, job, evaluation_profile.pk)
+    evaluations.process(record.pk)
+    record.refresh_from_db()
+    assert record.status == "completed"
+    assert record.result["cv_match_score"] == 100
+    assert record.usage == {"input_tokens": 0, "output_tokens": 0}
+    assert not AIQuota.objects.exists()
+    provider.assert_not_called()

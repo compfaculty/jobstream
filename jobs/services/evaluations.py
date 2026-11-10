@@ -26,7 +26,7 @@ from .evaluation_context import runtime_context
 from .preference_matching import evaluate, preferences_for
 
 logger = logging.getLogger(__name__)
-VERSION = "vacancy-evaluation-v2"
+VERSION = "vacancy-evaluation-stack-v3"
 CAPABILITY_SALT = "vacancy-evaluation-v1"
 ACTIVE = {"queued", "running"}
 POLICY_FIELDS = (
@@ -142,10 +142,9 @@ def start(owner, job, profile_id=None, *, document_id=None):
     snapshot["runtime_context_version"] = 1
     snapshot["reasoning_effort"] = settings.INFINITY_REASONING_EFFORT
     snapshot["criteria"] = criteria_for(vacancy)
-    if settings.CV_REPRESENTATIONS_ENABLED:
-        from .cv_profiles import exact_assessments
+    from .cv_profiles import exact_assessments
 
-        snapshot["exact_assessments"] = exact_assessments(snapshot["criteria"], facts)
+    snapshot["exact_assessments"] = exact_assessments(snapshot["criteria"], facts)
     snapshot["preference_blocks"] = preference_blocks(vacancy, snapshot["preferences"])
     encoded = json.dumps(runtime_context(snapshot), sort_keys=True, ensure_ascii=False)
     if len(encoded) > settings.AI_MAX_INPUT_CHARACTERS:
