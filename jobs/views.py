@@ -292,6 +292,11 @@ def application_detail(request, pk):
             "camunda_portal": camunda_supported(application),
             "camunda_review": camunda_review,
             "gitlab_portal": gitlab.supported(application),
+            "assisted_supported": (
+                cato_supported(application)
+                or camunda_supported(application)
+                or gitlab.supported(application)
+            ),
             "gitlab_review": gitlab_review,
             "can_approve": (
                 application.channel == "email"

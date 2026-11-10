@@ -48,6 +48,10 @@ document.querySelector('#send').onclick=async()=>{
         "422",
         "timeout",
         "challenge",
+        "assisted",
+        "assisted_after_fill",
+        "assisted_changed",
+        "assisted_expired",
         "city",
         "destination",
     ],
@@ -58,6 +62,15 @@ def test_browser_transport_uses_ui_and_never_replays(browser_type, outcome):
     requests = []
     html = HTML
     answers = ANSWERS.copy()
+    if outcome == "assisted_after_fill":
+        html = html.replace(
+            "<input id=phone>",
+            """<input id=phone oninput="
+            if(!document.querySelector('[name=security_code]')){
+                const c=document.createElement('input');c.name='security_code';
+                document.body.append(c);
+            }">""",
+        )
     if outcome == "short_city":
         answers["city"] = "Lod"
         html = html.replace("Tel Aviv, Israel", "Lod, Israel").replace(
@@ -73,7 +86,7 @@ setTimeout(() => {
 }, 1200);
 """,
         )
-    if outcome == "challenge":
+    if outcome in {"challenge", "assisted", "assisted_changed", "assisted_expired"}:
         html = html.replace(
             "<input id=first_name>", "<input id=first_name><input name=security_code>"
         )
@@ -114,10 +127,21 @@ setTimeout(() => {
             route.fulfill(content_type="text/html", body=html)
 
     context.route("**/*", intercept)
+    handoffs = []
+
+    def human(page):
+        handoffs.append(page)
+        page.locator('[name="security_code"]').evaluate("node => node.remove()")
+        if outcome == "assisted_changed":
+            page.locator("#first_name").fill("Changed without approval")
+
+    options = {"on_human_verification": human} if outcome.startswith("assisted") else {}
+    if outcome == "assisted_expired":
+        options["assisted_timeout"] = 0
     try:
-        if outcome in {"success", "hydration", "short_city"}:
+        if outcome in {"success", "hydration", "short_city", "assisted", "assisted_after_fill"}:
             assert (
-                browser.run(context, IDENTITY, answers, PDF, outcome_timeout=500)
+                browser.run(context, IDENTITY, answers, PDF, outcome_timeout=500, **options)
                 == f"cato_greenhouse:{IDENTITY}"
             )
         else:
@@ -129,11 +153,14 @@ setTimeout(() => {
                 else PortalRejected
             )
             with pytest.raises(error):
-                browser.run(context, IDENTITY, ANSWERS, PDF, outcome_timeout=500)
+                browser.run(context, IDENTITY, ANSWERS, PDF, outcome_timeout=500, **options)
         assert requests.count("submit") == (
-            0 if outcome in {"challenge", "city", "destination"} else 1
+            0
+            if outcome
+            in {"challenge", "city", "destination", "assisted_changed", "assisted_expired"}
+            else 1
         )
-        if outcome in {"challenge", "city", "destination"}:
+        if outcome in {"challenge", "city", "destination", "assisted_changed", "assisted_expired"}:
             assert "upload" not in requests
     finally:
         chromium.close()

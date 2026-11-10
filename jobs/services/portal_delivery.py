@@ -16,3 +16,8 @@ def browser_supported(application):
         or camunda_ashby.supported(application)
         or gitlab_greenhouse.supported(application)
     )
+
+
+def assisted_supported(application):
+    """Only provider transports with an implemented visible-browser handoff."""
+    return application.channel == "portal" and browser_supported(application)

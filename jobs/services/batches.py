@@ -34,7 +34,7 @@ def create(
     portal_answers=None,
     check_fit=False,
 ):
-    get_user_model().objects.select_for_update().get(pk=owner.pk)
+    get_user_model().objects.select_for_update(no_key=True).get(pk=owner.pk)
     existing = ApplicationBatch.objects.filter(owner=owner, request_key=request_key).first()
     if existing:
         return existing
@@ -283,7 +283,7 @@ def prepare(item_id):
         error = "preparation_unavailable"
     try:
         with transaction.atomic():
-            get_user_model().objects.select_for_update().get(pk=item.batch.owner_id)
+            get_user_model().objects.select_for_update(no_key=True).get(pk=item.batch.owner_id)
             current = (
                 BatchItem.objects.select_for_update(of=("self",))
                 .select_related("batch")

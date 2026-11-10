@@ -178,7 +178,7 @@ def read_schema(job) -> Schema:
         raise PortalRejected("cato_schema_unavailable") from exc
 
 
-def approve_portal(user, pk):
+def approve_portal(user, pk, *, assisted=False):
     from .submissions import InvalidTransition, digest, validate_content
 
     candidate = Application.objects.select_related("document", "job").get(pk=pk, owner=user)
@@ -218,6 +218,7 @@ def approve_portal(user, pk):
         validate_content(application)
         application.portal_url = job_url(application.job)
         application.portal_fingerprint = schema.fingerprint
+        application.assisted_delivery = assisted
         application.approval_digest = digest(application, "")
         application.approved_at = timezone.now()
         application.next_dispatch_at = timezone.now()
@@ -230,7 +231,7 @@ def approve_portal(user, pk):
         return application
 
 
-def send(application, attachment):
+def send(application, attachment, *, on_human_verification=None):
     from .cato_browser import deliver
 
     validate_answers(application.portal_answers)
@@ -241,6 +242,12 @@ def send(application, attachment):
         raise PortalRejected("cato_form_changed")
     if schema.linkedin_required and not application.portal_answers.get("linkedin"):
         raise PortalRejected("cato_linkedin_required")
-    return deliver(
-        posting_id(application.job), application.portal_answers, attachment, schema.linkedin_field
+    args = (
+        posting_id(application.job),
+        application.portal_answers,
+        attachment,
+        schema.linkedin_field,
     )
+    if application.assisted_delivery:
+        return deliver(*args, on_human_verification=on_human_verification, assisted=True)
+    return deliver(*args)

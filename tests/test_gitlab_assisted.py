@@ -31,7 +31,7 @@ def test_reserved_approval_ui_and_worker_exclusion(approved, client, monkeypatch
     client.force_login(approved.owner)
     response = client.get(f"/applications/{approved.pk}/")
     assert response.status_code == 200
-    assert b"assist_gitlab_application" in response.content
+    assert b"assist_application" in response.content
     assert b"Reserved for local assisted delivery" in response.content
     ordinary, browser = Mock(), Mock()
     monkeypatch.setattr(tasks.send_application, "delay", ordinary)
@@ -163,7 +163,7 @@ def test_assisted_approval_through_ui(gitlab_application, client, monkeypatch): 
 def test_assisted_mode_not_available_for_email(application):
     from django.core.exceptions import ValidationError
 
-    with pytest.raises(ValidationError, match="only for GitLab"):
+    with pytest.raises(ValidationError, match="supported browser application"):
         submissions.approve(application.owner, application.pk, assisted=True)
 
 

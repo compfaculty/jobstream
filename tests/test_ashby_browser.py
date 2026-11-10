@@ -80,6 +80,10 @@ call('ApiJobPosting');
     [
         "success",
         "nested_sms",
+        "assisted",
+        "assisted_after_upload",
+        "assisted_changed",
+        "assisted_expired",
         "429",
         "rejected",
         "timeout",
@@ -106,6 +110,14 @@ const phone=document.querySelector('[data-field-entry-id="{phone["id"]}"]');
 for(const radio of document.querySelectorAll('input[name=sms]'))phone.append(radio.parentElement);
 </script>'''
         html = html.replace("</body>", script + "</body>")
+    if outcome == "assisted_after_upload":
+        html = html.replace(
+            "await call('ApiSetFormValueToFile');",
+            """await call('ApiSetFormValueToFile');
+            const c=document.createElement('input');c.name='security_code';fields.append(c);""",
+        )
+    if outcome in {"assisted", "assisted_changed", "assisted_expired"}:
+        html = html.replace("</body>", '<input name="security_code"></body>')
     if outcome == "changed":
         html = HTML.replace('"isListed": true', '"isListed": false')
 
@@ -180,10 +192,19 @@ for(const radio of document.querySelectorAll('input[name=sms]'))phone.append(rad
         route.fulfill(content_type="application/json", body=json.dumps(payload))
 
     context.route("**/*", intercept)
+
+    def human(page):
+        page.locator('[name="security_code"]').evaluate("node => node.remove()")
+        if outcome == "assisted_changed":
+            page.locator("#fields input").first.fill("Changed without approval")
+
+    options = {"on_human_verification": human} if outcome.startswith("assisted") else {}
+    if outcome == "assisted_expired":
+        options["assisted_timeout"] = 0
     try:
-        if outcome in {"success", "nested_sms"}:
+        if outcome in {"success", "nested_sms", "assisted", "assisted_after_upload"}:
             assert (
-                ashby.run(context, IDENTITY, answers, PDF, SCHEMA, timeout=1500)
+                ashby.run(context, IDENTITY, answers, PDF, SCHEMA, timeout=1500, **options)
                 == f"camunda_ashby:{IDENTITY}"
             )
         else:
@@ -195,9 +216,21 @@ for(const radio of document.querySelectorAll('input[name=sms]'))phone.append(rad
                 else PortalRejected
             )
             with pytest.raises(expected):
-                ashby.run(context, IDENTITY, fixture_answers(), PDF, SCHEMA, timeout=1500)
+                ashby.run(
+                    context, IDENTITY, fixture_answers(), PDF, SCHEMA, timeout=1500, **options
+                )
         assert posts.count(ashby.SUBMIT_OP) == (
-            0 if outcome in {"changed", "save_failed", "upload_failed", "answer_429"} else 1
+            0
+            if outcome
+            in {
+                "changed",
+                "save_failed",
+                "upload_failed",
+                "answer_429",
+                "assisted_changed",
+                "assisted_expired",
+            }
+            else 1
         )
         if outcome in {"changed", "save_failed", "answer_429"}:
             assert "upload" not in posts

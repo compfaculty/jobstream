@@ -231,7 +231,8 @@ def test_create_form_and_owner_bound_cv(authenticated, cato_job, cato_applicatio
     assert app.channel == "portal" and app.portal_answers == ANSWERS
     detail = authenticated.get(f"/applications/{app.pk}/")
     assert b"Cato Networks application" in detail.content
-    assert b"Approve and send" in detail.content
+    assert b"Approve this application" in detail.content
+    assert b'name="assisted" value="1"' in detail.content
 
 
 @pytest.mark.django_db

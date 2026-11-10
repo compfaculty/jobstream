@@ -114,14 +114,16 @@ def approve(user, pk: int, *, assisted: bool = False) -> Application:
         if provider is None:
             raise ValidationError("Complete this application on the employer portal.")
         if assisted:
-            from . import gitlab_greenhouse
+            from .portal_delivery import assisted_supported
 
-            if provider is not gitlab_greenhouse:
-                raise ValidationError("Local assisted delivery is supported only for GitLab.")
+            if not assisted_supported(candidate):
+                raise ValidationError(
+                    "Local assisted delivery requires a supported browser application."
+                )
             return provider.approve_portal(user, pk, assisted=True)
         return provider.approve_portal(user, pk)
     if assisted:
-        raise ValidationError("Local assisted delivery is supported only for GitLab.")
+        raise ValidationError("Local assisted delivery requires a supported browser application.")
     with transaction.atomic():
         application = (
             Application.objects.select_for_update(of=("self",))
@@ -207,21 +209,20 @@ def submit(pk: int, *, assisted_owner_id: int | None = None, on_human_verificati
             .first()
         )
         if quota_owner is not None:
-            get_user_model().objects.select_for_update().get(pk=quota_owner)
+            # Serialize quota decisions without blocking completion audit FK references.
+            get_user_model().objects.select_for_update(no_key=True).get(pk=quota_owner)
         application = (
             Application.objects.select_for_update(of=("self",))
             .select_related("document")
             .get(pk=pk)
         )
         if assisted_owner_id is not None:
-            from .gitlab_greenhouse import supported
+            from .portal_delivery import assisted_supported
 
             if application.owner_id != assisted_owner_id:
                 raise Application.DoesNotExist
-            if not application.assisted_delivery or not supported(application):
-                raise InvalidTransition(
-                    "Approve this GitLab application for local assisted delivery."
-                )
+            if not application.assisted_delivery or not assisted_supported(application):
+                raise InvalidTransition("Approve this application for local assisted delivery.")
         elif application.assisted_delivery:
             logger.info("delivery_skipped", extra={"reason": "assisted_only"})
             return

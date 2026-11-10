@@ -8,6 +8,7 @@ from urllib.parse import urlsplit
 
 from playwright.sync_api import Error, sync_playwright
 
+from .browser_assistance import SESSION_SECONDS, wait_for_human
 from .camunda_ashby import inspect_schema
 from .cato_browser import challenge, launch
 from .network import PinnedHTTPSConnection, public_addresses
@@ -199,7 +200,15 @@ def upload_handle_response(request):
 
 
 def run(
-    context, identity, answers, attachment, schema, *, timeout=45000, on_human_verification=None
+    context,
+    identity,
+    answers,
+    attachment,
+    schema,
+    *,
+    timeout=45000,
+    on_human_verification=None,
+    assisted_timeout=SESSION_SECONDS,
 ):
     target = f"https://jobs.ashbyhq.com/camunda/{identity}/application"
     submit_op = SUBMIT_OP if schema.payload["surveyForms"] else SINGLE_SUBMIT_OP
@@ -217,7 +226,7 @@ def run(
     step = "navigation"
     blocked_hosts = set()
     blocked_operations = set()
-    human_notified = False
+    session_deadline = time.monotonic() + assisted_timeout
 
     def guard(route):
         nonlocal attempted, failure, rate_limit, upload_ok, upload_url
@@ -363,9 +372,14 @@ def run(
     page.on("requestfailed", failed)
 
     def wait_until(predicate, milliseconds=timeout):
-        nonlocal human_notified
         deadline = time.monotonic() + milliseconds / 1000
         while True:
+            if on_human_verification is not None and time.monotonic() >= session_deadline:
+                raise (
+                    PortalUnknown("camunda_submission_outcome_unknown")
+                    if attempted
+                    else PortalRejected("camunda_assisted_session_timeout")
+                )
             if rate_limit is not None:
                 if attempted and submission_status != 429:
                     raise PortalUnknown("camunda_submission_outcome_unknown")
@@ -378,11 +392,15 @@ def run(
                 )
             human_required = not attempted and challenge(page)
             if human_required:
-                if on_human_verification is None:
-                    raise PortalRejected("camunda_human_verification_required")
-                if not human_notified:
-                    on_human_verification(page)
-                    human_notified = True
+                wait_for_human(
+                    page,
+                    challenge,
+                    on_human_verification,
+                    deadline=session_deadline,
+                    provider="camunda",
+                )
+                # Human time consumes the session budget, not the network timeout.
+                deadline = min(session_deadline, time.monotonic() + milliseconds / 1000)
             elif predicate():
                 return
             if time.monotonic() >= deadline:
@@ -400,8 +418,7 @@ def run(
         wait_until(lambda: observed_schema is not None)
         if observed_schema.fingerprint != schema.fingerprint:
             raise PortalRejected("camunda_form_changed")
-        if challenge(page):
-            raise PortalRejected("camunda_human_verification_required")
+        wait_until(lambda: True)
         writing = True
         country_hint = next(
             (
@@ -437,8 +454,7 @@ def run(
             }
         )
         wait_until(lambda: upload_ok and resume_bound and not pending)
-        if challenge(page):
-            raise PortalRejected("camunda_human_verification_required")
+        wait_until(lambda: True)
         sending = True
         step = "submit"
         page.get_by_role("button", name="Submit Application", exact=True).click()
@@ -534,16 +550,23 @@ def probe(identity, schema):
                 browser.close()
 
 
-def deliver(identity, answers, attachment, schema):
+def deliver(identity, answers, attachment, schema, *, on_human_verification=None, assisted=False):
     started = False
     try:
         rules = resolver_rules()
         with sync_playwright() as runtime:
-            browser = launch(runtime, rules)
+            browser = launch(runtime, rules, headless=False) if assisted else launch(runtime, rules)
             try:
                 context = browser.new_context(service_workers="block", accept_downloads=False)
                 started = True
-                return run(context, identity, answers, attachment, schema)
+                return run(
+                    context,
+                    identity,
+                    answers,
+                    attachment,
+                    schema,
+                    on_human_verification=on_human_verification if assisted else None,
+                )
             finally:
                 with suppress(Error):
                     browser.close()

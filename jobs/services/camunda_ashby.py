@@ -302,7 +302,7 @@ def validate_schema_answers(schema, answers):
 def validate_limits(application):
     """Reserve a user's slots on approval; uncertain sends consume capacity too."""
     if connection.in_atomic_block:
-        get_user_model().objects.select_for_update().get(pk=application.owner_id)
+        get_user_model().objects.select_for_update(no_key=True).get(pk=application.owner_id)
     history = (
         Application.objects.filter(
             owner_id=application.owner_id,
@@ -350,7 +350,7 @@ def validate_limits(application):
         raise ValidationError("Camunda does not permit reapplying to this role within 60 days.")
 
 
-def approve_portal(user, pk):
+def approve_portal(user, pk, *, assisted=False):
     from .submissions import InvalidTransition, digest, validate_content
     from .throttles import portal_pause_seconds
 
@@ -384,7 +384,7 @@ def approve_portal(user, pk):
     validate_schema_answers(schema, candidate.portal_answers)
     with transaction.atomic():
         # Same order as dispatch and batch approval: owner quota lock, then application.
-        get_user_model().objects.select_for_update().get(pk=candidate.owner_id)
+        get_user_model().objects.select_for_update(no_key=True).get(pk=candidate.owner_id)
         app = (
             Application.objects.select_for_update(of=("self",))
             .select_related("document", "job")
@@ -394,6 +394,7 @@ def approve_portal(user, pk):
             raise InvalidTransition("Application changed during review.")
         validate_content(app)
         app.portal_url = job_url(app.job)
+        app.assisted_delivery = assisted
         app.approval_digest = digest(app, "")
         app.approved_at = app.next_dispatch_at = timezone.now()
         app.retry_not_before = None
@@ -404,7 +405,7 @@ def approve_portal(user, pk):
         return app
 
 
-def send(application, attachment):
+def send(application, attachment, *, on_human_verification=None):
     from .ashby_browser import deliver
 
     if not attachment or not attachment.startswith(b"%PDF-") or len(attachment) > 5 * 1024 * 1024:
@@ -416,4 +417,7 @@ def send(application, attachment):
         validate_schema_answers(schema, application.portal_answers)
     except ValidationError as exc:
         raise PortalRejected("camunda_answers_require_review") from exc
-    return deliver(posting_id(application.job), application.portal_answers, attachment, schema)
+    args = (posting_id(application.job), application.portal_answers, attachment, schema)
+    if application.assisted_delivery:
+        return deliver(*args, on_human_verification=on_human_verification, assisted=True)
+    return deliver(*args)

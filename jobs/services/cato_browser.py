@@ -10,6 +10,7 @@ from urllib.parse import parse_qs, urlsplit
 
 from playwright.sync_api import Error, TimeoutError, sync_playwright
 
+from .browser_assistance import SESSION_SECONDS, wait_for_human
 from .network import public_addresses
 from .secret_telaviv import PortalRateLimited, PortalRejected, PortalUnknown
 
@@ -207,16 +208,25 @@ def fill_form(page, answers, linkedin_field):
         page.locator(f"#{linkedin_field}").fill(answers["linkedin"])
 
 
-def deliver(identity, answers, attachment, linkedin_field=""):
+def deliver(
+    identity, answers, attachment, linkedin_field="", *, on_human_verification=None, assisted=False
+):
     transport_started = False
     try:
         rules = resolver_rules()
         with sync_playwright() as runtime:
-            browser = launch(runtime, rules)
+            browser = launch(runtime, rules, headless=False) if assisted else launch(runtime, rules)
             try:
                 context = browser.new_context(service_workers="block", accept_downloads=False)
                 transport_started = True
-                return run(context, identity, answers, attachment, linkedin_field)
+                return run(
+                    context,
+                    identity,
+                    answers,
+                    attachment,
+                    linkedin_field,
+                    on_human_verification=on_human_verification if assisted else None,
+                )
             finally:
                 # Cleanup failures must never turn a completed/uncertain send into safe retry.
                 with suppress(Error):
@@ -294,6 +304,7 @@ def run(
     *,
     outcome_timeout=45000,
     on_human_verification=None,
+    assisted_timeout=SESSION_SECONDS,
 ):
     """One context per attempt. Exposed separately for fully intercepted browser fixtures."""
     submit_url = f"https://boards.greenhouse.io/embed/catonetworks/jobs/{identity}"
@@ -303,6 +314,16 @@ def run(
     response_status = None
     retry_after = ""
     stage = "navigation"
+    session_deadline = time.monotonic() + assisted_timeout
+
+    def verify():
+        wait_for_human(
+            page,
+            challenge,
+            on_human_verification,
+            deadline=session_deadline,
+            provider="cato",
+        )
 
     def guard(route):
         request = route.request
@@ -354,8 +375,7 @@ def run(
             status = navigation.status if navigation is not None else "missing_response"
             raise PortalRejected(f"cato_form_http_{status}")
         page.locator("#first_name").wait_for(state="visible")
-        if challenge(page):
-            raise PortalRejected("cato_human_verification_required")
+        verify()
         # Check the UI's destination independently from the public question schema.
         destinations = page.evaluate("""() => {
             const data = window.__remixContext?.state?.loaderData?.['routes/embed.job_app'];
@@ -371,8 +391,7 @@ def run(
             raise PortalRejected("cato_destination_changed")
         stage = "form"
         fill_form(page, answers, linkedin_field)
-        if challenge(page):
-            raise PortalRejected("cato_human_verification_required")
+        verify()
         stage = "upload"
         with page.expect_response(
             lambda response: (
@@ -389,10 +408,15 @@ def run(
             raise PortalRejected("cato_cv_upload_failed")
         # Upload finishes asynchronously; the submit button is disabled while processing.
         button = page.get_by_role("button", name="Submit application", exact=True)
+        verify()
         posting = True
         stage = "submit"
         button.click(timeout=30000)
-        deadline = time.monotonic() + outcome_timeout / 1000
+        deadline = (
+            session_deadline
+            if on_human_verification is not None
+            else time.monotonic() + outcome_timeout / 1000
+        )
         notified = None
         while not confirmation(page.url, identity):
             if gate.error:
