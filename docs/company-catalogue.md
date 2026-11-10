@@ -18,6 +18,9 @@ Arbeitnow and Himalayas are job sources, not company-discovery providers. The [f
 imports pending companies before confirming hiring, including source-identified companies
 with missing websites. Identity attestation and source activation remain operator decisions. See [Employer discovery](employer-discovery.md) for configuration,
 evidence requirements, budgets and review. All seeded campaigns ship disabled.
+Track fetch readiness and application readiness independently using the
+[company integration criteria](company-integration-workflow.md). Fetching is the
+minimum milestone; application support remains a separate high-priority milestone.
 Collection support does not imply application submission support. Greenhouse/Ashby
 delivery is integration-specific; Workday and Akeyless/Comeet are not generally
 automated delivery routes. Unsupported routes require manual action. CV PDF

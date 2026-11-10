@@ -1,16 +1,73 @@
 # Company integration workflow
 
-Checkpoint: 05fccbf — company-first collection, lifecycle tracking, admin filters and
-Jazzmin. Company-by-company work starts with Cato Networks; see its integration note.
-Commit each completed company integration before moving to the next. Reuse platform
-adapters wherever possible, rather than writing a separate scraper for every employer.
+Track **fetching jobs** and **applying to jobs** independently for every company.
+Fetching is the minimum integration milestone. Application support is a high-priority
+second milestone; missing submission support must not prevent shipping a verified
+fetch adapter. Reuse platform adapters wherever possible. Do not use a single
+“company complete” label that hides which capability works.
 
-Completion requires verified employer/ATS identity, full bounded/resumable collection,
-normalization with fixtures, an identified and implemented application route, retries
-and uncertain-outcome handling, ownership/approval checks, and recorded test evidence.
+## Fetch readiness
+
+Record one of these states with evidence and any blocker:
+
+- **Pending:** no implemented, tested collection route.
+- **Implemented:** adapter and focused tests exist; runtime rollout or validation remains.
+- **Ready:** configured in the target environment and a controlled collection has
+  verified employer/ATS identity, job descriptions, locations where supplied,
+  stable identities, normalization, deduplication and applicable pagination/budgets.
+- **Blocked:** collection cannot currently work; record the specific cause and next action.
+
+A complete inventory must not be inferred from truncation, challenges, failed
+requests or partial HTML. Automatic vacancy closure is a separate capability:
+a source can be fetch-ready while closure remains disabled. Regressions can move
+an existing integration back to blocked; retain its last successful evidence.
+
+## Application readiness
+
+See the [browser-assisted application plan](browser-assisted-applications.md) for
+CAPTCHA handoff, browser compatibility and provider rollout.
+
+Record an independent state, route and blocker:
+
+- **Unassessed:** application route has not been reviewed.
+- **Pending:** route is identified, but integration work remains.
+- **Implemented:** preparation/submission code and tests exist; operational
+  validation remains. A recognized form alone does not qualify.
+- **Ready:** the supported route can prepare the intended application, preview
+  recipient/destination, content and attachments, enforce ownership and explicit
+  approval, submit with duplicate protection, and distinguish confirmed success,
+  failure and uncertain outcomes. Record the validation method; never imply a
+  real submission was tested when only fixtures or a sandbox were used.
+- **Assisted:** a verified handoff supports the user completing specified steps;
+  state exactly what Jobstream prepares and what the user must do. An untested
+  external apply link alone is not evidence of a working assisted integration.
+- **Blocked:** the route cannot currently be completed; record the cause, such as
+  CAPTCHA, access restrictions, unsupported questions or unavailable attachments.
+
+Keep the route explicit (published application email, supported ATS submission,
+or employer portal). Platform collection support does not establish submission
+support for every employer on that platform. Application readiness may differ
+between vacancies, locations or forms; assess each selected vacancy again before
+preparation/approval/delivery. A company-level summary is not authorization.
+
+Prioritize supported public submission mechanisms and verified published application
+email where suitable, then employer-specific forms and assisted workflows. CAPTCHA
+or anti-bot challenges should pause the affected application for user action where
+a supported handoff exists; otherwise report a blocker. Do not automatically retry
+a possibly successful submission, bypass challenges, or mark a handoff as sent
+without delivery evidence. A challenge in applying does not downgrade working
+fetching; a challenge in fetching does block fetch readiness.
+
+For both tracks, record relevant tests, last validation and remaining limitations.
+No live applications, emails or notifications are authorized by readiness work.
 Read-only live inspection is allowed. Live submissions require the user's selected
-vacancies, CV and approval; never invent an applicant or silently send test applications.
-If an application route still needs implementation, leave the company in progress.
+vacancies, CV and explicit approval; never invent an applicant or silently send
+test applications. Do not commit changes unless the user requests it.
+
+These are project acceptance and reporting criteria. They do not introduce new
+persisted model fields, admin badges or delivery state transitions. The existing
+`Source.needs_adapter` flag tracks collection implementation backlog only; clearing
+it does not establish runtime fetch readiness or any application capability.
 
 Target workflow: the user selects jobs and a truthful base CV/profile, approves one
 batch, and supported integrations prepare/send eligible applications concurrently.
