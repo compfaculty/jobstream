@@ -1,0 +1,282 @@
+[
+  {
+    "uid": "F0.47B",
+    "url_comeet_hosted_page": "https://www.comeet.com/jobs/exco/F0.005/adops-ai-automation-specialist/F0.47B",
+    "name": "AdOps AI Automation Specialist",
+    "company_name": "EX.CO",
+    "location": {
+      "name": "New York, US",
+      "country": "US",
+      "city": "New York",
+      "state": "NY",
+      "postal_code": "10010",
+      "street_name": "121 East 24th Street",
+      "arrival_instructions": null,
+      "street_number": null,
+      "timezone": "America/New_York",
+      "location_uid": "E3.00B",
+      "is_remote": true
+    },
+    "custom_fields": {
+      "details": [
+        {
+          "name": "Description",
+          "value": "<p class=\"editor-paragraph\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">Your Story:</strong></b></p><p class=\"editor-paragraph\"><span style=\"white-space: pre-wrap;\">You're the person who can't do the same task twice without thinking \"there has to be a way to automate this.\" You use AI tools every day, not just for chatting, but to actually build stuff. You've made your own GPTs, Claude projects, bots, or automations just because you wanted to see if you could. Now you want to do it for real, at a company that's all in on AI. If that sounds like you, keep reading.</span></p><p class=\"editor-paragraph\"><br></p><p class=\"editor-paragraph\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">\ufeffWho We Are:</strong></b></p><p class=\"editor-paragraph\"><a href=\"http://ex.co/\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"editor-link\"><span style=\"white-space: pre-wrap;\">EX.CO</span></a><span style=\"white-space: pre-wrap;\"> is the video technology fueling growth for media leaders worldwide. Since we launched, our mission has been to shape the future of media technology, powering publishers' business success in a rapidly changing reality. Today, we partner with leading media companies, including USA Today, Hearst Newspapers, Motorsport Network, The Arena Group (Parade, The Street), and Ziff Davis (Mashable), to maximize revenue across every screen: web, mobile apps, CTV, and DOOH. Our technology combines an online video platform with a machine learning-based yield engine, giving media owners the control, scale, and transparency they need to thrive.</span></p><p class=\"editor-paragraph\"><span style=\"white-space: pre-wrap;\">What drives us is simple: we're stronger together, always evolving, and radically transparent. Collaboration fuels our best work, innovation keeps us ahead, and honesty builds lasting trust with our colleagues, partners, and customers. We are proudly backed by The Walt Disney Company, Saban Ventures, Viola Group, 83North, and others.</span></p><p class=\"editor-paragraph\"><span style=\"white-space: pre-wrap;\">Now we're growing our team, and that's where you come in. We're building a place where talented people make an impact, ideas spark change, and everyone has a seat at the table.</span></p><p class=\"editor-paragraph\"><br></p><p class=\"editor-paragraph\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">\ufeffWhat You'll Do:</strong></b></p><ul class=\"editor-list-ul\"><li value=\"1\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">As part of the AdOps team, you\u2019ll learn our day-to-day work from the inside out: the routines, the repetitive tasks, and the pain points. You\u2019ll map these processes, streamline them with AI and automation, and build tools that help the team work faster and smarter.</span></li><li value=\"2\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Map our daily workflows (reporting, QA, ticket triage, publisher monitoring) and find what can be automated</span></li><li value=\"3\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Build automations and internal tools using AI assistants, Claude skills and agents, n8n/Zapier/Make, and Google Apps Script</span></li><li value=\"4\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Create and grow a skill library the whole team can use</span></li><li value=\"5\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Document every workflow you build and train the team to use it</span></li><li value=\"6\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Own the evaluation and integration of new AI tools, prioritizing those with clear operational value.</span></li></ul>",
+          "order": 1
+        },
+        {
+          "name": "Requirements",
+          "value": "<p class=\"editor-paragraph\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">What We're Looking For:</strong></b></p><ul class=\"editor-list-ul\"><li value=\"1\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Hands-on, daily use of AI tools (Claude, ChatGPT, Gemini), with advanced prompting that goes way beyond simple chat</span></li><li value=\"2\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">A portfolio of things you've built: an automation, a GPT/Gem/Claude project, a script, a bot. Show us!</span></li><li value=\"3\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Curious, self-driven, and happy to learn new tools on your own</span></li><li value=\"4\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Clear communicator who can explain what you built to people who aren't technical</span></li></ul><p class=\"editor-paragraph\"><br></p><p class=\"editor-paragraph\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">\ufeffAdvantage:</strong></b></p><ul class=\"editor-list-ul\"><li value=\"1\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Hands-on experience in AdOps or ad tech. Familiarity with GAM, programmatic demand, or video ads is a big plus.</span></li><li value=\"2\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">AdTech knowledge (GAM, programmatic, SSPs)</span></li><li value=\"3\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Experience with MCPs, AI agents, or Claude Code/Cowork</span></li></ul><p class=\"editor-paragraph\"><br></p><p class=\"editor-paragraph\"><span style=\"white-space: pre-wrap;\">**The pay range for this position in New York is $80,000 \u2013 $120,000</span></p>",
+          "order": 2
+        },
+        {
+          "name": "What we offer",
+          "value": null,
+          "order": 3
+        }
+      ],
+      "categories": []
+    },
+    "is_internal": false
+  },
+  {
+    "uid": "C4.F6A",
+    "url_comeet_hosted_page": "https://www.comeet.com/jobs/exco/F0.005/customer-success-manager--ny/C4.F6A",
+    "name": "Customer Success Manager- NY",
+    "company_name": "EX.CO",
+    "location": {
+      "name": "New York, US",
+      "country": "US",
+      "city": "New York",
+      "state": "NY",
+      "postal_code": "10010",
+      "street_name": "121 East 24th Street",
+      "arrival_instructions": null,
+      "street_number": null,
+      "timezone": "America/New_York",
+      "location_uid": "E3.00B",
+      "is_remote": true
+    },
+    "custom_fields": {
+      "details": [
+        {
+          "name": "Description",
+          "value": "<p><strong>Your Story:</strong></p><p>You\u2019ll be joining a core team at EX.CO to lead the charge with our customers and get to work closely with all stakeholders at the company. This position is based in our NYC office. Acting as the liaison between your publishers and EX.CO\u2019s Product, RevOps, and Tech teams to meet publisher KPIs, revenue goals, and evangelize EX.CO\u2019s video platform. Delivering best-in-class services to your publishers by bringing them strategic vision, training and planning sessions, and ensuring continuous growth through the different customer journey stages. You will be the face of EX.CO for your publishers and their biggest advocates to Product &amp; Revenue teams. Keeping up with industry trends and updates to effectively educate and smoothly navigate your customers through the changes.</p><p><br></p><p><strong>\ufeffWho we are:</strong></p><p><a href=\"http://ex.co/\" target=\"_blank\" rel=\"noopener noreferrer\">EX.CO</a> is the video technology fueling growth for media leaders worldwide. Since we launched, our mission has been to shape the future of media technology, powering publishers\u2019 business success in a rapidly changing reality.&nbsp;</p><p>Today, we partner with leading media companies\u2014including USA Today, Hearst Newspapers, Motorsport Network, The Arena Group (Parade, The Street), and Ziff Davis (Mashable) \u2014to maximize revenue across every screen: web, mobile apps, CTV, and DOOH. Our technology combines an online video platform with a machine learning-based yield engine, giving media owners the control, scale, and transparency they need to thrive.</p><p>What drives us is simple: we\u2019re stronger together, always evolving, and radically transparent. Collaboration fuels our best work, innovation keeps us ahead, and honesty builds lasting trust with our colleagues, partners, and customers. We are proudly backed by The Walt Disney Company, Saban Ventures, Viola Group, 83North, and others.</p><p>Now we\u2019re growing our team\u2014and that\u2019s where you come in. We\u2019re building a place where talented people make an impact, ideas spark change, and everyone has a seat at the table.</p><p><br></p><p><strong>What You\u2019ll Do:</strong></p><ul><li>Lead strategic relationships with a portfolio of global Online Video and Connected TV (CTV) publisher accounts, building trusted executive relationships and guiding customers through every stage of the customer lifecycle to maximize retention, growth, and long-term success.</li><li>Manage a global book of business across multiple regions and time zones, ensuring proactive communication, timely execution, and a consistent, high-quality customer experience.</li><li>Partner cross-functionally with Business Development, Ad Operations, Product, Engineering, and other key stakeholders to deliver seamless customer onboarding, accelerate product adoption, and drive ongoing business growth.</li><li>Identify expansion and upsell opportunities by leveraging customer performance data, market trends, and new product capabilities to increase account value and support revenue growth.</li><li>Lead strategic business planning sessions, define customer success objectives, and deliver executive-level Quarterly Business Reviews (QBRs) that communicate business outcomes, performance insights, and growth opportunities.</li><li>Act as the voice of the customer by advocating for publisher priorities internally, influencing product enhancements, and providing executive leadership with regular updates on customer health, risks, opportunities, and strategic initiatives.</li><li>Demonstrate deep technical and industry expertise by leveraging self-service platforms, navigating complex advertising technology ecosystems, and applying programmatic advertising knowledge to resolve customer challenges and optimize business outcomes.</li></ul>",
+          "order": 1
+        },
+        {
+          "name": "Requirements",
+          "value": "<p><strong>What We\u2019re Looking For:</strong></p><ul><li>4+ years of customer-facing experience (Customer Success, Client Services, Account Manager, Program Manager).</li><li>3+ years of experience at an Ad-Tech company or publisher.</li><li>Customer-centric approach to managing and growing customer relationships.</li><li>Entrepreneurial spirit, eager to learn and diligent contributor.</li><li>Stellar organizational, writing, listening, and presentation skills.</li><li>Sense of ownership skills, time management, project management, and prioritization.&nbsp;</li><li>Ability to be analytical, resourceful and tech-interested to see problems to resolution.</li></ul><p><br></p><p><strong>It will be awesome if you have:</strong></p><ul><li>Experience using tools such as Tableau and CRM tools (Zendesk, Salesforce, Monday).&nbsp;</li><li>Familiarity with SSPs, OVPs, DSPs.</li><li>Served as consultant to media or video companies.</li><li>Sales background having led upsell opportunities.</li><li>Previously worked as a Program or Project Manager directly with customers.</li></ul><p>**The pay range for this position in New York is $100,000 \u2013 $120,000</p>",
+          "order": 2
+        },
+        {
+          "name": "What we offer",
+          "value": null,
+          "order": 3
+        }
+      ],
+      "categories": []
+    },
+    "is_internal": false
+  },
+  {
+    "uid": "22.66C",
+    "url_comeet_hosted_page": "https://www.comeet.com/jobs/exco/F0.005/director-business-development/22.66C",
+    "name": "Director, Business Development",
+    "company_name": "EX.CO",
+    "location": {
+      "name": "New York, US",
+      "country": "US",
+      "city": "New York",
+      "state": "NY",
+      "postal_code": "10010",
+      "street_name": "121 East 24th Street",
+      "arrival_instructions": null,
+      "street_number": null,
+      "timezone": "America/New_York",
+      "location_uid": "E3.00B",
+      "is_remote": true
+    },
+    "custom_fields": {
+      "details": [
+        {
+          "name": "Description",
+          "value": "<p><br></p><p><strong>\ufeffWhat You\u2019ll Do:</strong></p><ul><li>Develop a sales strategy and business plan for generating revenue through mid-tier, premium publishers, websites and media owners/platforms across OLV and CTV.</li><li>Prospect new clients (publishers), including the ability to qualify and close new accounts.</li><li>Host online, phone and in-person pitches and presentations.</li><li>Maintain in-depth knowledge of competitive landscape and market trends whilst providing product feedback.</li><li>Work in collaboration with Product, Account Management and Ad-Operations groups to develop new advertising formats and introduce these to the publishing market.</li><li>Directly cultivate relationships with large digital publishers, audience owners and media companies. Interactions will be based on calls, meetings, event participation.</li><li>Contribute to special projects and company strategic initiatives.</li></ul><p><strong>Who we are:</strong></p><p><a href=\"http://ex.co/\" target=\"_blank\" rel=\"noopener noreferrer\">EX.CO</a> is the video technology fueling growth for media leaders worldwide. Since we launched, our mission has been to shape the future of media technology, powering publishers\u2019 business success in a rapidly changing reality. Today, we partner with leading media companies\u2014including USA Today, Hearst Newspapers, Motorsport Network, The Arena Group (Parade, The Street), and Ziff Davis (Mashable) \u2014to maximize revenue across every screen: web, mobile apps, CTV, and DOOH. Our technology combines an online video platform with a machine learning-based yield engine, giving media owners the control, scale, and transparency they need to thrive.</p><p>What drives us is simple: we\u2019re stronger together, always evolving, and radically transparent. Collaboration fuels our best work, innovation keeps us ahead, and honesty builds lasting trust with our colleagues, partners, and customers. We are proudly backed by The Walt Disney Company, Saban Ventures, Viola Group, 83North, and others.</p><p>Now we\u2019re growing our team\u2014and that\u2019s where you come in. We\u2019re building a place where talented people make an impact, ideas spark change, and everyone has a seat at the table.</p><p><strong>\ufeff</strong></p>",
+          "order": 1
+        },
+        {
+          "name": "Requirements",
+          "value": "<p><strong>What We\u2019re Looking For:</strong></p><ul><li>5+ years of experience in the ad-tech industry preferably in publisher sales, business development or other sales positions with a focus on selling to <strong>publishers</strong>.</li><li>Previous experience successfully signing deals, driving revenue through prospecting, pitching, negotiating and renewing business with mid-tier &amp; premium digital publishers.</li><li>Network of digital publishers, direct connection to high trafficked entities.</li><li>Fundamental understanding of the programmatic ecosystem, publisher landscape and the online advertising industry</li><li>Understanding of common ad-server implementations, programmatic video &amp; advertising products.</li><li>Strong communication skills and familiarity with the media buying jargon</li><li>Entrepreneurial, self-motivated, goal and target oriented executor that desires to be a key contributor and strong team player</li></ul>",
+          "order": 2
+        },
+        {
+          "name": "What we offer",
+          "value": "<p><strong>What we offer:</strong></p><ul><li>Competitive salary&nbsp;</li><li>Health coverage (based on location)</li><li>A flexible, hybrid work schedule in a dynamic and supportive environment</li><li>Generous paid time off</li><li>Stock options</li><li>Company paid holidays&nbsp;</li><li>Company paid sick leave</li><li>Retirement savings plans</li><li>Paid parental leave</li><li>Volunteering days</li><li>Employee referral program</li><li>Training and development programs</li><li>Casual dress code</li><li>Women\u2019s Employee Resource Group&nbsp;</li><li>An innovative tech company at the forefront of machine-learning-driven video&nbsp;</li><li>Hands-on experience working with high-impact digital assets</li><li>Collaboration with a talented and diverse global team</li></ul><p>**The pay range for this position in New York is $150,000 \u2013 $175,000</p>",
+          "order": 3
+        }
+      ],
+      "categories": []
+    },
+    "is_internal": false
+  },
+  {
+    "uid": "04.477",
+    "url_comeet_hosted_page": "https://www.comeet.com/jobs/exco/F0.005/implementation-support-team-lead/04.477",
+    "name": "Implementation Support Team Lead",
+    "company_name": "EX.CO",
+    "location": {
+      "name": "Poland",
+      "country": "",
+      "city": null,
+      "state": null,
+      "postal_code": null,
+      "street_name": null,
+      "arrival_instructions": null,
+      "street_number": null,
+      "timezone": "Asia/Jerusalem",
+      "location_uid": "CF.106",
+      "is_remote": true
+    },
+    "custom_fields": {
+      "details": [
+        {
+          "name": "Description",
+          "value": "<p class=\"editor-paragraph\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">Your Story:</strong></b></p><p class=\"editor-paragraph\"><span style=\"white-space: pre-wrap;\">We\u2019re looking for a hands-on, tech-savvy Team Lead to manage our Implementation Support Team. You\u2019ll lead a team of Technical Support Engineers who support EX.CO customers and work closely with other EX.CO operations teams (Customer Success, Technical Customer Success and Demand relationships). The team handles operational, data-driven, and configuration-based tasks. Your goal is to make sure our clients get excellent service by building smart processes, setting the bar for quality, and making sure technical work is done right.</span></p><p class=\"editor-paragraph\"><br></p><p class=\"editor-paragraph\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">\ufeffOur Story:</strong></b></p><p class=\"editor-paragraph\"><span style=\"white-space: pre-wrap;\">At the heart of every digital revolution, there\u2019s a story. Ours began in 2012, with a vision of creating a publisher video platform that offers all the necessary tools, innovation, and knowledge publishers need to fully optimize their websites with video.</span></p><p class=\"editor-paragraph\"><span style=\"white-space: pre-wrap;\">Through machine-learning and AI technology, EX.CO empowers publishers to own their video content and monetization strategies to maximize revenue. Our platform offers global publishers unparalleled access to best-in-class ad serving, monetization, content automation, and video recommendation.</span></p><p class=\"editor-paragraph\"><span style=\"white-space: pre-wrap;\">Trusted by some of the leading publishers globally including The Arena Group, CBSi, Hearst, Nasdaq, VICE, and more, EX.CO\u2019s platform helps publishers boost audience engagement and increase revenue. Our success is a direct result of our dedicated team located around the world and visionary backers including The Walt Disney Company, Saban Ventures, Viola Group, 83North, and Firstime Ventures.</span></p><p class=\"editor-paragraph\"><span style=\"white-space: pre-wrap;\">At EX.CO\u2019s core is a passion for reimagining the video space and an unyielding commitment to those who rely on us. And now, we\u2019re looking for remarkable talent like you to join the next chapter of our story. \ud83c\udf1f</span></p><p class=\"editor-paragraph\"><br></p><p class=\"editor-paragraph\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">\ufeffWhat You\u2019ll Do:</strong></b></p><ul class=\"editor-list-ul\"><li value=\"1\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Lead, mentor and grow a team of Technical Support Engineers, including hiring, onboarding, goal setting and performance reviews.</span></li><li value=\"2\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Own the team\u2019s workload and priorities, making sure tasks are handled on time and with high quality.</span></li><li value=\"3\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Oversee new client onboarding and day-to-day operations so launches go smoothly and clients keep succeeding.</span></li><li value=\"4\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Be the go-to person for complex escalations. Jump in hands-on to troubleshoot and debug production issues.</span></li><li value=\"5\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Creating and running automated workflows and developer tools using AI.</span></li><li value=\"6\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">leveraging AI agents and intelligent bots for workflow automation.</span></li><li value=\"7\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Oversee platform configurations, including content setup, video player settings and ad integrations, plus QA after launch.</span></li><li value=\"8\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Make sure system performance is monitored across platforms and anomalies are flagged and handled fast.</span></li><li value=\"9\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Build and improve team processes, SOPs and knowledge base. Find ways to automate and work smarter.</span></li><li value=\"10\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Work closely with Dev, AdOps, Product and CS to escalate issues, share customer feedback and align on priorities.</span></li><li value=\"11\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Own reporting and internal dashboards (KPIs, SLAs, ticket trends) to keep cross-functional teams aligned.</span></li></ul>",
+          "order": 1
+        },
+        {
+          "name": "Requirements",
+          "value": "<p class=\"editor-paragraph\"><br></p><p class=\"editor-paragraph\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">\ufeffWhat We\u2019re Looking For:</strong></b></p><ul class=\"editor-list-ul\"><li value=\"1\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">2-3+ years of experience managing a team of Technical Support Engineers (or a similar tech support / implementation team).</span></li><li value=\"2\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Strong technical background: hands-on JavaScript with real debugging ability (DevTools), plus solid CSS and HTML.</span></li><li value=\"3\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Expertise in creating and running automated workflows and developer tools using AI.</span></li><li value=\"4\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Experience in leveraging AI agents and intelligent bots for workflow automation.</span></li><li value=\"5\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Experience with logging/monitoring tools (Datadog, Groundcover, Logz.io or similar): searching logs, tracing issues and finding errors.</span></li><li value=\"6\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Strong production and troubleshooting mindset. Comfortable in production environments and reading API responses (JSON and XML).</span></li><li value=\"7\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Experience with Git and basic Git workflows.</span></li><li value=\"8\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Proven ability to build processes, manage priorities and drive high-quality execution.</span></li><li value=\"9\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Experience working with Dev / AdOps / Engineering teams.</span></li><li value=\"10\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Excellent English and clear communication. Strong ownership and comfortable working across time zones.</span></li></ul><p class=\"editor-paragraph\"><br></p><p class=\"editor-paragraph\"><span style=\"white-space: pre-wrap;\">Advantage: Ad-tech or video background, experience working with American or multicultural teams, technical degree, or QA automation.</span></p><p class=\"editor-paragraph\"><span style=\"white-space: pre-wrap;\">The role is full-time, hybrid (3 office days), from 10:00 AM to 7:00 PM Eastern European Time.</span></p>",
+          "order": 2
+        },
+        {
+          "name": "What we offer",
+          "value": null,
+          "order": 3
+        }
+      ],
+      "categories": []
+    },
+    "is_internal": false
+  },
+  {
+    "uid": "5D.07A",
+    "url_comeet_hosted_page": "https://www.comeet.com/jobs/exco/F0.005/tech-support-engineer/5D.07A",
+    "name": "Tech Support Engineer",
+    "company_name": "EX.CO",
+    "location": {
+      "name": "Poland",
+      "country": "",
+      "city": null,
+      "state": null,
+      "postal_code": null,
+      "street_name": null,
+      "arrival_instructions": null,
+      "street_number": null,
+      "timezone": "Asia/Jerusalem",
+      "location_uid": "CF.106",
+      "is_remote": true
+    },
+    "custom_fields": {
+      "details": [
+        {
+          "name": "Description",
+          "value": "<p><strong>Your Story:</strong></p><p>We are seeking detail-oriented and tech-savvy professionals to join our Implementation Support Team. This team will provide critical support to EX.CO customers collaborating with other members of EX.CO operations team (Customer Success, Technical Customer Success and Demand relationships) by handling operational, data-driven, and configuration-based tasks. The goal is to provide excellent service to our clients by streamlining operational processes, ensuring high-quality execution of technical processes.</p><p><br></p><p><strong>Our Story:</strong></p><p>At the heart of every digital revolution, there's a story. Ours began in 2012, with a vision of creating a publisher video platform that offers all the necessary tools, innovation, and knowledge publishers need to fully optimize their websites with video.&nbsp;</p><p>Through machine-learning and AI technology, EX.CO empowers publishers to own their video content and monetization strategies to maximize revenue. Our platform offers global publishers unparalleled access to best-in-class ad serving, monetization, content automation, and video recommendation.&nbsp;</p><p>Trusted by some of the leading publishers globally including The Arena Group, CBSi, Hearst, Nasdaq, VICE, and more, EX.CO\u2019s platform helps publishers boost audience engagement and increase revenue. Our success is a direct result of our dedicated team located around the world and visionary backers including The Walt Disney Company, Saban Ventures, Viola Group, 83North, and Firstime Ventures.</p><p>At EX.CO's core is a passion for reimagining the video space and an unyielding commitment to those who rely on us. And now, we're looking for remarkable talent like you to join the next chapter of our story. \ud83c\udf1f</p><p><br></p><p><strong>\ufeffWhat You\u2019ll do:</strong></p><ul><li>Support the seamless onboarding of new clients and assist with day-to-day operational tasks to ensure a smooth launch and ongoing success.</li><li>Manage platform configurations, including content setup, video player settings, and basic advertising integrations.</li><li>Assist in product setup QA post launch and troubleshooting</li><li>Monitor system performance across multiple platforms, flag anomalies, and assist with troubleshooting.</li><li>Generate reports for internal planning and customer growth updates, following established procedures.</li><li>Monitor files for unnecessary or missing lines, making sure that all is defined as expected</li><li>Maintain internal dashboards to keep cross-functional teams aligned and informed.</li></ul>",
+          "order": 1
+        },
+        {
+          "name": "Requirements",
+          "value": "<p><strong>What We\u2019re Looking For:</strong></p><ul><li>Hands-on JavaScript with real debugging ability (via DevTools), plus flawless CSS and HTML.</li><li>Proven experience with logging/monitoring tools (Datadog, Groundcover, Logz.io, or similar), searching logs, tracing issues, and identifying errors.</li><li>Strong production &amp; troubleshooting mindset, comfortable with production environments and reading API responses (JSON &amp; XML).</li><li>Experience with Git and basic Git workflows.</li><li>Background in technical support / implementation / technical customer success, collaborating with Dev / AdOps / Engineering teams.</li><li>Excellent English and clear communication, with strong ownership and independent working habits across time zones.</li></ul><p>Advantage: AI tools &amp; automation in daily work, multicultural/American-team experience, technical degree, or QA automation.</p><p><strong>The team will be required to work full-time, hybrid (3 office days), from 10:00 AM to 7:00 PM Eastern European Time</strong></p><p><br></p>",
+          "order": 2
+        },
+        {
+          "name": "What we offer",
+          "value": null,
+          "order": 3
+        }
+      ],
+      "categories": []
+    },
+    "is_internal": false
+  },
+  {
+    "uid": "03.472",
+    "url_comeet_hosted_page": "https://www.comeet.com/jobs/exco/F0.005/vp-marketing/03.472",
+    "name": "VP Marketing",
+    "company_name": "EX.CO",
+    "location": {
+      "name": "Tel Aviv, Israel",
+      "country": "IL",
+      "city": "Tel Aviv-Yafo",
+      "state": "Tel Aviv District",
+      "postal_code": "",
+      "street_name": "3 Aluf Kalman Magen St, Building A, 1st Floor",
+      "arrival_instructions": "<p><span style=\"font-size: 13px;\">Enter the Sarona Market, and walk towards the &#34;Tiger Lily&#34; restaurant.\u00a0 In front of the restaurant you will see the elevators (go up to the 1st floor in order to reach our offices).</span><br/></p><p><br/><br/><br/><br/></p>",
+      "street_number": null,
+      "timezone": "Asia/Jerusalem",
+      "location_uid": "80.00A",
+      "is_remote": true
+    },
+    "custom_fields": {
+      "details": [
+        {
+          "name": "Description",
+          "value": "<p><strong>About EX.CO</strong></p><p>EX.CO is the video technology fueling growth for media leaders worldwide. Since we launched, our mission has been to shape the future of media technology, powering media owners\u2019 business success in a rapidly changing reality across web, mobile, CTV and DOOH. Today, we partner with leading companies, including USA Today, People Inc., Hearst Newspapers, Motorsport Network, and Ziff Davis (Mashable). Our machine learning engine uses billions of predictions to grow video ad revenue, giving media owners the control, scale, and transparency they need to thrive.</p><p>What drives us is simple: we\u2019re stronger together, always evolving, and radically transparent. Collaboration fuels our best work, innovation keeps us ahead, and honesty builds lasting trust with our colleagues, partners, and customers. We are proudly backed by The Walt Disney Company, Saban Ventures, Viola Group, 83North, and others.</p><p>Now we\u2019re growing our team\u2014and that\u2019s where you come in. We\u2019re building a place where talented people make an impact, ideas spark change, and everyone has a seat at the table.</p><p><strong>\ufeff</strong></p><p><strong>\ufeffThe Role</strong></p><p><strong>\ufeff</strong>We're looking for a VP Marketing to lead EX.CO's brand, creative and market presence. You'll own marketing strategy and execution across brand identity, content and video, social channels, PR and communications, events and growth.</p><p>You'll work hand in hand with our Go To Market and Business teams, helping crystallize our messaging, refine our visual language, take our identity into new areas of the media world, and drive new business opportunities. You'll also partner closely with Product and the executive team, and stay hands-on.</p><p><br></p><p><strong><span class=\"ql-cursor\">\ufeff</span>What You and Your Team Will Do</strong></p><ul><li>Build and own the marketing strategy across our different offerings and audiences, create annual and quarterly plans according to budget</li><li>Lead our fierce and excellent marketing team and external consultants&nbsp;</li><li>Help refine our brand identity, messaging and visual guidelines across all touchpoints</li><li>Drive growth campaigns and demand generation tied to pipeline - including media buying strategy, campaigns and creatives</li><li>Own our external facing communications and channels, PR &amp; media relations strategy&nbsp;</li><li>Lead content and video production, including thought leadership</li><li>Plan and run EX.CO's presence at key industry events</li><li>Support our internal communications efforts</li></ul>",
+          "order": 1
+        },
+        {
+          "name": "Requirements",
+          "value": "<p><strong>What We're Looking For</strong></p><ul><li>10+ years in B2B tech marketing, 4+ in senior leadership. AdTech or media experience is a strong plus</li><li>A track record of leading campaigns, growth and content at a senior level</li><li>Strong in both brand and performance, with a clear link to revenue</li><li>A good visual eye and experience managing creative and PR external resources</li><li>A collaborative style and experience working alongside GTM, Sales and Product leaders</li><li>Native-level English</li><li>Strategic and hands-on</li></ul><p><br></p><p><br></p>",
+          "order": 2
+        },
+        {
+          "name": "What we offer",
+          "value": null,
+          "order": 3
+        }
+      ],
+      "categories": []
+    },
+    "is_internal": false
+  },
+  {
+    "uid": "24.473",
+    "url_comeet_hosted_page": "https://www.comeet.com/jobs/exco/F0.005/vp-marketing/24.473",
+    "name": "VP Marketing",
+    "company_name": "EX.CO",
+    "location": {
+      "name": "New York, US",
+      "country": "US",
+      "city": "New York",
+      "state": "NY",
+      "postal_code": "10010",
+      "street_name": "121 East 24th Street",
+      "arrival_instructions": null,
+      "street_number": null,
+      "timezone": "America/New_York",
+      "location_uid": "E3.00B",
+      "is_remote": true
+    },
+    "custom_fields": {
+      "details": [
+        {
+          "name": "Description",
+          "value": "<p class=\"editor-paragraph\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">About EX.CO</strong></b></p><p class=\"editor-paragraph\"><span style=\"white-space: pre-wrap;\">EX.CO is the video technology fueling growth for media leaders worldwide. Since we launched, our mission has been to shape the future of media technology, powering media owners\u2019 business success in a rapidly changing reality across web, mobile, CTV and DOOH. Today, we partner with leading companies, including USA Today, People Inc., Hearst Newspapers, Motorsport Network, and Ziff Davis (Mashable). Our machine learning engine uses billions of predictions to grow video ad revenue, giving media owners the control, scale, and transparency they need to thrive.</span></p><p class=\"editor-paragraph\"><span style=\"white-space: pre-wrap;\">What drives us is simple: we\u2019re stronger together, always evolving, and radically transparent. Collaboration fuels our best work, innovation keeps us ahead, and honesty builds lasting trust with our colleagues, partners, and customers. We are proudly backed by The Walt Disney Company, Saban Ventures, Viola Group, 83North, and others.</span></p><p class=\"editor-paragraph\"><span style=\"white-space: pre-wrap;\">Now we\u2019re growing our team\u2014and that\u2019s where you come in. We\u2019re building a place where talented people make an impact, ideas spark change, and everyone has a seat at the table.</span></p><p class=\"editor-paragraph\"><br></p><p class=\"editor-paragraph\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">\ufeffThe Role</strong></b></p><p class=\"editor-paragraph\"><span style=\"white-space: pre-wrap;\">We're looking for a VP Marketing to lead EX.CO's brand, creative and market presence. You'll own marketing strategy and execution across brand identity, content and video, social channels, PR and communications, events and growth.</span></p><p class=\"editor-paragraph\"><span style=\"white-space: pre-wrap;\">You'll work hand in hand with our Go To Market and Business teams, helping crystallize our messaging, refine our visual language, take our identity into new areas of the media world, and drive new business opportunities. You'll also partner closely with Product and the executive team, and stay hands-on.</span></p><p class=\"editor-paragraph\"><br></p><p class=\"editor-paragraph\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">\ufeffWhat You and Your Team Will Do</strong></b></p><ul class=\"editor-list-ul\"><li value=\"1\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Build and own the marketing strategy across our different offerings and audiences, create annual and quarterly plans according to budget</span></li><li value=\"2\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Lead our fierce and excellent marketing team and external consultants&nbsp;</span></li><li value=\"3\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Help refine our brand identity, messaging and visual guidelines across all touchpoints</span></li><li value=\"4\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Drive growth campaigns and demand generation tied to pipeline - including media buying strategy, campaigns and creatives</span></li><li value=\"5\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Own our external facing communications and channels, PR &amp; media relations strategy&nbsp;</span></li><li value=\"6\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Lead content and video production, including thought leadership</span></li><li value=\"7\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Plan and run EX.CO's presence at key industry events</span></li><li value=\"8\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Support our internal communications efforts</span></li></ul>",
+          "order": 1
+        },
+        {
+          "name": "Requirements",
+          "value": "<p class=\"editor-paragraph\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">What We're Looking For</strong></b></p><ul class=\"editor-list-ul\"><li value=\"1\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">10+ years in B2B tech marketing, 4+ in senior leadership. AdTech or media experience is a strong plus</span></li><li value=\"2\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">A track record of leading campaigns, growth and content at a senior level</span></li><li value=\"3\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Strong in both brand and performance, with a clear link to revenue</span></li><li value=\"4\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">A good visual eye and experience managing creative and PR external resources</span></li><li value=\"5\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">A collaborative style and experience working alongside GTM, Sales and Product leaders</span></li><li value=\"6\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Strategic and hands-on</span></li></ul><p class=\"editor-paragraph\"><span style=\"white-space: pre-wrap;\">**The pay range for this position in New York is $180,000 \u2013 $210,000</span></p>",
+          "order": 2
+        },
+        {
+          "name": "What we offer",
+          "value": null,
+          "order": 3
+        }
+      ],
+      "categories": []
+    },
+    "is_internal": false
+  }
+]

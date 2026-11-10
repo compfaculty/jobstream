@@ -1,0 +1,95 @@
+[
+  {
+    "uid": "63.F1C",
+    "url_comeet_hosted_page": "https://www.comeet.com/jobs/firebolt/26.004/join-the-team/63.F1C",
+    "name": "Join the team",
+    "company_name": "Firebolt",
+    "location": null,
+    "custom_fields": {
+      "details": [
+        {
+          "name": "Description",
+          "value": "<p>Apply here!</p>",
+          "order": 1
+        },
+        {
+          "name": "Requirements",
+          "value": null,
+          "order": 2
+        }
+      ],
+      "categories": []
+    },
+    "is_internal": false
+  },
+  {
+    "uid": "05.865",
+    "url_comeet_hosted_page": "https://www.comeet.com/jobs/firebolt/26.004/senior-software-engineer--query-processing-munich/05.865",
+    "name": "Senior Software Engineer , Query Processing, Munich",
+    "company_name": "Firebolt",
+    "location": {
+      "name": "Munich, Bavaria, Germany",
+      "country": "DE",
+      "city": "M\u00fcnchen",
+      "state": "BY",
+      "postal_code": "80331",
+      "street_name": "5 Neuturmstra\u00dfe",
+      "arrival_instructions": null,
+      "street_number": null,
+      "timezone": "Europe/Berlin",
+      "location_uid": "F2.208",
+      "is_remote": true
+    },
+    "custom_fields": {
+      "details": [
+        {
+          "name": "Description",
+          "value": "<p><strong>About Firebolt</strong></p><p>Analytical databases are moving deeper into the software stack. This is accelerated by agentic AI: teams building on top of analytical databases are more technical, and modern data intensive products demand more of these systems than traditional BI and reporting workloads. We believe the next generation of data infrastructure requires zero compromises: open-source, scale-out, cloud-native, and capable of handling both batch and real-time with the speed agentic AI demands. This is what we\u2019re building in Firebolt - an extremely efficient, Postgres-compliant analytical database. We architected it to provide maximum performance at the lowest operational complexity in any setting, running as a single binary on a laptop, or as a cluster of hundreds of nodes in your cloud or data center. We\u2019re well funded, have an exceptional engineering team and we\u2019re working with some of the world\u2019s top tech companies on their most difficult data challenges.</p><p><strong>About the role</strong></p><p>Firebolt is building a team of talented developers to work on our distributed query processing engine and storage layer.</p><p>As part of our growing team here in Munich, you can have a major impact on Firebolt\u2019s product. We are focused on improving the performance of and extending our vectorized query engine which sits at the heart of our product.</p><p>Our projects range from building indexes on top of cloud storage, expanding support for semi-structured data, supporting Python UDFs, integration with AI inference engines, improving distributed query processing, all the way to collecting detailed statistics for our cost-based query optimizer. If these challenges sound exciting, we would love to hear from you!</p><p><strong>Your responsibilities</strong></p><ul><li>Take a key position in our R&amp;D team and and provide technical mentorship to junior engineers.</li><li>Design, build, and maintain our cutting-edge query processing and optimization engine.</li><li>Help shape how Firebolt supports open table formats like Iceberg, ensuring correctness, performance, and future extensibility.</li><li>Participate in design discussions, code reviews, and performance investigations across the query processing team.</li><li>Partner with engineers across Firebolt to deliver well-integrated, high-performance query execution features.</li></ul>",
+          "order": 1
+        },
+        {
+          "name": "Requirements",
+          "value": "<p><br></p><ul><li>Bachelor\u2019s/Master\u2019s/PhD in Computer Science, Engineering, or a related field or equivalent experience.</li><li>5+ years of experience working with modern C++ on production software (our codebase uses C++20).</li><li>Experience building production-ready multi-threaded, high-performance systems.</li><li>Strong knowledge of database internals and/or query processing.</li><li>Experience developing for Linux.</li></ul><p><strong>Preferred qualifications</strong></p><ul><li>Strong background in database internals.</li><li>Experience writing high-performance code for network access, SSD access, or CPU-heavy computation.</li><li>Experience building large-scale systems.</li><li>Experience with distributed systems or distributed query processing.</li></ul><p><strong>Compensation</strong></p><p>The&nbsp;actual&nbsp;compensation&nbsp;package&nbsp;will&nbsp;be&nbsp;determined&nbsp;based&nbsp;on&nbsp;the&nbsp;candidate\u2019s&nbsp;qualifications,&nbsp;experience,&nbsp;and&nbsp;geographic&nbsp;location&nbsp;and&nbsp;may&nbsp;vary&nbsp;within&nbsp;the&nbsp;stated&nbsp;range.</p><ul><li>Base&nbsp;Salary&nbsp;Range:&nbsp;\u20ac120,000&nbsp;\u2013&nbsp;\u20ac150,000</li></ul>",
+          "order": 2
+        }
+      ],
+      "categories": []
+    },
+    "is_internal": false
+  },
+  {
+    "uid": "E2.A5D",
+    "url_comeet_hosted_page": "https://www.comeet.com/jobs/firebolt/26.004/software-engineer-query-processing-munich/E2.A5D",
+    "name": "Software Engineer, Query Processing, Munich",
+    "company_name": "Firebolt",
+    "location": {
+      "name": "Munich, Bavaria, Germany",
+      "country": "DE",
+      "city": "M\u00fcnchen",
+      "state": "BY",
+      "postal_code": "80331",
+      "street_name": "5 Neuturmstra\u00dfe",
+      "arrival_instructions": null,
+      "street_number": null,
+      "timezone": "Europe/Berlin",
+      "location_uid": "F2.208",
+      "is_remote": true
+    },
+    "custom_fields": {
+      "details": [
+        {
+          "name": "Description",
+          "value": "<p><strong>About Firebolt</strong></p><p>Analytical databases are moving deeper into the software stack. This is accelerated by agentic AI: teams building on top of analytical databases are more technical, and modern data intensive products demand more of these systems than traditional BI and reporting workloads. We believe the next generation of data infrastructure requires zero compromises: open-source, scale-out, cloud-native, and capable of handling both batch and real-time with the speed agentic AI demands. This is what we\u2019re building in Firebolt - an extremely efficient, Postgres-compliant analytical database. We architected it to provide maximum performance at the lowest operational complexity in any setting, running as a single binary on a laptop, or as a cluster of hundreds of nodes in your cloud or data center. We\u2019re well funded, have an exceptional engineering team and we\u2019re working with some of the world\u2019s top tech companies on their most difficult data challenges.</p><p><strong>About the role</strong></p><p>Firebolt is building a team of talented developers to work on our distributed query processing engine and storage layer.</p><p>As part of our growing team here in Munich, you can have a major impact on Firebolt\u2019s product. We are focused on improving the performance of and extending our vectorized query engine which sits at the heart of our product.</p><p>Our projects range from building indexes on top of cloud storage, expanding support for semi-structured data, supporting Python UDFs, integration with AI inference engines, improving distributed query processing, all the way to collecting detailed statistics for our cost-based query optimizer. If these challenges sound exciting, we would love to hear from you!</p><p><strong>Your responsibilities</strong></p><ul><li>Design, build, and maintain our cutting-edge query processing and optimization engine.</li><li>Help shape how Firebolt supports open table formats like Iceberg, ensuring correctness, performance, and future extensibility.</li><li>Participate in design discussions, code reviews, and performance investigations across the query processing team.</li><li>Partner with engineers across Firebolt to deliver well-integrated, high-performance query execution features.</li></ul>",
+          "order": 1
+        },
+        {
+          "name": "Requirements",
+          "value": "<p><br></p><ul><li>Bachelor\u2019s/Master\u2019s in Computer Science, Engineering, or a related field or equivalent experience.</li><li>Experience working with modern C++ on production software (our codebase uses C++20).</li><li>Experience building multi-threaded, high-performance systems.</li><li>Experience with database internals and query processing.</li><li>Experience developing for Linux.</li></ul><p><strong>Preferred qualifications</strong></p><ul><li>Strong background in database internals.</li><li>Experience writing high-performance code for network access, SSD access, or CPU-heavy computation.</li><li>Experience building large-scale systems.</li><li>Experience with distributed systems or distributed query processing.</li></ul><p><br></p><p><strong>Compensation</strong></p><p>The&nbsp;actual&nbsp;compensation&nbsp;package&nbsp;will&nbsp;be&nbsp;determined&nbsp;based&nbsp;on&nbsp;the&nbsp;candidate\u2019s&nbsp;qualifications,&nbsp;experience,&nbsp;and&nbsp;geographic&nbsp;location&nbsp;and&nbsp;may&nbsp;vary&nbsp;within&nbsp;the&nbsp;stated&nbsp;range.</p><ul><li>Base&nbsp;Salary&nbsp;Range:&nbsp;\u20ac80,000&nbsp;\u2013&nbsp;\u20ac110,000</li></ul>",
+          "order": 2
+        }
+      ],
+      "categories": []
+    },
+    "is_internal": false
+  }
+]

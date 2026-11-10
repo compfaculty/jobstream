@@ -16,7 +16,7 @@ BOARD = "https://www.comeet.com/jobs/akeyless/27.006"
 def identity(url: str) -> tuple[str, str, str]:
     parts = urlsplit(canonical_url(url))
     match = re.fullmatch(
-        r"/jobs/([a-z0-9-]+)/([A-Z0-9]+\.[A-Z0-9]+)(?:/([a-z0-9-]+)/([A-Z0-9]+\.[A-Z0-9]+))?/?",
+        r"/jobs/([a-z0-9-]+)/([A-Z0-9]+\.[A-Z0-9]+)(?:/([a-z0-9_-]+)/([A-Z0-9]+\.[A-Z0-9]+(?:-[A-Z0-9]+\.[A-Z0-9]+)?))?/?",
         parts.path,
     )
     if parts.hostname not in HOSTS or not match or parts.query or parts.fragment:
@@ -77,6 +77,9 @@ class HostedAdapter:
                 raise ValueError("Mismatched or duplicate Comeet identity")
             seen.add(uid)
             fields, location = row.get("custom_fields"), row.get("location")
+            # General-interest vacancies legitimately have no assigned location.
+            if location is None:
+                location = {"name": ""}
             if not isinstance(fields, dict) or not isinstance(location, dict):
                 raise ValueError("Malformed Comeet posting details")
             details = fields.get("details")

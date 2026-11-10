@@ -1,0 +1,677 @@
+[
+  {
+    "uid": "1B.473",
+    "url_comeet_hosted_page": "https://www.comeet.com/jobs/withfaye/87.00A/assistant-controller/1B.473",
+    "name": "Assistant Controller",
+    "company_name": "Faye",
+    "location": {
+      "name": "Tel Aviv",
+      "country": "IL",
+      "city": "Tel Aviv-Yafo",
+      "state": "Tel Aviv District",
+      "postal_code": "",
+      "street_name": "150 Derech Menachem Begin",
+      "arrival_instructions": "<p>WeTLV Tower<br/>12th floor</p>",
+      "street_number": "150",
+      "timezone": "Asia/Jerusalem",
+      "location_uid": "EE.20D",
+      "is_remote": true
+    },
+    "custom_fields": {
+      "details": [
+        {
+          "name": "Description",
+          "value": "<p class=\"editor-paragraph\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">Who we are</strong></b></p><p class=\"editor-paragraph\"><span style=\"white-space: pre-wrap;\">Faye is the fastest-growing travel protection company in the U.S., and the highest-rated by travelers who use it trip after trip.</span></p><p class=\"editor-paragraph\"><span style=\"white-space: pre-wrap;\">We\u2019ve raised $100M to build the autonomous platform for traveler care: insurance, travel care, real-time information, and finance in one place, powered by AI and a team that moves fast.</span></p><p class=\"editor-paragraph\"><span style=\"white-space: pre-wrap;\">We\u2019re there for travelers throughout their entire journey, from the moment they book to the moment they\u2019re back home.</span></p><p class=\"editor-paragraph\"><span style=\"white-space: pre-wrap;\">The bar is a 6-star experience, 24/7: near-instant payouts, an award-winning app and real support when travel goes sideways. It\u2019s hard to pull off. That\u2019s the point.</span></p><p class=\"editor-paragraph\"><span style=\"white-space: pre-wrap;\">Come build what\u2019s next with us.</span></p><p class=\"editor-paragraph\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">What we're looking for</strong></b></p><p class=\"editor-paragraph\"><span style=\"white-space: pre-wrap;\">We\u2019re looking for a detail-oriented, tech-savvy </span><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">Assistant Controller</strong></b><span style=\"white-space: pre-wrap;\"> who takes ownership and works independently to support and strengthen Faye\u2019s multi-entity (US &amp; Israel) financial operations. You\u2019ll assist with the month-end close, lead major reconciliations, improve systems and automations, and ensure accurate, audit-ready financials as we continue to scale.</span></p>",
+          "order": 1
+        },
+        {
+          "name": "Responsibilities",
+          "value": "<ul class=\"editor-list-ul\"><li value=\"1\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Support the monthly financial close process, ensuring compliance with US GAAP, including accounts reconciliation, review of journal entries, flux analyses, and other ad hoc corporate requirements.</span></li><li value=\"2\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Own and improve reconciliation processes (bank, intercompany, credit cards, commissions, claims, balance sheet).</span></li><li value=\"3\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Take end-to-end ownership of key finance processes, including claims and premium reconciliations against payment processors, partner and vendor payments, and procurement.</span></li><li value=\"4\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Assist with financial reporting, supporting schedules, and internal controls.</span></li><li value=\"5\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Help manage NetSuite, integrations, and automation initiatives to reduce manual work.</span></li><li value=\"6\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Use AI tools to automate reconciliations, reporting, and recurring close tasks, and keep finding ways to work more efficiently.</span></li><li value=\"7\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Partner with Ops, BD, CX, and Data on finance-related workflows.</span></li><li value=\"8\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Manage and execute regulatory tax reporting and Transfer Pricing compliance for both US and Israeli operations.</span></li><li value=\"9\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Lead efforts to improve, develop, and document accounting policies, procedures, and internal controls.</span></li></ul>",
+          "order": 2
+        },
+        {
+          "name": "Requirements",
+          "value": "<ul class=\"editor-list-ul\"><li value=\"1\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">2\u20134+ years of accounting experience within the technology industry (Must).</span></li><li value=\"2\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Big 4 experience (Must).</span></li><li value=\"3\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Strong knowledge of US GAAP.</span></li><li value=\"4\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Hands-on experience using AI tools (e.g., Claude, ChatGPT) to support and improve finance workflows (Must).</span></li><li value=\"5\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Advanced Excel skills.</span></li><li value=\"6\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Experience working with NetSuite and financial integrations (Advantage).</span></li><li value=\"7\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Excellent attention to detail, organizational, and problem-solving skills.</span></li><li value=\"8\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">High level of ownership, with the ability to work independently, take initiative, and drive tasks through to completion.</span></li><li value=\"9\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Comfortable operating in a fast-paced, high-growth environment.</span></li><li value=\"10\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Fluent in both English and Hebrew.</span></li></ul>",
+          "order": 3
+        },
+        {
+          "name": "Qualifications",
+          "value": null,
+          "order": 4
+        }
+      ],
+      "categories": []
+    },
+    "is_internal": false
+  },
+  {
+    "uid": "B6.B67",
+    "url_comeet_hosted_page": "https://www.comeet.com/jobs/withfaye/87.00A/backend-architect/B6.B67",
+    "name": "Backend Architect",
+    "company_name": "Faye",
+    "location": {
+      "name": "Tel Aviv",
+      "country": "IL",
+      "city": "Tel Aviv-Yafo",
+      "state": "Tel Aviv District",
+      "postal_code": "",
+      "street_name": "150 Derech Menachem Begin",
+      "arrival_instructions": "<p>WeTLV Tower<br/>12th floor</p>",
+      "street_number": "150",
+      "timezone": "Asia/Jerusalem",
+      "location_uid": "EE.20D",
+      "is_remote": false
+    },
+    "custom_fields": {
+      "details": [
+        {
+          "name": "Description",
+          "value": "<p><strong>Who we are</strong></p><p>Faye is the fastest-growing travel protection company in the U.S., and the highest-rated by travelers who use it trip after trip.</p><p>We\u2019ve raised $100M to build the autonomous platform for traveler care: insurance, travel care, real-time information, and finance in one place, powered by AI and a team that moves fast.</p><p>We\u2019re there for travelers throughout their entire journey, from the moment they book to the moment they\u2019re back home.</p><p>The bar is a 6-star experience, 24/7: near-instant payouts, an award-winning app and real support when travel goes sideways. It\u2019s hard to pull off. That\u2019s the point.</p><p>Come build what\u2019s next with us.</p><p><strong>What we're looking for</strong></p><p>We're looking for a <strong>Backend Architect</strong> to be the technical authority across our engineering teams. This is a hands-on leadership role for someone who loves diving deep into complex systems while keeping the big picture in mind.</p><p>You'll work closely with three cross-functional development teams - shaping the backend architecture, driving engineering standards, and making sure we're building for scale, reliability, and long-term maintainability.</p>",
+          "order": 1
+        },
+        {
+          "name": "Responsibilities",
+          "value": "<ul class=\"editor-list-ul\"><li value=\"1\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Own the backend architecture across all product domains - define patterns, set standards, and ensure hands-on involvement when it matters.</span></li><li value=\"2\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Be the go-to technical authority for backend engineers across three teams.</span></li><li value=\"3\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Identify technical debt, scalability risks, and performance bottlenecks - and drive the roadmap to address them.</span></li><li value=\"4\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Partner with team leads to elevate engineering practices: code quality, testing, CI/CD etc.</span></li><li value=\"5\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Collaborate with product and R&amp;D leadership to align technical strategy with business goals.</span></li></ul>",
+          "order": 2
+        },
+        {
+          "name": "Requirements",
+          "value": "<ul class=\"editor-list-ul\"><li value=\"1\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">8+ years of backend development experience, with at least 2\u20133 years in an architecture or principal engineer role.</span></li><li value=\"2\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Deep expertise in Node.js and NestJS.</span></li><li value=\"3\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Excellent communication skills - you can explain a complex architectural decision to an engineer and to a PM alike.</span></li><li value=\"4\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">High ownership mentality - you see a problem, you drive it to resolution.</span></li></ul>",
+          "order": 3
+        },
+        {
+          "name": "Qualifications",
+          "value": null,
+          "order": 4
+        }
+      ],
+      "categories": []
+    },
+    "is_internal": false
+  },
+  {
+    "uid": "2E.B54",
+    "url_comeet_hosted_page": "https://www.comeet.com/jobs/withfaye/87.00A/business-development-manager---west-coast/2E.B54",
+    "name": "Business Development Manager - West Coast",
+    "company_name": "Faye",
+    "location": {
+      "name": "West Coast - Remote",
+      "country": "US",
+      "city": "Remote",
+      "state": "CA",
+      "postal_code": null,
+      "street_name": "Remote - West Coast",
+      "arrival_instructions": null,
+      "street_number": null,
+      "timezone": "America/Los_Angeles",
+      "location_uid": "A2.60E",
+      "is_remote": true
+    },
+    "custom_fields": {
+      "details": [
+        {
+          "name": "Description",
+          "value": "<p><strong>Who we are</strong></p><p>Faye is the fastest-growing travel protection company in the U.S., and the highest-rated by travelers who use it trip after trip.</p><p>We\u2019ve raised $100M to build the autonomous platform for traveler care: insurance, travel care, real-time information, and finance in one place, powered by AI and a team that moves fast.</p><p>We\u2019re there for travelers throughout their entire journey, from the moment they book to the moment they\u2019re back home.</p><p>The bar is a 6-star experience, 24/7: near-instant payouts, an award-winning app and real support when travel goes sideways. It\u2019s hard to pull off. That\u2019s the point.</p><p>Come build what\u2019s next with us.</p><p><strong>What We\u2019re Looking For</strong></p><p>We are looking for a seasoned <strong>Business Development Manager</strong> in the <strong>west coast region</strong>, with established experience in the<strong> travel industry</strong> to join our team. The ideal candidate has a proven track record of working with a broad range of travel advisors, travel agencies and travel service providers.&nbsp;</p><p>As a member of Faye\u2019s business development team, you will lead one of the company\u2019s most significant growth channels and be in charge of devising business development strategies, as well as identifying and partnering with suppliers and distributors in the travel industry.</p><p>We work in a fun, collaborative, and open-minded environment and are looking for proactive, accountable professionals focused on continuous learning and growth to push themselves and our team forward.</p>",
+          "order": 1
+        },
+        {
+          "name": "Responsibilities",
+          "value": "<ul><li>In this West Coast remote role, you'll join our global business development team to drive distribution growth for Faye, focusing heavily on partnerships with travel advisors and agencies.</li><li>Develop a near-term and long-term business opportunity pipeline in accordance with targets and defined strategies.</li><li>Own partnerships from A-Z, from discovery to discussions with prospective partners to finalizing agreements to supporting them as they utilize Faye.</li><li>Generate new leads, evaluate business opportunities, negotiate and secure distribution and growth partners.</li><li>Represent Faye in various professional forums, conferences and events in the travel and insurance space.</li></ul>",
+          "order": 2
+        },
+        {
+          "name": "Requirements",
+          "value": null,
+          "order": 3
+        },
+        {
+          "name": "Qualifications",
+          "value": "<ul><li>4+ years of experience in leading business development activities within the<strong> travel industry - with a focus on working with travel advisors and agencies.</strong></li><li>Successful proven track record in B2B2C sales and negotiations.</li><li>Strong interpersonal skills with the ability to build and maintain a network of relationships.</li><li>Ability to run with new ideas, be proactive and excel independently.</li><li>Excellent verbal and written communication skills.</li><li>Proficiency with data analysis, forecasting and budgeting.</li><li>Ability and desire to travel domestically and internationally.</li></ul>",
+          "order": 4
+        }
+      ],
+      "categories": []
+    },
+    "is_internal": false
+  },
+  {
+    "uid": "F1.66C",
+    "url_comeet_hosted_page": "https://www.comeet.com/jobs/withfaye/87.00A/customer-experience-specialist/F1.66C",
+    "name": "Customer Experience Specialist",
+    "company_name": "Faye",
+    "location": {
+      "name": "Tel Aviv",
+      "country": "IL",
+      "city": "Tel Aviv-Yafo",
+      "state": "Tel Aviv District",
+      "postal_code": "",
+      "street_name": "150 Derech Menachem Begin",
+      "arrival_instructions": "<p>WeTLV Tower<br/>12th floor</p>",
+      "street_number": "150",
+      "timezone": "Asia/Jerusalem",
+      "location_uid": "EE.20D",
+      "is_remote": false
+    },
+    "custom_fields": {
+      "details": [
+        {
+          "name": "Description",
+          "value": "<p><strong>Who We Are</strong></p><p><strong><span class=\"ql-cursor\">\ufeff</span></strong>Faye is the fastest-growing travel protection company in the U.S., and the highest-rated by travelers who use it trip after trip.</p><p>We\u2019ve raised $100M to build the autonomous platform for traveler care: insurance, travel care, real-time information, and finance in one place, powered by AI and a team that moves fast.</p><p>We\u2019re there for travelers throughout their entire journey, from the moment they book to the moment they\u2019re back home.</p><p>The bar is a 6-star experience, 24/7: near-instant payouts, an award-winning app and real support when travel goes sideways. It\u2019s hard to pull off. That\u2019s the point.</p><p>Come build what\u2019s next with us.</p><p><strong>What We\u2019re Looking For</strong></p><p>Faye is looking for a <strong>Customer Experience Specialist</strong> to join our fast-growing team as we take over the travel industry. This key role will ensure we are delivering a customer-first, best-in-class service to our valued users and will be pivotal in setting the bar for standard and excellence in the travel space.</p><p>We work in a fun, collaborative and entrepreneurial environment and are looking for a proactive, accountable person focused on continuous learning and growth to push themselves and our team forward. If you\u2019re process-driven, passionate about the travel space and keen to make an impact, then this is the role for you.</p>",
+          "order": 1
+        },
+        {
+          "name": "Responsibilities",
+          "value": "<ul><li>Assist customers via&nbsp;<strong>phone, chat, and email</strong>, delivering&nbsp;<strong>fast, friendly, and effective</strong>&nbsp;support.</li><li>Handle&nbsp;<strong>travel-related inquiries</strong>, from policy questions to real-time trip assistance and claims guidance.</li><li>Resolve issues efficiently, ensuring a&nbsp;<strong>seamless and positive customer experience</strong>.</li><li>Maintain&nbsp;<strong>high performance metrics</strong>, including response time, resolution speed, and customer satisfaction.</li><li>Work collaboratively across teams and departments to help solve any matter at hand.</li></ul><p><br></p>",
+          "order": 2
+        },
+        {
+          "name": "Requirements",
+          "value": "<ul><li>Proven experience in customer service/call center roles</li><li>Native English speaker / English mother tongue level - a must</li><li><strong>Ability to work afternoon/evening, night, and weekend shifts - a must</strong></li><li><strong>\ufeffAbility to work in a hybrid model of 5 shifts per week - a must</strong></li><li>Excellent verbal &amp; written communications skills</li><li>Ability to display great time management and prioritize workload while remaining organized and efficient</li><li>Familiarity with American customer service and culture</li><li>A medical and/or travel and/or Insurance background is a plus</li><li>Tech-oriented</li></ul>",
+          "order": 3
+        },
+        {
+          "name": "Qualifications",
+          "value": null,
+          "order": 4
+        }
+      ],
+      "categories": []
+    },
+    "is_internal": false
+  },
+  {
+    "uid": "2E.E31",
+    "url_comeet_hosted_page": "https://www.comeet.com/jobs/withfaye/87.00A/customer-experience-specialist---richmond/2E.E31",
+    "name": "Customer Experience Specialist - Richmond",
+    "company_name": "Faye",
+    "location": {
+      "name": "Richmond, VA",
+      "country": "US",
+      "city": "Richmond",
+      "state": "VA",
+      "postal_code": null,
+      "street_name": null,
+      "arrival_instructions": null,
+      "street_number": null,
+      "timezone": "America/New_York",
+      "location_uid": "62.507",
+      "is_remote": true
+    },
+    "custom_fields": {
+      "details": [
+        {
+          "name": "Description",
+          "value": "<p><strong>Who We Are</strong></p><p>Faye is the fastest-growing travel protection company in the U.S., and the highest-rated by travelers who use it trip after trip.</p><p>We\u2019ve raised $100M to build the autonomous platform for traveler care: insurance, travel care, real-time information, and finance in one place, powered by AI and a team that moves fast.</p><p>We\u2019re there for travelers throughout their entire journey, from the moment they book to the moment they\u2019re back home.</p><p>The bar is a 6-star experience, 24/7: near-instant payouts, an award-winning app and real support when travel goes sideways. It\u2019s hard to pull off. That\u2019s the point.</p><p>Come build what\u2019s next with us.</p><p><strong>What We\u2019re Looking For</strong></p><p>Faye is looking for a <strong>Customer Experience Specialist </strong>to join our fast-growing team in Richmond, Virginia as we take over the travel industry. This key role will ensure we are delivering a customer-first, best-in-class service to our valued users and will be pivotal in setting the bar for standard and excellence in the travel space.</p><p>We work in a fun, collaborative and entrepreneurial environment and are looking for a proactive, accountable leader focused on continuous learning and growth to push themselves and our team forward. If you\u2019re process-driven, passionate about the travel space and keen to make an impact, then this is the role for you.</p>",
+          "order": 1
+        },
+        {
+          "name": "Responsibilities",
+          "value": "<ul class=\"editor-list-ul\"><li value=\"1\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Be customer obsessed and set the highest bar for customer care in our industry. This role will be key in developing a top-notch reputation for our growing brand - one that is known for excellence, speed, empathy, proactivity and positivity.</span></li><li value=\"2\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Handle incoming calls and digital inquiries from our US customers who are traveling stateside and abroad.</span></li><li value=\"3\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Provide real-time support related to travel inquiries &amp; emergency events.</span></li><li value=\"4\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Collect &amp; monitor travel intelligence information.</span></li><li value=\"5\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Interact with travel &amp; medical providers.</span></li><li value=\"6\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Effectively manage customer contacts across various channels of communication, including phone, e-mail and chat.</span></li><li value=\"7\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Efficiently handle customer complaints with empathy, knowledge and understanding.</span></li><li value=\"8\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Complete customer requests in a friendly, professional and timely manner.</span></li><li value=\"9\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Work collaboratively across teams and departments to help solve any matter at hand.</span></li></ul>",
+          "order": 2
+        },
+        {
+          "name": "Requirements",
+          "value": null,
+          "order": 3
+        },
+        {
+          "name": "Qualifications",
+          "value": "<p class=\"editor-paragraph\"><br></p><ul class=\"editor-list-ul\"><li value=\"1\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Local to Richmond, Virginia and able to work an in-office, hybrid schedule</span></li><li value=\"2\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Ability to work rotating shifts across morning, afternoon &amp; evening hours. (3 shifts spanning 8am to 1am)</span></li><li value=\"3\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Excellent verbal &amp; written communication skills</span></li><li value=\"4\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Ability to display great time management and prioritize workload while remaining organized and efficient</span></li><li value=\"5\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Proven experience in customer service/call center roles</span></li><li value=\"6\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">A medical and/or travel background - a plus</span></li><li value=\"7\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Tech-oriented</span></li></ul>",
+          "order": 4
+        }
+      ],
+      "categories": []
+    },
+    "is_internal": false
+  },
+  {
+    "uid": "2F.A69",
+    "url_comeet_hosted_page": "https://www.comeet.com/jobs/withfaye/87.00A/customer-experience-team-lead/2F.A69",
+    "name": "Customer Experience Team Lead",
+    "company_name": "Faye",
+    "location": {
+      "name": "Richmond, VA",
+      "country": "US",
+      "city": "Richmond",
+      "state": "VA",
+      "postal_code": null,
+      "street_name": null,
+      "arrival_instructions": null,
+      "street_number": null,
+      "timezone": "America/New_York",
+      "location_uid": "62.507",
+      "is_remote": true
+    },
+    "custom_fields": {
+      "details": [
+        {
+          "name": "Description",
+          "value": "<p><strong>Who We Are</strong></p><p>Faye is the fastest-growing travel protection company in the U.S., and the highest-rated by travelers who use it trip after trip.</p><p>We\u2019ve raised $100M to build the autonomous platform for traveler care: insurance, travel care, real-time information, and finance in one place, powered by AI and a team that moves fast.</p><p>We\u2019re there for travelers throughout their entire journey, from the moment they book to the moment they\u2019re back home.</p><p>The bar is a 6-star experience, 24/7: near-instant payouts, an award-winning app and real support when travel goes sideways. It\u2019s hard to pull off. That\u2019s the point.</p><p>Come build what\u2019s next with us.</p><p><strong>What We\u2019re Looking For</strong></p><p>We\u2019re looking for a Customer Experience Team Lead to manage and mentor a team of agents in our Richmond, Virginia office as part of our global CX team.&nbsp;</p><p>In this role, you\u2019ll oversee daily operations, ensure smooth shift coverage, and maintain high-quality customer interactions. You\u2019ll also play a critical role in coaching, mentoring, and developing agents, handling escalations, and ensuring we meet our KPIs.</p>",
+          "order": 1
+        },
+        {
+          "name": "Responsibilities",
+          "value": "<ul><li><strong>Team Management:</strong> Lead, mentor, and support a team of 10-15 CX agents.</li><li><strong>Quality Assurance &amp; Coaching:</strong> Conduct regular QA reviews and coaching sessions to improve agent performance.</li><li><strong>Shift &amp; Volume Management:</strong> Oversee work schedules, optimize shift coverage, and ensure efficient handling of customer interactions.</li><li><strong>Escalation Handling: </strong>Assist our front line and senior agents with escalations and manager calls.&nbsp;</li><li><strong>Performance Tracking:</strong> Monitor key metrics and team performance, ensuring we meet our KPI and drive efficiency.&nbsp;</li><li><strong>Professional Growth:</strong> Guide and develop agents, helping them advance their careers and enhance their expertise.</li><li><strong>Team Staffing:</strong> Work closely with the Talent Acquisition team to interview, evaluate &amp; select qualified candidates for hire.</li></ul>",
+          "order": 2
+        },
+        {
+          "name": "Requirements",
+          "value": "<ul><li>2+ years of experience as a team lead, manager or supervisor in a customer support environment.&nbsp;</li><li>Experience with shift management, workforce optimization, and/or customer communication tools</li><li>Strong coaching and problem-solving skills with a passion for team development.</li><li>Data-driven mindset with experience tracking KPIs and using reports to improve performance.</li><li>Ability to work in a fast-paced, data-driven environment while ensuring top-notch service.</li><li>Technologically adept with a focus on AI-driven solutions&nbsp;&nbsp;</li><li>An intuitive interviewer who makes confident hiring decisions while maintaining a team culture of excellence&nbsp;</li><li>Excellent communication and coaching skills</li><li>Experience with systems like Front and/or Talkdesk would be an advantage</li></ul>",
+          "order": 3
+        },
+        {
+          "name": "Qualifications",
+          "value": null,
+          "order": 4
+        }
+      ],
+      "categories": []
+    },
+    "is_internal": false
+  },
+  {
+    "uid": "5F.F68",
+    "url_comeet_hosted_page": "https://www.comeet.com/jobs/withfaye/87.00A/director-national-accounts-non-ti/5F.F68",
+    "name": "Director, National Accounts (non-TI)",
+    "company_name": "Faye",
+    "location": {
+      "name": "USA, Remote",
+      "country": "US",
+      "city": "Remote",
+      "state": "VA",
+      "postal_code": null,
+      "street_name": null,
+      "arrival_instructions": null,
+      "street_number": null,
+      "timezone": "America/Iqaluit",
+      "location_uid": "EE.20E",
+      "is_remote": true
+    },
+    "custom_fields": {
+      "details": [
+        {
+          "name": "Description",
+          "value": "<p><strong>Who we are</strong></p><p><strong><span class=\"ql-cursor\">\ufeff</span></strong>Faye is the fastest-growing travel protection company in the U.S., and the highest-rated by travelers who use it trip after trip.</p><p>We\u2019ve raised $100M to build the autonomous platform for traveler care: insurance, travel care, real-time information, and finance in one place, powered by AI and a team that moves fast.</p><p>We\u2019re there for travelers throughout their entire journey, from the moment they book to the moment they\u2019re back home.</p><p>The bar is a 6-star experience, 24/7: near-instant payouts, an award-winning app and real support when travel goes sideways. It\u2019s hard to pull off. That\u2019s the point.</p><p>Come build what\u2019s next with us.</p><p><strong>What We\u2019re Looking For</strong></p><p>Faye is seeking an ambitious, tech-forward, and commercially minded <strong>Director, National Accounts</strong> to lead the pursuit, development, and growth of strategic travel partnerships across the U.S. We are explicitly looking for a top-performing strategic hunter with a proven track record in high-growth B2B SaaS, enterprise technology, or venture-backed startups. You bring fresh tech-y thinking, modern deal-making playbooks, and a history of navigating complex, multi-stakeholder enterprise sales.</p><p>In this role, you will focus on securing high-value enterprise accounts\u2014such as tour operators, cruise lines, OTAs, airlines, and travel platforms\u2014typically targeting $5M\u2013$15M+ in annual deal potential. Prior travel industry experience is not required. We care far more about your startup agility, enterprise closing ability, and capacity to quickly master a new vertical than a traditional travel resume. If you excel at taking a complex product, learning a new domain, and building high-revenue partnership pipelines from scratch, we want to talk to you.</p>",
+          "order": 1
+        },
+        {
+          "name": "Responsibilities",
+          "value": "<ul><li>Identify, pursue, and close high-value strategic partnerships that support Faye\u2019s rapid commercial growth and market expansion.</li><li>Own the full enterprise sales cycle from outbound prospecting and initial engagement through pitch, complex commercial negotiation, contracting, and launch.</li><li>Bring modern, tech-forward sales frameworks into every deal, helping legacy and modern travel partners realize the value of embedded digital solutions.</li><li>Develop tailored partner strategies and structure innovative commercial terms, revenue models, and go-to-market launch plans based on each account's unique platform.</li><li>Build and nurture strong, credibility-driven relationships with senior decision-makers, founders, and C-suite executives across prospective partner organizations.</li><li>Partner cross-functionally with Product, Insurance, Legal, Finance, Operations, and Account Management to execute complex opportunities and shape tailored product offerings.</li><li>Maintain rigorous pipeline discipline, data integrity, and forecasting accuracy within the CRM.</li><li>Represent Faye as a forward-thinking technology partner at key industry conferences, events, and high-level partner meetings.</li></ul>",
+          "order": 2
+        },
+        {
+          "name": "Requirements",
+          "value": "<ul><li>7\u201310+ years of business development, strategic partnerships, or <strong>enterprise sales experience within high-growth B2B SaaS or technology startups. </strong></li><li>A proven track record of independently sourcing, negotiating, and closing high-value, complex enterprise partnerships with six-to-seven-figure deal potential.</li><li><strong>Rapid Domain Adaptability:</strong> Demonstrated ability to quickly digest complex industry mechanics (e.g., travel, embedded fintech, insurtech) and articulate product value to domain experts.</li><li>Exceptional executive presence and the ability to credibly consult with and influence C-suite, founder, and VP-level stakeholders.</li><li>Strong commercial acumen to evaluate deal economics, potential ROI, contract risk, and strategic alignment.</li><li>High bias for action and comfort operating in a fast-paced, high-growth startup environment that requires ownership, self-direction, and adaptability.</li><li>Flawless sales operations discipline, including CRM management, pipeline hygiene, and structured deal tracking.</li><li>Preferred (but not required): Prior experience in API-driven platforms, embedded software, fintech, insurtech, or travel technology</li></ul>",
+          "order": 3
+        },
+        {
+          "name": "Qualifications",
+          "value": null,
+          "order": 4
+        }
+      ],
+      "categories": []
+    },
+    "is_internal": false
+  },
+  {
+    "uid": "84.D6B",
+    "url_comeet_hosted_page": "https://www.comeet.com/jobs/withfaye/87.00A/director-national-accounts-ti/84.D6B",
+    "name": "Director, National Accounts (TI)",
+    "company_name": "Faye",
+    "location": {
+      "name": "United States of America",
+      "country": "US",
+      "city": null,
+      "state": null,
+      "postal_code": null,
+      "street_name": null,
+      "arrival_instructions": null,
+      "street_number": null,
+      "timezone": "America/Iqaluit",
+      "location_uid": "E5.603",
+      "is_remote": true
+    },
+    "custom_fields": {
+      "details": [
+        {
+          "name": "Description",
+          "value": "<p><strong>Who we are</strong></p><p><strong><span class=\"ql-cursor\">\ufeff</span></strong>Faye is the fastest-growing travel protection company in the U.S., and the highest-rated by travelers who use it trip after trip.</p><p>We\u2019ve raised $100M to build the autonomous platform for traveler care: insurance, travel care, real-time information, and finance in one place, powered by AI and a team that moves fast.</p><p>We\u2019re there for travelers throughout their entire journey, from the moment they book to the moment they\u2019re back home.</p><p>The bar is a 6-star experience, 24/7: near-instant payouts, an award-winning app and real support when travel goes sideways. It\u2019s hard to pull off. That\u2019s the point.</p><p>Come build what\u2019s next with us.</p><p><strong>What We\u2019re Looking For</strong></p><p>Faye is seeking a relationship-driven, commercially minded <strong>Director, National Accounts</strong> to personally source, develop, and close high-value strategic partnerships across the U.S. travel market.</p><p>This is a senior individual contributor role with no direct reports. The Director will serve as a strategic hunter, building their own pipeline and owning the full business development cycle for large, complex opportunities\u2014typically representing $5M\u2013$15M+ in potential annual travel insurance sales.</p><p>The role will focus on wholesale-oriented organizations, including tour operators, cruise lines, OTAs, airlines, travel technology platforms, and other large travel companies. The ideal candidate brings an active industry network, a demonstrated ability to independently close complex partnerships, and the drive to navigate long sales cycles with substantial personal ownership.</p>",
+          "order": 1
+        },
+        {
+          "name": "Responsibilities",
+          "value": "<ul><li>Personally identify, source, pursue, and close high-value strategic travel partnerships.</li><li>Build and manage a self-generated pipeline through existing industry relationships, targeted prospecting, networking, and industry events.</li><li>Own the full business development cycle, from prospecting and relationship development through pitch, negotiation, contracting, and launch.</li><li>Develop tailored partner strategies, negotiating commercial terms, commission structures, and launch plans based on each account's unique needs.</li><li>Lead commercial negotiations involving commission structures, integration requirements, product needs, and launch plans.</li><li>Build strong relationships with senior decision-makers and key influencers across large partner organizations.</li><li>Partner cross-functionally with Product, Insurance, Legal, Finance, Operations, and Account Development to advance complex opportunities.</li><li>Collaborate with the Product/Insurance team to propose custom products or coverage enhancements tailored to large national accounts.</li><li>Maintain strong pipeline discipline, forecasting accuracy, and clear communication regarding opportunity status.</li><li>Represent Faye at industry conferences, networking events, and strategic partner meetings.</li></ul>",
+          "order": 2
+        },
+        {
+          "name": "Requirements",
+          "value": "<ul><li>10+ years of business development, strategic partnerships, national accounts, or <strong>enterprise sales</strong> <strong>experience within the travel, travel insurance,</strong> travel technology, cruise, wholesale, or OTA industries<strong>. Industry experience and connections are a must-have. </strong></li><li>Proven ability to source, develop, negotiate, and close high-value partnerships while navigating longer sales cycles and multi-stakeholder decision processes.</li><li>A strong existing network within the travel industry that can create meaningful business development opportunities.</li><li>Strong executive presence and the ability to communicate credibly with senior leaders, founders, and C-suite stakeholders.</li><li>Strong commercial judgment to evaluate account potential, revenue opportunity, and strategic fit.</li><li>Comfort operating in a fast-moving, high-growth environment requiring ownership, collaboration skills, and strong CRM discipline.</li><li>Preferred experience in travel insurance, ancillary revenue, embedded travel products, or travel protection solutions.</li></ul>",
+          "order": 3
+        },
+        {
+          "name": "Qualifications",
+          "value": null,
+          "order": 4
+        }
+      ],
+      "categories": []
+    },
+    "is_internal": false
+  },
+  {
+    "uid": "5D.D53",
+    "url_comeet_hosted_page": "https://www.comeet.com/jobs/withfaye/87.00A/head-of-strategic-partnerships/5D.D53",
+    "name": "Head of Strategic Partnerships",
+    "company_name": "Faye",
+    "location": {
+      "name": "USA, Remote",
+      "country": "US",
+      "city": "Remote",
+      "state": "VA",
+      "postal_code": null,
+      "street_name": null,
+      "arrival_instructions": null,
+      "street_number": null,
+      "timezone": "America/Iqaluit",
+      "location_uid": "EE.20E",
+      "is_remote": true
+    },
+    "custom_fields": {
+      "details": [
+        {
+          "name": "Description",
+          "value": "<p><strong>Who we are</strong></p><p>Faye is the fastest-growing travel protection company in the U.S., and the highest-rated by travelers who use it trip after trip.</p><p>We\u2019ve raised $100M to build the autonomous platform for traveler care: insurance, travel care, real-time information, and finance in one place, powered by AI and a team that moves fast.</p><p>We\u2019re there for travelers throughout their entire journey, from the moment they book to the moment they\u2019re back home.</p><p>The bar is a 6-star experience, 24/7: near-instant payouts, an award-winning app and real support when travel goes sideways. It\u2019s hard to pull off. That\u2019s the point.</p><p>Come build what\u2019s next with us.</p><p><strong>\ufeffWhat we\u2019re Looking For</strong></p><p>We are seeking a high-caliber, veteran leader in the travel industry \u2014 a proven rainmaker with a track record of closing and scaling national, high-impact partnerships. This is a role for someone who has been a driving force behind industry-defining deals, has deep relationships at the C-suite level across travel verticals, and understands how to leverage those relationships to deliver transformative revenue growth.</p><p>The ideal candidate has extensive tenure in the travel industry, preferably with direct experience at leadership roles in travel insurance companies. This is not an entry point \u2014 it\u2019s a role for a seasoned professional who commands respect in the market and thrives on creating high-stakes, win-win partnerships.</p>",
+          "order": 1
+        },
+        {
+          "name": "Responsibilities",
+          "value": "<p class=\"editor-paragraph\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">Core Responsibilities</strong></b></p><ul class=\"editor-list-ul\"><li value=\"1\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Lead Strategic Growth: Own the mandate to unlock national strategic partnerships that elevate Faye to the next level in market reach and revenue.</span></li><li value=\"2\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Target and Win Major Accounts: Develop and execute a winning strategy to secure partnerships with airlines, OTAs, banks, and other large-scale travel intermediaries.</span></li><li value=\"3\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Deal Leadership: Lead negotiations from initial engagement through execution, ensuring terms maximize long-term value for Faye.</span></li><li value=\"4\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Market Positioning: Position Faye as the premier travel insurance partner through thought leadership, network engagement, and relationship building.</span></li><li value=\"5\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Internal Collaboration: Partner with product, marketing, operations, and customer success to ensure partnerships are implemented effectively and deliver on their revenue potential.</span></li><li value=\"6\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Performance Ownership: Set aggressive targets, monitor progress, and take accountability for delivering \u2014 and exceeding \u2014 agreed-upon outcomes.</span></li></ul>",
+          "order": 2
+        },
+        {
+          "name": "Requirements",
+          "value": "<p class=\"editor-paragraph\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">Experience &amp; Background Requirements</strong></b></p><ul class=\"editor-list-ul\"><li value=\"1\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">15+ years in the travel sector, with at least 10 years in senior partnership, business development, or sales leadership roles.</span></li><li value=\"2\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Proven success leading and closing strategic partnerships with major airlines, OTAs, cruise lines, banks, and other large-scale travel ecosystem players.</span></li><li value=\"3\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Direct travel insurance experience strongly preferred; deep familiarity with the product, regulatory environment, and competitive landscape.</span></li><li value=\"4\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">A well-established network of senior decision-makers across relevant industries.</span></li><li value=\"5\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Demonstrated ability to design, negotiate, and execute complex, high-value, multi-year agreements.</span></li><li value=\"6\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Skilled at driving transformational revenue impact, not incremental gains.</span></li></ul><p class=\"editor-paragraph\"><br></p>",
+          "order": 3
+        },
+        {
+          "name": "Qualifications",
+          "value": null,
+          "order": 4
+        }
+      ],
+      "categories": []
+    },
+    "is_internal": false
+  },
+  {
+    "uid": "BC.475",
+    "url_comeet_hosted_page": "https://www.comeet.com/jobs/withfaye/87.00A/hr--office-experience-coordinator-32hrswk-mon_-thurs_/BC.475",
+    "name": "HR & Office Experience Coordinator (32hrs/wk: Mon.-Thurs.)",
+    "company_name": "Faye",
+    "location": {
+      "name": "Richmond, VA",
+      "country": "US",
+      "city": "Richmond",
+      "state": "VA",
+      "postal_code": null,
+      "street_name": null,
+      "arrival_instructions": null,
+      "street_number": null,
+      "timezone": "America/New_York",
+      "location_uid": "62.507",
+      "is_remote": false
+    },
+    "custom_fields": {
+      "details": [
+        {
+          "name": "Description",
+          "value": "<p class=\"editor-paragraph\" style=\"text-align: justify;\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">Who We Are:</strong></b></p><p class=\"editor-paragraph\" style=\"text-align: justify;\"><span style=\"white-space: pre-wrap;\">Faye is the fastest-growing travel protection company in the U.S., and the highest-rated by travelers who use it trip after trip.</span></p><p class=\"editor-paragraph\" style=\"text-align: justify;\"><span style=\"white-space: pre-wrap;\">We\u2019ve raised $100M to build the autonomous platform for traveler care: insurance, travel care, real-time information, and finance in one place, powered by AI and a team that moves fast.</span></p><p class=\"editor-paragraph\" style=\"text-align: justify;\"><span style=\"white-space: pre-wrap;\">We\u2019re there for travelers throughout their entire journey, from the moment they book to the moment they\u2019re back home.</span></p><p class=\"editor-paragraph\" style=\"text-align: justify;\"><span style=\"white-space: pre-wrap;\">The bar is a 6-star experience, 24/7: near-instant payouts, an award-winning app and real support when travel goes sideways. It\u2019s hard to pull off. That\u2019s the point.</span></p><p class=\"editor-paragraph\" style=\"text-align: justify;\"><span style=\"white-space: pre-wrap;\">Come build what\u2019s next with us.</span><br><br><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">What We're Looking For:</strong></b></p><p class=\"editor-paragraph\" style=\"text-align: justify;\"><span style=\"white-space: pre-wrap;\">As we continue to grow, we\u2019re looking for a HR &amp; Office Experience Coordinator to help make our Richmond office a great place to work. If you\u2019re highly organized, proactive, love working with people, and enjoy making things happen, we\u2019d love to meet you!</span></p><p class=\"editor-paragraph\" style=\"text-align: justify;\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">About The Role: (32 hrs/wk., on-site Mon.- Thurs. in our Richmond, Virginia office)</strong></b></p><p class=\"editor-paragraph\" style=\"text-align: justify;\"><span style=\"white-space: pre-wrap;\">As our HR &amp; Office Experience Coordinator, you\u2019ll take full ownership of the day-to-day operations of our Richmond office, ensuring a smooth, organized, and welcoming workplace for employees and visitors.</span></p><p class=\"editor-paragraph\" style=\"text-align: justify;\"><span style=\"white-space: pre-wrap;\">You\u2019ll coordinate and execute employee experience activities in close partnership with our US HR Manager, and provide hands-on administrative and operational support to our VP of Claims &amp; CX and his teams.</span></p><p class=\"editor-paragraph\" style=\"text-align: justify;\"><span style=\"white-space: pre-wrap;\">You\u2019ll also assist our US HR Manager with administrative tasks related to HR processes as needed.</span></p><p class=\"editor-paragraph\" style=\"text-align: justify;\"><span style=\"white-space: pre-wrap;\">This is a hands-on, execution-focused role for someone who takes pride in getting things done, pays attention to the details, and enjoys making a difference in people\u2019s everyday work experience.</span></p><p class=\"editor-paragraph\" style=\"text-align: justify;\"><br></p><p class=\"editor-paragraph\"><br></p><p class=\"editor-paragraph\"><br></p>",
+          "order": 1
+        },
+        {
+          "name": "Responsibilities",
+          "value": "<p class=\"editor-paragraph\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">What You'll Do:</strong></b></p><p class=\"editor-paragraph\"><br></p><p class=\"editor-paragraph\"><u><b><strong class=\"editor-text-bold editor-text-underline\" style=\"white-space: pre-wrap;\">Office Operations</strong></b></u></p><ul class=\"editor-list-ul\"><li value=\"1\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Own the day-to-day operations of our Richmond office, ensuring everything runs smoothly and the workplace is organized, welcoming, and well-maintained.</span></li><li value=\"2\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Manage office supplies, kitchen inventory, snacks, coffee, and other daily essentials.</span></li><li value=\"3\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Coordinate mail, deliveries, shipping, office equipment, and general office needs.</span></li><li value=\"4\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Serve as the main point of contact for building management, maintenance providers, and local office vendors.</span></li><li value=\"5\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Coordinate catering, office purchases, invoices, and other office-related administrative activities.</span></li><li value=\"6\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Welcome visitors and help ensure a positive experience for employees and guests.</span></li><li value=\"7\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Proactively identify and resolve office-related issues and find ways to improve daily operations.</span></li></ul><p class=\"editor-paragraph\"><u><b><strong class=\"editor-text-bold editor-text-underline\" style=\"white-space: pre-wrap;\">Employee Experience &amp; HR Administration Support</strong></b></u></p><ul class=\"editor-list-ul\"><li value=\"1\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Coordinate and execute employee experience initiatives, events, celebrations, and engagement activities in partnership with the US HR Manager.</span></li><li value=\"2\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Take ownership of event logistics and execution, ensuring activities are delivered smoothly from start to finish.</span></li><li value=\"3\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Coordinate vendors, catering, supplies, setup, and other event arrangements.</span></li><li value=\"4\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Bring ideas and suggestions to improve the office experience while helping turn plans into action.</span></li><li value=\"5\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Assist with onboarding and offboarding coordination, including documentation, scheduling, equipment coordination, and other logistics.</span></li><li value=\"6\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Support employee records management, HR system updates, and routine administrative tasks.</span></li><li value=\"7\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Assist with the coordination and execution of HR processes and initiatives under the guidance of the US HR Manager.</span></li></ul><p class=\"editor-paragraph\"><u><b><strong class=\"editor-text-bold editor-text-underline\" style=\"white-space: pre-wrap;\">Operational &amp; Administrative Support to VP of Claims &amp; CX</strong></b></u></p><ul class=\"editor-list-ul\"><li value=\"1\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Provide hands-on administrative support to the VP of Claims &amp; CX and his teams, including processing Claims &amp; CX-related mail and documents, printing, scanning, shipping, and other recurring operational tasks.</span></li><li value=\"2\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Manage recurring administrative activities that support the daily work of the Claims &amp; CX departments.</span></li><li value=\"3\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Handle additional administrative and operational tasks based on the VP\u2019s priorities and the evolving needs of both teams.</span></li></ul>",
+          "order": 2
+        },
+        {
+          "name": "Requirements",
+          "value": "<p class=\"editor-paragraph\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">What Makes You A Great Fit:</strong></b></p><ul class=\"editor-list-ul\"><li value=\"1\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">2\u20134 years of experience in office administration, office management, employee experience, or a similar role.</span></li><li value=\"2\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Highly organized, detail-oriented, and able to manage multiple tasks and priorities effectively.</span></li><li value=\"3\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Proactive, resourceful, and hands-on, with a strong sense of ownership and the ability to solve problems and get things done independently.</span></li><li value=\"4\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Strong interpersonal and communication skills, with a service-oriented mindset and a passion for helping others.</span></li><li value=\"5\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Comfortable supporting multiple stakeholders and adapting to changing priorities.</span></li><li value=\"6\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Tech-savvy and comfortable working with Google Workspace, Slack, and other digital tools.</span></li><li value=\"7\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Experience coordinating events or employee engagement activities is a plus.</span></li><li value=\"8\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Experience working in a fast-growing company or startup is a plus.</span></li></ul><p class=\"editor-paragraph\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">What Success Looks Like:</strong></b></p><ul class=\"editor-list-ul\"><li value=\"1\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Our Richmond office runs smoothly, with day-to-day needs handled proactively and independently.</span></li><li value=\"2\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Employees and visitors enjoy a welcoming, organized, and positive office environment.</span></li><li value=\"3\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Employee events, celebrations, and initiatives are executed smoothly and with attention to detail.</span></li><li value=\"4\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">The VP of Claims &amp; CX and his teams receive reliable administrative support, reducing time spent on recurring operational tasks.</span></li><li value=\"5\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">The US HR Manager can focus on her core HR responsibilities, knowing that employee experience activities and administrative tasks are being executed effectively.</span></li><li value=\"6\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Office operations and administrative processes become more efficient as Faye continues to grow.</span></li></ul><p class=\"editor-paragraph\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">Location &amp; Schedule: </strong></b></p><p class=\"editor-paragraph\" style=\"text-align: justify;\"><span style=\"white-space: pre-wrap;\">This is a part-time (Monday\u2013Thursday), on-site position based in our Richmond, VA office. Daily office presence is an essential part of the role.</span></p><p class=\"editor-paragraph\" style=\"text-align: justify;\"><span style=\"white-space: pre-wrap;\">If you\u2019re someone who loves creating great experiences, keeping things organized, and making things happen, we\u2019d love to hear from you!</span></p><p class=\"editor-paragraph\"><br></p>",
+          "order": 3
+        },
+        {
+          "name": "Qualifications",
+          "value": null,
+          "order": 4
+        }
+      ],
+      "categories": []
+    },
+    "is_internal": false
+  },
+  {
+    "uid": "5F.F6A",
+    "url_comeet_hosted_page": "https://www.comeet.com/jobs/withfaye/87.00A/partner-growth-manager---west-coast/5F.F6A",
+    "name": "Partner Growth Manager - West Coast",
+    "company_name": "Faye",
+    "location": {
+      "name": "West Coast - Remote",
+      "country": "US",
+      "city": "Remote",
+      "state": "CA",
+      "postal_code": null,
+      "street_name": "Remote - West Coast",
+      "arrival_instructions": null,
+      "street_number": null,
+      "timezone": "America/Los_Angeles",
+      "location_uid": "A2.60E",
+      "is_remote": true
+    },
+    "custom_fields": {
+      "details": [
+        {
+          "name": "Description",
+          "value": "<p><strong>Who we are</strong></p><p>Faye is the fastest-growing travel protection company in the U.S., and the highest-rated by travelers who use it trip after trip.</p><p>We\u2019ve raised $100M to build the autonomous platform for traveler care: insurance, travel care, real-time information, and finance in one place, powered by AI and a team that moves fast.</p><p>We\u2019re there for travelers throughout their entire journey, from the moment they book to the moment they\u2019re back home.</p><p>The bar is a 6-star experience, 24/7: near-instant payouts, an award-winning app and real support when travel goes sideways. It\u2019s hard to pull off. That\u2019s the point.</p><p>Come build what\u2019s next with us.</p><p><strong>What We\u2019re Looking For</strong></p><p>We are looking for an experienced <strong>Partner Growth</strong> <strong>Manager</strong> for our <strong>West Coast Region </strong>to join our growing Business Development team. The ideal candidate has a proven <strong>track record in account development &amp; partner growth management, with a</strong> <strong>deep understanding of the travel and/or insurance industries.&nbsp;&nbsp;&nbsp;</strong></p><p>As a member of Faye\u2019s Business Development team, you will play a crucial role in growing and developing our accounts within the travel industry vertical.&nbsp;&nbsp;</p><p>We work in a fun, collaborative, and open-minded environment and are looking for proactive and accountable professionals focused on continuous learning and growth to push themselves and our team forward.</p>",
+          "order": 1
+        },
+        {
+          "name": "Responsibilities",
+          "value": "<ul><li><strong>Partner Growth Management:</strong> Develop and maintain strong relationships with our industry partners, ensuring high levels of client satisfaction and retention.</li><li><strong>Strategic Planning:</strong> Develop and implement strategic account plans to achieve sales targets and drive revenue growth.</li><li><strong>Client Engagement:</strong> Conduct regular meetings and presentations with clients to understand their needs, provide solutions, and promote Faye Travel Insurance products.</li><li><strong>Market Analysis:</strong> Stay informed about industry trends, market conditions, and competitor activities to identify opportunities.</li><li><strong>Representation:</strong> Represent Faye in various professional forums, conferences and events in the travel space.&nbsp;</li></ul>",
+          "order": 2
+        },
+        {
+          "name": "Requirements",
+          "value": "<ul><li>4+ years of experience in leading partner growth &amp; account development activities, specifically B2B2C partner management, ideally within the <strong>travel or insurance industry.</strong></li><li>Strong understanding of the travel sector, including agencies, airlines, cruise lines, hospitality, tour operators and OTAs.</li><li>Excellent communication, interpersonal and presentation skills.</li><li>Proven ability to build and maintain long term client relationships.</li><li>Strategic thinker with a results-driven approach.</li><li>Ability and desire to travel domestically and internationally.</li><li>Ability to run with new ideas, be proactive and excel independently and as part of a team.</li></ul>",
+          "order": 3
+        },
+        {
+          "name": "Qualifications",
+          "value": null,
+          "order": 4
+        }
+      ],
+      "categories": []
+    },
+    "is_internal": false
+  },
+  {
+    "uid": "0C.F69",
+    "url_comeet_hosted_page": "https://www.comeet.com/jobs/withfaye/87.00A/secops-specialist/0C.F69",
+    "name": "SecOps Specialist",
+    "company_name": "Faye",
+    "location": {
+      "name": "Tel Aviv",
+      "country": "IL",
+      "city": "Tel Aviv-Yafo",
+      "state": "Tel Aviv District",
+      "postal_code": "",
+      "street_name": "150 Derech Menachem Begin",
+      "arrival_instructions": "<p>WeTLV Tower<br/>12th floor</p>",
+      "street_number": "150",
+      "timezone": "Asia/Jerusalem",
+      "location_uid": "EE.20D",
+      "is_remote": false
+    },
+    "custom_fields": {
+      "details": [
+        {
+          "name": "Description",
+          "value": "<p><strong>Who we are</strong></p><p>Faye is the fastest-growing travel protection company in the U.S., and the highest-rated by travelers who use it trip after trip.</p><p>We\u2019ve raised $100M to build the autonomous platform for traveler care: insurance, travel care, real-time information, and finance in one place, powered by AI and a team that moves fast.</p><p>We\u2019re there for travelers throughout their entire journey, from the moment they book to the moment they\u2019re back home.</p><p>The bar is a 6-star experience, 24/7: near-instant payouts, an award-winning app and real support when travel goes sideways. It\u2019s hard to pull off. That\u2019s the point.</p><p>Come build what\u2019s next with us.</p><p><strong>What we're looking for</strong></p><p>We're looking for a <strong>Security Operations (SecOps) specialist</strong> to take ownership of our security infrastructure and operations as we scale. In this hands-on, high-impact role, you\u2019ll play a crucial role in managing the infrastructure, services and service providers that help keep Faye secure from outside attacks and insider threats, along with managing our information compliance programs.</p>",
+          "order": 1
+        },
+        {
+          "name": "Responsibilities",
+          "value": "<ul><li>Support and lead our security programs, both internal and with 3rd party vendors.</li><li>Lead incident response simulations and continuous vulnerability remediation efforts, optimizing our observability and alerting frameworks.</li><li>Support the design and maintenance of resilient, scalable cloud infrastructure, ensuring security is baked into the foundation.</li><li>Work closely with company leadership to ensure adoption of security best practices.</li><li>Work closely with R&amp;D teams to help them shift security testing left into the early phases of development.</li><li>Monitor, detect, and respond to security alerts and infrastructure anomalies, optimizing our logging, tracing, and alerting frameworks.</li><li>Conduct regular reviews of security tools and infrastructure such as endpoint security, malware detection, firewall logs, and the like.</li><li>Collaborate with our CISO to implement and automate controls supporting fintech/insurtech compliance and data privacy standards (PII protection, SOC2).</li></ul><p><br></p>",
+          "order": 2
+        },
+        {
+          "name": "Requirements",
+          "value": "<ul><li>4+ years experience working in an Incident Response/Cyber Security Operations Center (in-house or outsourced) creating, escalating, and managing security incidents and creating incident reports <strong>or</strong> 4+ years in either a SecOps or DevSecOps role.</li><li>Proficient in at least one scripting language (Python, Bash, or Node.js) to build security guardrails and automate manual processes.</li><li>3+ years working with security tools including SIEM, Analytics &amp; Intelligence, Intrusion Detection, Malware Detection, Data Loss Protection, and Identity &amp; Access Management.</li><li>Experience managing low to high-risk cybersecurity events, alerts, and incidents with event monitoring, analysis, and escalation.</li><li>A builder\u2019s mindset: You aren't just identifying vulnerabilities; you are designing the automated fixes, guardrails, and processes that prevent them from recurring.</li></ul><p><br></p>",
+          "order": 3
+        },
+        {
+          "name": "Qualifications",
+          "value": null,
+          "order": 4
+        }
+      ],
+      "categories": []
+    },
+    "is_internal": false
+  },
+  {
+    "uid": "52.B5E",
+    "url_comeet_hosted_page": "https://www.comeet.com/jobs/withfaye/87.00A/senior-backend-engineer/52.B5E",
+    "name": "Senior Backend Engineer",
+    "company_name": "Faye",
+    "location": {
+      "name": "Tel Aviv",
+      "country": "IL",
+      "city": "Tel Aviv-Yafo",
+      "state": "Tel Aviv District",
+      "postal_code": "",
+      "street_name": "150 Derech Menachem Begin",
+      "arrival_instructions": "<p>WeTLV Tower<br/>12th floor</p>",
+      "street_number": "150",
+      "timezone": "Asia/Jerusalem",
+      "location_uid": "EE.20D",
+      "is_remote": true
+    },
+    "custom_fields": {
+      "details": [
+        {
+          "name": "Description",
+          "value": "<p><strong>Who we are</strong></p><p>Faye is the fastest-growing travel protection company in the U.S., and the highest-rated by travelers who use it trip after trip.</p><p>We\u2019ve raised $100M to build the autonomous platform for traveler care: insurance, travel care, real-time information, and finance in one place, powered by AI and a team that moves fast.</p><p>We\u2019re there for travelers throughout their entire journey, from the moment they book to the moment they\u2019re back home.</p><p>The bar is a 6-star experience, 24/7: near-instant payouts, an award-winning app and real support when travel goes sideways. It\u2019s hard to pull off. That\u2019s the point.</p><p>Come build what\u2019s next with us.</p><p><strong>What we're looking for</strong></p><p>Faye is redefining travel insurance through a fully digital, data-driven platform that delivers real-time travel care, streamlined claims, and proactive disruption handling.</p><p>We\u2019re looking for a <strong>Senior Backend Developer</strong> to help build and scale the core systems powering our products end-to-end. In this role, you\u2019ll take ownership of backend services, design and develop robust, scalable architectures, and work closely with product and engineering teams to solve meaningful challenges that directly impact our customers and partners.</p><p>You\u2019ll work with modern technologies including Node.js, Nest.js, TypeScript, PostgreSQL, and AWS, in a fast-moving environment that values strong engineering fundamentals, a product-driven mindset, and a passion for solving complex problems at scale.</p>",
+          "order": 1
+        },
+        {
+          "name": "Responsibilities",
+          "value": "<ul><li>Design, develop, and deploy scalable, high-performance backend services that support our web and mobile applications.</li><li>Own backend features end-to-end: from technical design and implementation to production deployment and ongoing improvements.</li><li>Write clean, maintainable, and well-documented&nbsp;TypeScript&nbsp;code, following best practices, design patterns, and high testing standards.</li><li>Build and optimize&nbsp;PostgreSQL&nbsp;schemas, queries, and data flows to ensure reliability and performance at scale.</li><li>Participate in architecture discussions and help drive technical decisions that improve velocity, stability, and extensibility.</li><li>Perform code reviews, troubleshoot production issues, and proactively improve system observability, reliability, and performance.</li><li>Collaborate closely with Product, FE, QA, and other stakeholders to understand requirements and translate them into clear technical plans and execution.</li></ul><p><br></p>",
+          "order": 2
+        },
+        {
+          "name": "Requirements",
+          "value": "<ul><li>Minimum of 6+ years of professional experience in backend development, with a strong proficiency in Node.js and TypeScript.</li><li>Experience working with backend frameworks such as Nest.js or similar frameworks.</li><li>Solid understanding of relational databases and experience with PostgreSQL or similar database technologies.</li><li>Familiarity with CI/CD pipelines, version control systems (e.g., Git), and agile development methodologies.</li><li>Bachelor\u2019s degree in Computer Science, Engineering, or related field (or equivalent work experience).</li><li>Excellent problem-solving skills and ability to troubleshoot complex issues in a fast-paced environment.</li><li>Strong communication and collaboration skills to work effectively within a multidisciplinary team.</li></ul>",
+          "order": 3
+        },
+        {
+          "name": "Qualifications",
+          "value": null,
+          "order": 4
+        }
+      ],
+      "categories": []
+    },
+    "is_internal": false
+  },
+  {
+    "uid": "91.661",
+    "url_comeet_hosted_page": "https://www.comeet.com/jobs/withfaye/87.00A/senior-full-stack-engineer/91.661",
+    "name": "Senior Full Stack Engineer",
+    "company_name": "Faye",
+    "location": {
+      "name": "Tel Aviv",
+      "country": "IL",
+      "city": "Tel Aviv-Yafo",
+      "state": "Tel Aviv District",
+      "postal_code": "",
+      "street_name": "150 Derech Menachem Begin",
+      "arrival_instructions": "<p>WeTLV Tower<br/>12th floor</p>",
+      "street_number": "150",
+      "timezone": "Asia/Jerusalem",
+      "location_uid": "EE.20D",
+      "is_remote": true
+    },
+    "custom_fields": {
+      "details": [
+        {
+          "name": "Description",
+          "value": "<p><strong>Who we are</strong></p><p>Faye is the fastest-growing travel protection company in the U.S., and the highest-rated by travelers who use it trip after trip.</p><p>We\u2019ve raised $100M to build the autonomous platform for traveler care: insurance, travel care, real-time information, and finance in one place, powered by AI and a team that moves fast.</p><p>We\u2019re there for travelers throughout their entire journey, from the moment they book to the moment they\u2019re back home.</p><p>The bar is a 6-star experience, 24/7: near-instant payouts, an award-winning app and real support when travel goes sideways. It\u2019s hard to pull off. That\u2019s the point.</p><p>Come build what\u2019s next with us.</p><p><strong>What we're looking for</strong></p><p><strong>\ufeff</strong>Faye is looking for a talented Full Stack Engineer to join our core R&amp;D team. You will be a key player in building our innovative travel insurance platform, taking ownership of features from the database all the way to the user interface. While the role is approximately <strong>70% Backend focused</strong>, you will have a significant impact on our frontend architecture and user experience.</p><p>You\u2019ll be joining a fast-paced, high-growth startup environment where you will solve complex technical challenges, optimize for high scalability, and help shape the future of travel tech.</p>",
+          "order": 1
+        },
+        {
+          "name": "Responsibilities",
+          "value": "<ul><li>Design, develop, and maintain high-scale backend services and APIs (Node.js/TypeScript).</li><li>Build responsive, intuitive, and visually appealing web interfaces using React.js.</li><li>Take full ownership of features end-to-end: from architecture and database design to frontend implementation.</li><li>Optimize applications for maximum speed, scalability, and security.</li><li>Collaborate closely with Product, Design, and other engineers to translate complex requirements into high-quality code.</li><li>Participate in code reviews, testing, and debugging to maintain high engineering standards.</li><li>Stay up-to-date with the latest technologies and best practices to continuously improve our stack.</li></ul>",
+          "order": 2
+        },
+        {
+          "name": "Requirements",
+          "value": "<ul><li>5+ years of professional software development experience.</li><li>Strong proficiency in Node.js and TypeScript.</li><li>Proficiency in React.js and its core principles.</li><li>Deep understanding of database design and building scalable distributed systems.</li><li>Experience with cloud environments (AWS preferred), CI/CD pipelines, and microservices architecture.</li><li>Strong problem-solving skills and the ability to navigate complex codebases.</li><li>A \u201cget things done\u201d mindset with the ability to work effectively in a dynamic startup environment.</li><li>Excellent communication skills and a team-player attitude.</li></ul>",
+          "order": 3
+        },
+        {
+          "name": "Qualifications",
+          "value": null,
+          "order": 4
+        }
+      ],
+      "categories": []
+    },
+    "is_internal": false
+  },
+  {
+    "uid": "B7.373",
+    "url_comeet_hosted_page": "https://www.comeet.com/jobs/withfaye/87.00A/senior-product-analyst/B7.373",
+    "name": "Senior Product Analyst",
+    "company_name": "Faye",
+    "location": {
+      "name": "Tel Aviv",
+      "country": "IL",
+      "city": "Tel Aviv-Yafo",
+      "state": "Tel Aviv District",
+      "postal_code": "",
+      "street_name": "150 Derech Menachem Begin",
+      "arrival_instructions": "<p>WeTLV Tower<br/>12th floor</p>",
+      "street_number": "150",
+      "timezone": "Asia/Jerusalem",
+      "location_uid": "EE.20D",
+      "is_remote": true
+    },
+    "custom_fields": {
+      "details": [
+        {
+          "name": "Description",
+          "value": "<p><strong>Who we are</strong></p><p>Faye is the fastest-growing travel protection company in the U.S., and the highest-rated by travelers who use it trip after trip.</p><p>We\u2019ve raised $100M to build the autonomous platform for traveler care: insurance, travel care, real-time information, and finance in one place, powered by AI and a team that moves fast.</p><p>We\u2019re there for travelers throughout their entire journey, from the moment they book to the moment they\u2019re back home.</p><p>The bar is a 6-star experience, 24/7: near-instant payouts, an award-winning app and real support when travel goes sideways. It\u2019s hard to pull off. That\u2019s the point.</p><p>Come build what\u2019s next with us.</p><p><strong>What we're looking for</strong></p><p>Faye is looking for a Senior Product Analyst to help Faye build smarter, move faster, and make better product decisions through data. You\u2019re deeply data-driven and love turning analysis into meaningful business insights that shape strategy and drive impact.</p><p>Sitting at the intersection of Product and Data, you\u2019ll own product analytics across the department. You\u2019ll develop a deep understanding of our <u>\ufeff</u>customers, products, and business, turn complex data into clear insights, and help Product Managers uncover opportunities, prioritize confidently, and measure what matters.</p><p>This is a hands-on role in a fast-moving startup, with real ownership, high impact, and strong exposure to cross-functional leaders.</p>",
+          "order": 1
+        },
+        {
+          "name": "Responsibilities",
+          "value": "<ul><li>Become an expert on our products, customers, and business.</li><li>Partner closely with Product Managers on high-impact questions, and support them with insights and ad hoc data requests.</li><li>Define, track, and evolve core product KPIs across key journeys and flows.</li><li>Analyze funnels, cohorts, feature adoption, user behavior, and customer drop-offs.</li><li>Identify friction points and translate them into clear product and business recommendations.</li><li>Design and analyze A/B tests and product experiments.</li><li>Measure the impact of product launches, feature changes, and customer experience improvements.</li><li>Build dashboards and recurring insights using Tableau, Mixpanel, Snowflake, dbt, and AI tools or LLM engines.</li><li>Uphold a high bar for rigor and accuracy, so the numbers that reach stakeholders are right and well understood.</li><li>Communicate findings clearly to technical and non-technical stakeholders.</li><li>Partner with Data and Engineering to improve tracking, event instrumentation, and metric definitions.</li><li>Take part in the team's effort to bring AI into how we work.</li></ul>",
+          "order": 2
+        },
+        {
+          "name": "Requirements",
+          "value": "<ul><li>4+ years of experience in product analytics roles.</li><li>Strong SQL skills and comfort working with large, real-world datasets.</li><li>Experience analyzing product funnels, cohorts, customer journeys, and feature usage.</li><li>Strong understanding of product metrics such as conversion, activation, engagement, retention, usage, and customer satisfaction.</li><li>Experience with A/B testing, experimentation, and product measurement.</li><li>Experience with tools like Tableau, Mixpanel, dbt, and Snowflake, or similar.</li><li>A strong sense of rigor and accuracy, and care for data quality and clear metric definitions.</li><li>Excellent communication skills, with a track record of making data clear and actionable for non-technical stakeholders.</li><li>Ability to connect product behavior with customer experience and business impact.</li><li>Comfortable working directly with Product, Data, and leadership stakeholders.</li><li>Curiosity about using AI to work faster and smarter, and openness to adopting it as part of a team effort.</li><li>Python or R experience for deeper analysis is a plus.</li><li>A relevant academic degree or equivalent hands-on experience.</li><li>Experience in consumer products, travel, insurance, fintech, or customer-facing digital products is a plus.</li></ul><p><strong>What makes you a great fit</strong></p><ul><li>You're curious about how customers behave, not just what the dashboard says.</li><li>You have exceptional business understanding and naturally connect data to the bigger picture.</li><li>You move fast, really fast, without compromising accuracy.</li><li>You know how to turn messy product data into clear decisions.</li><li>You communicate clearly, challenge assumptions respectfully, and help teams move faster with confidence.</li><li>You're pragmatic, impact-driven, and excited to help build better travel experiences at scale.</li><li>You're excited to use AI to work smarter and help shape how we use it across the team.</li></ul>",
+          "order": 3
+        },
+        {
+          "name": "Qualifications",
+          "value": null,
+          "order": 4
+        }
+      ],
+      "categories": []
+    },
+    "is_internal": false
+  }
+]

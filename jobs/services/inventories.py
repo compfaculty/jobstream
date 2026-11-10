@@ -150,7 +150,7 @@ class WorkdayAdapter:
 
 def source_adapter(source):
     adapter = ADAPTERS.get(source.adapter)
-    if source.adapter == "akeyless" and urlsplit(source.url).hostname in {
+    if source.adapter in {"akeyless", "comeet"} and urlsplit(source.url).hostname in {
         "www.comeet.com",
         "comeet.com",
         "www.comeet.co",
@@ -182,6 +182,10 @@ def collect(source, cursor, *, fetch=fetch_public):
             scope=f"board:{source.adapter}",
             cursor=page.cursor,
         ), b""
+    if source.adapter == "bamboohr":
+        from .bamboohr import collect as collect_bamboohr
+
+        return collect_bamboohr(source, cursor, fetch=fetch), b""
     if source.adapter == "workday":
         return WorkdayAdapter().collect(source, cursor), b""
     adapter = source_adapter(source)

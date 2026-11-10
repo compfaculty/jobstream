@@ -311,7 +311,10 @@ class CompanyPageAdapter(BoardAdapter):
             or not any(section.get_text(strip=True) for section in sections)
         ):
             raise ValueError("Company job metadata structure not found")
-        location = soup.select_one(".career__location, .details__location, .job__location")
+        location = soup.select_one(
+            ".career__location, .details__location, .job__location, "
+            "header .career-sub-wrapper:first-child .text-size-regular"
+        )
         return replace(
             listing,
             title=plain(title.get_text()),
@@ -396,6 +399,9 @@ ADAPTERS.update(
             "Akeyless", r"/jobs/.+", "div.userDesignedContent.company-description", comeet=True
         ),
         "agrematch": AgrematchAdapter(),
+        "foundational": CompanyPageAdapter(
+            "Foundational", r"/careers/[^/]+/?", ".careers-content .text-rich-text"
+        ),
     }
 )
 

@@ -1,0 +1,710 @@
+[
+  {
+    "uid": "C0.662",
+    "url_comeet_hosted_page": "https://www.comeet.com/jobs/proteantecs/D5.00E/c-senior-software-engineer/C0.662",
+    "name": "C++ Senior Software Engineer",
+    "company_name": "proteanTecs",
+    "location": {
+      "name": "Israel - Tel Aviv",
+      "country": "IL",
+      "city": "Tel Aviv-Yafo",
+      "state": "Tel Aviv District",
+      "postal_code": "",
+      "street_name": "154 Menakhem Begin Road",
+      "arrival_instructions": "<p>Beit Karden, 14 floor</p><p>Parking: Karden parking lot</p>",
+      "street_number": "154",
+      "timezone": "Asia/Jerusalem",
+      "location_uid": "BE.103",
+      "is_remote": true
+    },
+    "custom_fields": {
+      "details": [
+        {
+          "name": "Description",
+          "value": "<p class=\"editor-paragraph\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">Chips Talk, We Listen</strong></b><span style=\"white-space: pre-wrap;\">&nbsp;</span></p><p class=\"editor-paragraph\"><span style=\"white-space: pre-wrap;\">proteanTecs is a\u202fgame-changing startup\u202fthat's giving advanced electronics the power to\u202freport on their own health. In a digital world built for autonomous driving, cloud computing, and AI, we depend on computing systems daily. But how can we guarantee their safety, reliability and functionality? proteanTecs is the\u202ffirst-ever\u202fcompany\u202fto provide visibility into next-gen chips while they are operating, based on the power of\u202fon-chip monitoring, machine learning, and data analytics.&nbsp;</span></p><p class=\"editor-paragraph\"><span style=\"white-space: pre-wrap;\">Here at proteanTecs, you'll be part of a team that's\u202funlocking deep insights\u202fto make electronics more\u202freliable, efficient, and high-quality. We're trusted by industry leaders in data centers, automotive, communications, and consumer devices \u2013 we work with the world's largest and most notable companies in tech.&nbsp;</span></p><p class=\"editor-paragraph\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">Why proteanTecs is a great place to work:</strong></b><span style=\"white-space: pre-wrap;\">&nbsp;</span></p><ul class=\"editor-list-ul\"><li value=\"1\" class=\"editor-listitem\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">Fast-paced and impactful:</strong></b><span style=\"white-space: pre-wrap;\">\u202fWe're a mission-driven startup,\u202fso you'll tackle new challenges daily,\u202fwear many hats,\u202fand see your work directly influence the future of electronics.&nbsp;</span></li><li value=\"2\" class=\"editor-listitem\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">Supportive\u202fcompany\u202fculture</strong></b><span style=\"white-space: pre-wrap;\">: Learn from the best. Our 200+ team members are experts in their field with a proven track record of success, and they're committed to fostering a collaborative and supportive work environment.&nbsp;</span></li><li value=\"3\" class=\"editor-listitem\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">International presence:</strong></b><span style=\"white-space: pre-wrap;\">\u202fWe're a multinational\u202fcompany\u202fwith a diverse team across multiple locations around the globe. You'll collaborate on projects with international impact, gaining a global perspective of the tech industry.&nbsp;</span></li><li value=\"4\" class=\"editor-listitem\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">Work with industry leaders:</strong></b><span style=\"white-space: pre-wrap;\">\u202fOur solutions are used by the biggest names in tech. You'll be part of the team creating the next generation of groundbreaking products.&nbsp;</span></li><li value=\"5\" class=\"editor-listitem\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">Cutting-edge playground:</strong></b><span style=\"white-space: pre-wrap;\">\u202fWe use the latest machine learning,\u202fplatforms,\u202fand tools to push boundaries and achieve breakthroughs.&nbsp;</span></li><li value=\"6\" class=\"editor-listitem\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">Real-world impact:</strong></b><span style=\"white-space: pre-wrap;\">\u202fOur work keeps data centers, cars, and other critical systems running smoothly. Your work will directly contribute to safer, more reliable electronics.&nbsp;</span></li><li value=\"7\" class=\"editor-listitem\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">We are here for the win:</strong></b><span style=\"white-space: pre-wrap;\">\u202fBacked by industry veterans and leading investors, we offer a stable and secure work environment with plenty of room for growth.&nbsp;</span></li></ul><p class=\"editor-paragraph\"><span style=\"white-space: pre-wrap;\">proteanTecs is looking for a </span><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">C++ Senior Software Engineer</strong></b><span style=\"white-space: pre-wrap;\"> to join the ride as we spearhead the next revolution in electronics!</span></p>",
+          "order": 1
+        },
+        {
+          "name": "Requirements",
+          "value": "<ul class=\"editor-list-ul\"><li value=\"1\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Bachelor\u2019s degree in Electrical, Computer, or Software Engineering, or Computer Science.</span></li><li value=\"2\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">7+ years of experience in software design and development in C++11/14/17 for edge devices / host machines.</span></li><li value=\"3\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Experience with build systems, scripts, and tools (e.g., CMake, Bash Scripts, Docker, GitHub Actions).</span></li><li value=\"4\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Strong foundation in programming: data structures, algorithms, version control, performance, and testing.</span></li><li value=\"5\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Attention to coding standards, including formatting, conventions, and documentation.</span></li><li value=\"6\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Excellent team player with strong communication skills.</span></li></ul><p class=\"editor-paragraph\"><span style=\"white-space: pre-wrap;\">&nbsp;</span><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">Preferred Qualifications:</strong></b></p><ul class=\"editor-list-ul\"><li value=\"1\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Familiarity with multiple programming languages, such as Python, Java, and C#.</span></li><li value=\"2\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Knowledge of SQLite3 for database management.</span></li><li value=\"3\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Experience working closely with customers on software integration and debugging.</span></li><li value=\"4\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Past experience as a post-silicon test engineer working with Advantest or Teradyne automated test equipment.</span></li></ul>",
+          "order": 2
+        },
+        {
+          "name": "Responsibilities",
+          "value": "<ul class=\"editor-list-ul\"><li value=\"1\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Design and implement multi-architecture and cross-platform software solutions in C++ for Linux and Windows OS.</span></li><li value=\"2\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Maintain software application interfaces in Java, Python, and C#.</span></li><li value=\"3\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Contribute to the full life-cycle development, integration, and deployment of software solutions in advanced testing equipment.</span></li><li value=\"4\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Collaborate within a multidisciplinary team environment across scientific and engineering disciplines.</span></li><li value=\"5\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Conduct code reviews to enhance software engineering quality.</span></li></ul>",
+          "order": 3
+        },
+        {
+          "name": "Personal skills",
+          "value": null,
+          "order": 4
+        }
+      ],
+      "categories": []
+    },
+    "is_internal": false
+  },
+  {
+    "uid": "FB.D6C",
+    "url_comeet_hosted_page": "https://www.comeet.com/jobs/proteantecs/D5.00E/circuit-design-engineer/FB.D6C",
+    "name": "Circuit Design Engineer",
+    "company_name": "proteanTecs",
+    "location": {
+      "name": "Israel - Haifa",
+      "country": "IL",
+      "city": "Haifa",
+      "state": "Haifa District",
+      "postal_code": "",
+      "street_name": "36 Kdoshei Bagdad Street",
+      "arrival_instructions": "<p>Kdoshei Bagdad 36, Port Town Building, Floor 3,Gate 3\u00a0 Haifa, IL</p><p><span style=\"font-size: 13px;\">Parking: Hanamal Street Number 36.</span></p><p>Waze: \u05d7\u05e0\u05d9\u05d5\u05df \u05e4\u05d5\u05e8\u05d8\u05d0\u05d5\u05df, \u05d4\u05e0\u05de\u05dc 36, \u05d7\u05d9\u05e4\u05d4</p><p>Train station: Haifa Mercaz Hashmona</p>",
+      "street_number": "36",
+      "timezone": "Asia/Jerusalem",
+      "location_uid": "BE.102",
+      "is_remote": true
+    },
+    "custom_fields": {
+      "details": [
+        {
+          "name": "Description",
+          "value": "<p class=\"editor-paragraph\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">Chips Talk, We Listen</strong></b><span style=\"white-space: pre-wrap;\">&nbsp;</span></p><p class=\"editor-paragraph\"><span style=\"white-space: pre-wrap;\">proteanTecs is a\u202fgame-changing startup\u202fthat's giving advanced electronics the power to\u202freport on their own health. In a digital world built for autonomous driving, cloud computing, and AI, we depend on computing systems daily. But how can we guarantee their safety, reliability and functionality? proteanTecs is the\u202ffirst-ever\u202fcompany\u202fto provide visibility into next-gen chips while they are operating, based on the power of\u202fon-chip monitoring, machine learning, and data analytics.&nbsp;</span></p><p class=\"editor-paragraph\"><span style=\"white-space: pre-wrap;\">Here at proteanTecs, you'll be part of a team that's\u202funlocking deep insights\u202fto make electronics more\u202freliable, efficient, and high-quality. We're trusted by industry leaders in data centers, automotive, communications, and consumer devices \u2013 we work with the world's largest and most notable companies in tech.&nbsp;</span></p><p class=\"editor-paragraph\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">Why proteanTecs is a great place to work:</strong></b><span style=\"white-space: pre-wrap;\">&nbsp;</span></p><ul class=\"editor-list-ul\"><li value=\"1\" class=\"editor-listitem\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">Fast-paced and impactful:</strong></b><span style=\"white-space: pre-wrap;\">\u202fWe're a mission-driven startup,\u202fso you'll tackle new challenges daily,\u202fwear many hats,\u202fand see your work directly influence the future of electronics.&nbsp;</span></li><li value=\"2\" class=\"editor-listitem\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">Supportive\u202fcompany\u202fculture</strong></b><span style=\"white-space: pre-wrap;\">: Learn from the best. Our 200+ team members are experts in their field with a proven track record of success, and they're committed to fostering a collaborative and supportive work environment.&nbsp;</span></li><li value=\"3\" class=\"editor-listitem\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">International presence:</strong></b><span style=\"white-space: pre-wrap;\">\u202fWe're a multinational\u202fcompany\u202fwith a diverse team across multiple locations around the globe. You'll collaborate on projects with international impact, gaining a global perspective of the tech industry.&nbsp;</span></li><li value=\"4\" class=\"editor-listitem\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">Work with industry leaders:</strong></b><span style=\"white-space: pre-wrap;\">\u202fOur solutions are used by the biggest names in tech. You'll be part of the team creating the next generation of groundbreaking products.&nbsp;</span></li><li value=\"5\" class=\"editor-listitem\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">Cutting-edge playground:</strong></b><span style=\"white-space: pre-wrap;\">\u202fWe use the latest machine learning,\u202fplatforms,\u202fand tools to push boundaries and achieve breakthroughs.&nbsp;</span></li><li value=\"6\" class=\"editor-listitem\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">Real-world impact:</strong></b><span style=\"white-space: pre-wrap;\">\u202fOur work keeps data centers, cars, and other critical systems running smoothly. Your work will directly contribute to safer, more reliable electronics.&nbsp;</span></li><li value=\"7\" class=\"editor-listitem\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">We are here for the win:</strong></b><span style=\"white-space: pre-wrap;\">\u202fBacked by industry veterans and leading investors, we offer a stable and secure work environment with plenty of room for growth.&nbsp;</span></li></ul><p class=\"editor-paragraph\"><span style=\"white-space: pre-wrap;\">proteanTecs is looking for a</span><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\"> Circuit Design Engineer</strong></b><span style=\"white-space: pre-wrap;\"> to join the ride as we spearhead the next revolution in electronics!</span></p>",
+          "order": 1
+        },
+        {
+          "name": "Requirements",
+          "value": "<ul class=\"editor-list-ul\"><li value=\"1\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Bachelor\u2019s degree in electrical engineering</span></li><li value=\"2\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">2-5 years of relevant experience in circuit design</span></li><li value=\"3\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Strong understanding of circuit theory and design architectures</span></li><li value=\"4\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Excellent problem-solving skills and attention to detail</span></li><li value=\"5\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Effective communication skills and ability to work in a team environment</span></li><li value=\"6\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Proficiency in circuit design tools (e.g. Cadence Virtuoso) is a plus</span></li><li value=\"7\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Unix skills is a plus</span></li><li value=\"8\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">AI skills is a plus</span></li><li value=\"9\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Fluent English</span></li></ul>",
+          "order": 2
+        },
+        {
+          "name": "Responsibilities",
+          "value": "<ul class=\"editor-list-ul\"><li value=\"1\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">To develop IPs (Hard IP/Soft IP) in advanced process nodes (from definition, through design, post layout simulations, to full integration)</span></li><li value=\"2\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">To work with experienced designers in the field and help enhance our solution for preventive maintenance</span></li><li value=\"3\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Assist in the design and development of electronic circuits</span></li><li value=\"4\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Conduct full simulation coverage of our circuits to ensure functionality and performance</span></li><li value=\"5\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Collaborate with senior engineers to analyse and improve circuit designs</span></li><li value=\"6\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Prepare and maintain documentation related to circuit designs and simulation results</span></li><li value=\"7\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Stay updated with industry trends and advancements in circuit design and technology</span></li><li value=\"8\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Support other engineering teams as needed</span></li></ul>",
+          "order": 3
+        },
+        {
+          "name": "Personal skills",
+          "value": null,
+          "order": 4
+        }
+      ],
+      "categories": []
+    },
+    "is_internal": false
+  },
+  {
+    "uid": "6C.C6E",
+    "url_comeet_hosted_page": "https://www.comeet.com/jobs/proteantecs/D5.00E/devops-team-lead/6C.C6E",
+    "name": "DevOps Team Lead",
+    "company_name": "proteanTecs",
+    "location": {
+      "name": "Israel - Tel Aviv",
+      "country": "IL",
+      "city": "Tel Aviv-Yafo",
+      "state": "Tel Aviv District",
+      "postal_code": "",
+      "street_name": "154 Menakhem Begin Road",
+      "arrival_instructions": "<p>Beit Karden, 14 floor</p><p>Parking: Karden parking lot</p>",
+      "street_number": "154",
+      "timezone": "Asia/Jerusalem",
+      "location_uid": "BE.103",
+      "is_remote": true
+    },
+    "custom_fields": {
+      "details": [
+        {
+          "name": "Description",
+          "value": "<p><strong>Chips Talk, We Listen</strong>&nbsp;</p><p>proteanTecs is a\u202fgame-changing startup\u202fthat's giving advanced electronics the power to\u202freport on their own health. In a digital world built for autonomous driving, cloud computing, and AI, we depend on computing systems daily. But how can we guarantee their safety, reliability and functionality? proteanTecs is the\u202ffirst-ever\u202fcompany\u202fto provide visibility into next-gen chips while they are operating, based on the power of\u202fon-chip monitoring, machine learning, and data analytics.&nbsp;</p><p>Here at proteanTecs, you'll be part of a team that's\u202funlocking deep insights\u202fto make electronics more\u202freliable, efficient, and high-quality. We're trusted by industry leaders in data centers, automotive, communications, and consumer devices \u2013 we work with the world's largest and most notable companies in tech.&nbsp;</p><p><strong>Why proteanTecs is a great place to work:</strong>&nbsp;</p><ul><li><strong>Fast-paced and impactful:</strong>\u202fWe're a mission-driven startup,\u202fso you'll tackle new challenges daily,\u202fwear many hats,\u202fand see your work directly influence the future of electronics.&nbsp;</li><li><strong>Supportive\u202fcompany\u202fculture</strong>: Learn from the best. Our 200+ team members are experts in their field with a proven track record of success, and they're committed to fostering a collaborative and supportive work environment.&nbsp;</li><li><strong>International presence:</strong>\u202fWe're a multinational\u202fcompany\u202fwith a diverse team across multiple locations around the globe. You'll collaborate on projects with international impact, gaining a global perspective of the tech industry.&nbsp;</li><li><strong>Work with industry leaders:</strong>\u202fOur solutions are used by the biggest names in tech. You'll be part of the team creating the next generation of groundbreaking products.&nbsp;</li><li><strong>Cutting-edge playground:</strong>\u202fWe use the latest machine learning,\u202fplatforms,\u202fand tools to push boundaries and achieve breakthroughs.&nbsp;</li><li><strong>Real-world impact:</strong>\u202fOur work keeps data centers, cars, and other critical systems running smoothly. Your work will directly contribute to safer, more reliable electronics.&nbsp;</li><li><strong>We are here for the win:</strong>\u202fBacked by industry veterans and leading investors, we offer a stable and secure work environment with plenty of room for growth.&nbsp;</li></ul><p>proteanTecs is looking for an experienced and hands-on <strong>DevOps Team Lead </strong>to bridge the gap between individual engineering execution and strategic leadership. Reporting directly to the DevOps Director, you will guide a team of DevOps Engineers, drive technical excellence, and ensure the smooth delivery of infrastructure, automation, and CI/CD capabilities across the organization. This role combines technical depth with people leadership \u2014 you are equally comfortable reviewing a Terraform plan and running a team retrospective.</p>",
+          "order": 1
+        },
+        {
+          "name": "Requirements",
+          "value": "<p><strong>Experience &amp; Background</strong></p><p>\u2022&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;5+ years of experience in DevOps, Site Reliability Engineering, or a related field.</p><p>\u2022&nbsp;&nbsp;&nbsp;&nbsp;2+ years in a team lead, tech lead, or senior individual contributor role with mentorship responsibilities.</p><p>\u2022&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Proven track record of leading small-to-mid-size engineering teams in a fast-paced environment.</p><p><strong>Technical Skills</strong></p><p>\u2022&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Strong hands-on expertise with Kubernetes, Helm, Terraform, and Terragrunt.</p><p>\u2022&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Deep experience with CI/CD tooling \u2014 GitHub Actions, ArgoCD, or equivalent.</p><p>\u2022&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Proficiency in at least one major cloud platform: AWS, Azure, or GCP.</p><p>\u2022&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Experience with monitoring and observability stacks: Prometheus, Grafana, ELK.</p><p>\u2022&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Solid scripting skills in Python and/or Bash.</p><p>\u2022&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Knowledge of container security, Vault, and infrastructure cost management.</p><p>\u2022&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Familiarity with Ansible, Docker, and networking/DNS fundamentals.</p><p><strong>Leadership &amp; Soft Skills</strong></p><p>\u2022&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Excellent communication skills \u2014 able to translate complex technical topics to non-technical stakeholders.</p><p>\u2022&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Strong organizational skills with the ability to manage competing priorities and deadlines.</p><p>\u2022&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A collaborative, people-first mindset with a focus on team success over individual contribution.</p><p>\u2022&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Comfort working across time zones and with distributed, international teams.</p><p>\u2022&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Proactive problem-solver with a continuous improvement and automation-first mindset.</p><p><strong>Nice to Have</strong></p><p>\u2022&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Experience with large-scale SaaS or data-intensive environments.</p><p>\u2022&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Familiarity with Apache Flink, ElasticSearch, Vertica, or hybrid cloud deployments.</p><p>\u2022&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Exposure to Keycloak (OIDC), Tableau, or enterprise identity management.</p><p>\u2022&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Customer-facing or on-site deployment experience.</p>",
+          "order": 2
+        },
+        {
+          "name": "Responsibilities",
+          "value": "<p><strong>Team Leadership &amp; Management</strong></p><p>\u2022&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Lead, mentor, and support a team of DevOps Engineers, fostering a culture of ownership, collaboration, and continuous improvement.</p><p>\u2022&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Conduct regular 1:1s, provide constructive feedback, and support the professional growth of team members.</p><p>\u2022&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Coordinate workload distribution, sprint planning, and prioritization across the team in alignment with organizational goals.</p><p>\u2022&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Act as the primary point of escalation for technical challenges within the team.</p><p>\u2022&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Work closely with the DevOps Director to translate the DevOps roadmap into actionable team-level objectives.</p><p><strong>Technical Execution</strong></p><p>\u2022&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Design, implement, and maintain CI/CD pipelines using GitHub Actions and ArgoCD.</p><p>\u2022&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Manage and evolve cloud infrastructure across AWS, Azure, and/or GCP using Terraform, Helm, and Kubernetes.</p><p>\u2022&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Lead automation initiatives to improve deployment reliability, system scalability, and developer productivity.</p><p>\u2022&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Ensure robust observability through Prometheus, Grafana, and ELK, and participate in incident management and on-call rotations as needed.</p><p>\u2022&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Champion infrastructure security best practices, including secrets management (Vault) and container security.</p><p>\u2022&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Collaborate with R&amp;D, QA, and Product teams to streamline release processes and resolve deployment bottlenecks.</p><p><strong>Process &amp; Governance</strong></p><p>\u2022&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Define and enforce DevOps best practices, coding standards, and documentation guidelines across the team.</p><p>\u2022&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Drive post-incident reviews and implement learnings to prevent recurrence.</p><p>\u2022&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Monitor infrastructure costs and propose optimization strategies to the DevOps Director.</p><p>\u2022&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Maintain and improve technical documentation, runbooks, and operational playbooks.</p>",
+          "order": 3
+        },
+        {
+          "name": "Personal skills",
+          "value": null,
+          "order": 4
+        }
+      ],
+      "categories": []
+    },
+    "is_internal": false
+  },
+  {
+    "uid": "7E.47B",
+    "url_comeet_hosted_page": "https://www.comeet.com/jobs/proteantecs/D5.00E/field-application-engineer---physical-design/7E.47B",
+    "name": "Field Application Engineer - Physical Design",
+    "company_name": "proteanTecs",
+    "location": {
+      "name": "India",
+      "country": "IN",
+      "city": "Bangalore",
+      "state": null,
+      "postal_code": null,
+      "street_name": "01-104, WeWorks,Block L, Embassy Tech Village, Devarabisanahalli,Outer Ring Road",
+      "arrival_instructions": "<p><span>01-104, WeWorks,Block L, Embassy Tech Village, Devarabisanahalli,Outer Ring Road, Bellandur,Bengaluru, Karnataka \u2013 560103<br/><br/></span><br/></p>",
+      "street_number": null,
+      "timezone": "Asia/Jerusalem",
+      "location_uid": "FF.101",
+      "is_remote": true
+    },
+    "custom_fields": {
+      "details": [
+        {
+          "name": "Description",
+          "value": "<p class=\"editor-paragraph\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">Chips Talk, We Listen</strong></b><span style=\"white-space: pre-wrap;\">&nbsp;</span></p><p class=\"editor-paragraph\"><span style=\"white-space: pre-wrap;\">proteanTecs is a\u202fgame-changing startup\u202fthat's giving advanced electronics the power to\u202freport on their own health. In a digital world built for autonomous driving, cloud computing, and AI, we depend on computing systems daily. But how can we guarantee their safety, reliability and functionality? proteanTecs is the\u202ffirst-ever\u202fcompany\u202fto provide visibility into next-gen chips while they are operating, based on the power of\u202fon-chip monitoring, machine learning, and data analytics.&nbsp;</span></p><p class=\"editor-paragraph\"><span style=\"white-space: pre-wrap;\">Here at proteanTecs, you'll be part of a team that's\u202funlocking deep insights\u202fto make electronics more\u202freliable, efficient, and high-quality. We're trusted by industry leaders in data centers, automotive, communications, and consumer devices \u2013 we work with the world's largest and most notable companies in tech.&nbsp;</span></p><p class=\"editor-paragraph\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">Why proteanTecs is a great place to work:</strong></b><span style=\"white-space: pre-wrap;\">&nbsp;</span></p><ul class=\"editor-list-ul\"><li value=\"1\" class=\"editor-listitem\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">Fast-paced and impactful:</strong></b><span style=\"white-space: pre-wrap;\">\u202fWe're a mission-driven startup,\u202fso you'll tackle new challenges daily,\u202fwear many hats,\u202fand see your work directly influence the future of electronics.&nbsp;</span></li><li value=\"2\" class=\"editor-listitem\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">Supportive\u202fcompany\u202fculture</strong></b><span style=\"white-space: pre-wrap;\">: Learn from the best. Our 200+ team members are experts in their field with a proven track record of success, and they're committed to fostering a collaborative and supportive work environment.&nbsp;</span></li><li value=\"3\" class=\"editor-listitem\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">International presence:</strong></b><span style=\"white-space: pre-wrap;\">\u202fWe're a multinational\u202fcompany\u202fwith a diverse team across multiple locations around the globe. You'll collaborate on projects with international impact, gaining a global perspective of the tech industry.&nbsp;</span></li><li value=\"4\" class=\"editor-listitem\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">Work with industry leaders:</strong></b><span style=\"white-space: pre-wrap;\">\u202fOur solutions are used by the biggest names in tech. You'll be part of the team creating the next generation of groundbreaking products.&nbsp;</span></li><li value=\"5\" class=\"editor-listitem\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">Cutting-edge playground:</strong></b><span style=\"white-space: pre-wrap;\">\u202fWe use the latest machine learning,\u202fplatforms,\u202fand tools to push boundaries and achieve breakthroughs.&nbsp;</span></li><li value=\"6\" class=\"editor-listitem\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">Real-world impact:</strong></b><span style=\"white-space: pre-wrap;\">\u202fOur work keeps data centers, cars, and other critical systems running smoothly. Your work will directly contribute to safer, more reliable electronics.&nbsp;</span></li><li value=\"7\" class=\"editor-listitem\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">We are here for the win:</strong></b><span style=\"white-space: pre-wrap;\">\u202fBacked by industry veterans and leading investors, we offer a stable and secure work environment with plenty of room for growth.&nbsp;</span></li></ul><p class=\"editor-paragraph\"><span style=\"white-space: pre-wrap;\">proteanTecs is looking for a</span><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\"> </strong></b><span style=\"white-space: pre-wrap;\">Physical Design Application Engineer, who wants to join the ride as we spearhead the next revolution in electronics!</span></p><p class=\"editor-paragraph\"><span style=\"white-space: pre-wrap;\">Position location: Our site in Bangalore (Hybrid working model)</span></p>",
+          "order": 1
+        },
+        {
+          "name": "Requirements",
+          "value": "<ul class=\"editor-list-ul\"><li value=\"1\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Bachelor\u2019s in Electrical/Computer Engineering&nbsp;</span></li><li value=\"2\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">5+ years of experience in RTL2GDS/implementation flow &amp; has taped out designs in advanced processes&nbsp;</span></li><li value=\"3\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Knowledge of Cadence and/or Synopsys tools&nbsp;</span></li><li value=\"4\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Strong scripting skills in TCL/python/Perl&nbsp;</span></li><li value=\"5\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Must have excellent debugging skills &amp; ability to prioritize tasks/issues&nbsp;</span></li><li value=\"6\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">English proficiency&nbsp;</span></li><li value=\"7\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Experience in signoff STA/LVS/DRC flows of advanced processes \u2013 Advantage&nbsp;</span></li><li value=\"8\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Has customer interfacing experience (AE) \u2013 Advantage&nbsp;</span></li></ul>",
+          "order": 2
+        },
+        {
+          "name": "Responsibilities",
+          "value": "<ul class=\"editor-list-ul\"><li value=\"1\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Provide close support to customers and resolve any challenges&nbsp;</span></li><li value=\"2\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Provide training to customers on our tools and present our technology&nbsp;</span></li><li value=\"3\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Work on full Implementation and Signoff flow for some IP hardening</span></li><li value=\"4\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Provide continuous feedback to R&amp;D to improve the product&nbsp;</span></li></ul>",
+          "order": 3
+        },
+        {
+          "name": "Personal skills",
+          "value": "<ul class=\"editor-list-ul\"><li value=\"1\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Innovative &amp; Self-Driven&nbsp;</span></li><li value=\"2\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Team Player</span></li><li value=\"3\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Can articulate well</span></li><li value=\"4\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Customer Oriented - Advantage</span></li></ul>",
+          "order": 4
+        }
+      ],
+      "categories": []
+    },
+    "is_internal": false
+  },
+  {
+    "uid": "16.65E",
+    "url_comeet_hosted_page": "https://www.comeet.com/jobs/proteantecs/D5.00E/join-our-talent-pool/16.65E",
+    "name": "Join Our Talent Pool",
+    "company_name": "proteanTecs",
+    "location": null,
+    "custom_fields": {
+      "details": [
+        {
+          "name": "Description",
+          "value": "<p>At proteanTecs, we are always open to connecting with talented individuals who are passionate about shaping the future of electronics. While there may not be an open position that aligns with your profile at this time, we encourage you to submit your CV for future consideration.&nbsp;</p><p>All submitted CVs are stored in our candidate database and reviewed as new opportunities arise. Should your background align with a future opening, a member of our team will contact you. In the meantime, we invite you to stay involved by regularly visiting our careers page and following our&nbsp;<a href=\"https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fil.linkedin.com%2Fcompany%2Fproteantecs&amp;data=05%7C02%7Cmaayan.eluz%40proteantecs.com%7Cb73f53a9923c49e1aa7808ddd8af688f%7Cae7715677524476e9cee4800bc93183b%7C0%7C0%7C638904970062436659%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&amp;sdata=PkhPSwEaa0aDzLUzuKDk%2B7%2F%2FaT%2Bg9Z7li%2FIUubEBrjM%3D&amp;reserved=0\" target=\"_blank\" rel=\"noopener noreferrer\">LinkedIn channel</a>. We appreciate your interest in proteanTecs</p>",
+          "order": 1
+        },
+        {
+          "name": "Requirements",
+          "value": null,
+          "order": 2
+        },
+        {
+          "name": "Responsibilities",
+          "value": null,
+          "order": 3
+        },
+        {
+          "name": "Personal skills",
+          "value": null,
+          "order": 4
+        }
+      ],
+      "categories": []
+    },
+    "is_internal": false
+  },
+  {
+    "uid": "EE.270",
+    "url_comeet_hosted_page": "https://www.comeet.com/jobs/proteantecs/D5.00E/physical-design-application-engineer/EE.270",
+    "name": "Physical Design Application Engineer",
+    "company_name": "proteanTecs",
+    "location": {
+      "name": "Korea",
+      "country": "KR",
+      "city": "Seoul",
+      "state": "",
+      "postal_code": "",
+      "street_name": "ARA WORK & ALL Inc.Greits Pangyo 4th FLR 117 Bundangnaegok-ro, Bundang-gu, Gyeon",
+      "arrival_instructions": "<p><br/></p>",
+      "street_number": null,
+      "timezone": "Asia/Seoul",
+      "location_uid": "81.404",
+      "is_remote": true
+    },
+    "custom_fields": {
+      "details": [
+        {
+          "name": "Description",
+          "value": "<p><strong>Chips Talk, We Listen</strong>&nbsp;</p><p>proteanTecs is a\u202fgame-changing startup\u202fthat's giving advanced electronics the power to\u202freport on their own health. In a digital world built for autonomous driving, cloud computing, and AI, we depend on computing systems daily. But how can we guarantee their safety, reliability and functionality? proteanTecs is the\u202ffirst-ever\u202fcompany\u202fto provide visibility into next-gen chips while they are operating, based on the power of\u202fon-chip monitoring, machine learning, and data analytics.&nbsp;</p><p>Here at proteanTecs, you'll be part of a team that's\u202funlocking deep insights\u202fto make electronics more\u202freliable, efficient, and high-quality. We're trusted by industry leaders in data centers, automotive, communications, and consumer devices \u2013 we work with the world's largest and most notable companies in tech.&nbsp;</p><p><strong>Why proteanTecs is a great place to work:</strong>&nbsp;</p><ul><li><strong>Fast-paced and impactful:</strong>\u202fWe're a mission-driven startup,\u202fso you'll tackle new challenges daily,\u202fwear many hats,\u202fand see your work directly influence the future of electronics.&nbsp;</li><li><strong>Supportive\u202fcompany\u202fculture</strong>: Learn from the best. Our 200+ team members are experts in their field with a proven track record of success, and they're committed to fostering a collaborative and supportive work environment.&nbsp;</li><li><strong>International presence:</strong>\u202fWe're a multinational\u202fcompany\u202fwith a diverse team across multiple locations around the globe. You'll collaborate on projects with international impact, gaining a global perspective of the tech industry.&nbsp;</li><li><strong>Work with industry leaders:</strong>\u202fOur solutions are used by the biggest names in tech. You'll be part of the team creating the next generation of groundbreaking products.&nbsp;</li><li><strong>Cutting-edge playground:</strong>\u202fWe use the latest machine learning,\u202fplatforms,\u202fand tools to push boundaries and achieve breakthroughs.&nbsp;</li><li><strong>Real-world impact:</strong>\u202fOur work keeps data centers, cars, and other critical systems running smoothly. Your work will directly contribute to safer, more reliable electronics.&nbsp;</li><li><strong>We are here for the win:</strong>\u202fBacked by industry veterans and leading investors, we offer a stable and secure work environment with plenty of room for growth.&nbsp;</li></ul><p>proteanTecs is looking for a<strong> Physical Design Application Engineer,</strong> who wants to join the ride as we spearhead the next revolution in electronics!</p>",
+          "order": 1
+        },
+        {
+          "name": "Requirements",
+          "value": "<ul><li>Bachelor\u2019s in Electrical/Computer Engineering</li><li>1+ years of experience in RTL2GDS/implementation flow &amp; has taped out designs in advanced processes</li><li>Knowledge of Cadence and/or Synopsys tools</li><li>Strong scripting skills in TCL/python/Perl</li><li>Must have excellent debugging skills &amp; ability to prioritize tasks/issues</li><li>English proficiency</li><li>Experience in signoff STA/LVS/DRC flows of advanced processes \u2013 Advantage</li><li>Has customer interfacing experience (AE) \u2013 Advantage&nbsp;</li></ul>",
+          "order": 2
+        },
+        {
+          "name": "Responsibilities",
+          "value": "<ul><li>Provide close support to customers and resolve any challenges</li><li>Provide training to customers on our tools and present our technology</li><li>Work on full Implementation and Signoff flow for some IP hardening</li><li>Provide continuous feedback to R&amp;D to improve the product&nbsp;</li></ul>",
+          "order": 3
+        },
+        {
+          "name": "Personal skills",
+          "value": "<ul><li>Innovative &amp; Self-Driven&nbsp;</li><li>Team Player</li><li>Can articulate well</li><li>Customer Oriented - Advantage</li></ul><p><br></p>",
+          "order": 4
+        }
+      ],
+      "categories": []
+    },
+    "is_internal": false
+  },
+  {
+    "uid": "8C.65F",
+    "url_comeet_hosted_page": "https://www.comeet.com/jobs/proteantecs/D5.00E/sales-director/8C.65F",
+    "name": "Sales Director",
+    "company_name": "proteanTecs",
+    "location": {
+      "name": "USA - Santa Clara, CA",
+      "country": "US",
+      "city": "Santa Clara",
+      "state": "CA",
+      "postal_code": "95054",
+      "street_name": "4633 Old Ironsides Drive",
+      "arrival_instructions": null,
+      "street_number": null,
+      "timezone": "America/Los_Angeles",
+      "location_uid": "BE.105",
+      "is_remote": true
+    },
+    "custom_fields": {
+      "details": [
+        {
+          "name": "Description",
+          "value": "<p><strong>Chips Talk, We Listen</strong>&nbsp;</p><p>proteanTecs is a\u202fgame-changing startup\u202fthat's giving advanced electronics the power to\u202freport on their own health. In a digital world built for autonomous driving, cloud computing, and AI, we depend on computing systems daily. But how can we guarantee their safety, reliability and functionality? proteanTecs is the\u202ffirst-ever\u202fcompany\u202fto provide visibility into next-gen chips while they are operating, based on the power of\u202fon-chip monitoring, machine learning, and data analytics.&nbsp;</p><p>Here at proteanTecs, you'll be part of a team that's\u202funlocking deep insights\u202fto make electronics more\u202freliable, efficient, and high-quality. We're trusted by industry leaders in data centers, automotive, communications, and consumer devices \u2013 we work with the world's largest and most notable companies in tech.&nbsp;</p><p><strong>Why proteanTecs is a great place to work:</strong>&nbsp;</p><ul><li><strong>Fast-paced and impactful:</strong>\u202fWe're a mission-driven startup,\u202fso you'll tackle new challenges daily,\u202fwear many hats,\u202fand see your work directly influence the future of electronics.&nbsp;</li><li><strong>Supportive\u202fcompany\u202fculture</strong>: Learn from the best. Our 200+ team members are experts in their field with a proven track record of success, and they're committed to fostering a collaborative and supportive work environment.&nbsp;</li><li><strong>International presence:</strong>\u202fWe're a multinational\u202fcompany\u202fwith a diverse team across multiple locations around the globe. You'll collaborate on projects with international impact, gaining a global perspective of the tech industry.&nbsp;</li><li><strong>Work with industry leaders:</strong>\u202fOur solutions are used by the biggest names in tech. You'll be part of the team creating the next generation of groundbreaking products.&nbsp;</li><li><strong>Cutting-edge playground:</strong>\u202fWe use the latest machine learning,\u202fplatforms,\u202fand tools to push boundaries and achieve breakthroughs.&nbsp;</li><li><strong>Real-world impact:</strong>\u202fOur work keeps data centers, cars, and other critical systems running smoothly. Your work will directly contribute to safer, more reliable electronics.&nbsp;</li><li><strong>We are here for the win:</strong>\u202fBacked by industry veterans and leading investors, we offer a stable and secure work environment with plenty of room for growth.&nbsp;</li></ul><p>We are seeking an experienced and strategic <strong>Sales manager </strong>to join our team in the USA.</p><p>This customer-facing role requires working in a large team environment including: leadership for directing and coordinating sales and field AE resources, coordination/facilitation of customer interaction between proteaanTecs Product Marketing/Engineering, understanding of the core technology requirements in the digital implementation and/or IP space, coordination of sales strategies and efforts across worldwide customer operations.</p><ul><li>Leading pre/post-sales campaigns, managing and growing solution adoption in the territory for proteanTecs IP and solution platform.</li><li>The ability to foster and grow customer relationships throughout all levels of the customer organization to better connect our solutions with the customer's problems/business challenges and insure roadmap alignment for long term success.</li><li>Working knowledge of Strategic Selling techniques such as Miller Heiman, or Target Account Selling a plus.</li><li>Must have a deep technical knowledge and understanding of digital implementation flows (synthesis, place &amp; route, and signoff) and/or experience with IP\u2019s or software platforms .&nbsp;Understanding of semiconductor manufacturing eco-systems.&nbsp;Understanding of DFT chip bringup and manufacturing flows is plus.</li><li>The ability to effectively translate customer needs to viable solutions internally to proteanTecs technical teams.&nbsp;</li></ul><p>Base salary of $160,000 per year + Bonuses.</p>",
+          "order": 1
+        },
+        {
+          "name": "Requirements",
+          "value": "<ul><li>4+ years of strategic sales experience in the&nbsp;<strong style=\"font-style: inherit; font-variant-ligatures: inherit; font-variant-caps: inherit; letter-spacing: 0px;\">semiconductor industry</strong>&nbsp;or a closely related field.</li><li>Proven track record of&nbsp;<strong style=\"font-style: inherit; font-variant-ligatures: inherit; font-variant-caps: inherit; letter-spacing: 0px;\">exceeding sales targets</strong>&nbsp;and driving revenue growth in a&nbsp;<strong style=\"font-style: inherit; font-variant-ligatures: inherit; font-variant-caps: inherit; letter-spacing: 0px;\">multinational or startup environment</strong>.&nbsp;</li><li>Strong&nbsp;<strong>technical knowledge</strong>&nbsp;of semiconductor technologies and industry trends.&nbsp;</li><li>Experience managing complex, multi-level sale cycles, with an ability to influence executive-level decision-making.&nbsp;</li><li>Excellent communication, negotiation, and relationship-building skills.&nbsp;</li><li>Deep understanding of business dynamics and strategies, including tactics for successfully closing high-stakes deals.</li><li>Ability to work autonomously and adapt quickly in a fast-paced, dynamic startup environment.&nbsp;</li><li>Bachelor's degree in<strong>&nbsp;</strong>electrical engineering, or a related field; MBA is a plus.</li><li>Deep understanding of electronic systems and HW design</li></ul>",
+          "order": 2
+        },
+        {
+          "name": "Responsibilities",
+          "value": "<ul><li>You will be responsible for building, developing, and driving a sales pipeline for our processor IP technology and software solutions in key accounts across the Silicon Valley.</li><li>Responsibilities include developing and managing a sales pipeline while driving market penetration, adoption,&nbsp;and revenue</li><li>You will work closely with multi-functional teams including Application Engineers, Business Unit Marketing, Legal, Finance, proteanTecs executives and collaborate with proteanTecs sales team to achieve sales targets in the region</li><li>&nbsp;&nbsp;&nbsp;Generate, develop, qualify, and drive new business opportunities in the region, including:</li><li>Opportunity management</li><li>Manage contract negotiations (business and legal) with customers and proteanTecs functional teams</li><li>Articulate key value propositions for the adoption of the unique proteanTecs solution with key semiconductor companies, across the organization (executive management, marketing, architects, hardware, and software engineers)</li><li>Collaborate with technical and marketing teams to develop and execute strategies for proliferation of the technology in the region</li><li>Provide market and account feedback to the RnD and Marketing BU to drive product roadmaps and strategies</li><li>Track activities and provide reports to management, BU and executive personnel on account strategies activities and progress</li><li>Develop and execute against strategic sales plans</li><li>Maintain regular contact with multiple internal BU's team to drive enterprise-wide strategic activities</li></ul>",
+          "order": 3
+        },
+        {
+          "name": "Personal skills",
+          "value": null,
+          "order": 4
+        }
+      ],
+      "categories": []
+    },
+    "is_internal": false
+  },
+  {
+    "uid": "6B.46F",
+    "url_comeet_hosted_page": "https://www.comeet.com/jobs/proteantecs/D5.00E/senior-application-engineer---design-verification/6B.46F",
+    "name": "Senior Application Engineer - Design Verification",
+    "company_name": "proteanTecs",
+    "location": {
+      "name": "USA - Santa Clara, CA",
+      "country": "US",
+      "city": "Santa Clara",
+      "state": "CA",
+      "postal_code": "95054",
+      "street_name": "4633 Old Ironsides Drive",
+      "arrival_instructions": null,
+      "street_number": null,
+      "timezone": "America/Los_Angeles",
+      "location_uid": "BE.105",
+      "is_remote": true
+    },
+    "custom_fields": {
+      "details": [
+        {
+          "name": "Description",
+          "value": "<p><strong>Chips Talk, We Listen</strong>&nbsp;</p><p>proteanTecs is a\u202fgame-changing startup\u202fthat's giving advanced electronics the power to\u202freport on their own health. In a digital world built for autonomous driving, cloud computing, and AI, we depend on computing systems daily. But how can we guarantee their safety, reliability and functionality? proteanTecs is the\u202ffirst-ever\u202fcompany\u202fto provide visibility into next-gen chips while they are operating, based on the power of\u202fon-chip monitoring, machine learning, and data analytics.&nbsp;</p><p>Here at proteanTecs, you'll be part of a team that's\u202funlocking deep insights\u202fto make electronics more\u202freliable, efficient, and high-quality. We're trusted by industry leaders in data centers, automotive, communications, and consumer devices \u2013 we work with the world's largest and most notable companies in tech.&nbsp;</p><p><strong>Why proteanTecs is a great place to work:</strong>&nbsp;</p><ul><li><strong>Fast-paced and impactful:</strong>\u202fWe're a mission-driven startup,\u202fso you'll tackle new challenges daily,\u202fwear many hats,\u202fand see your work directly influence the future of electronics.&nbsp;</li><li><strong>Supportive\u202fcompany\u202fculture</strong>: Learn from the best. Our 200+ team members are experts in their field with a proven track record of success, and they're committed to fostering a collaborative and supportive work environment.&nbsp;</li><li><strong>International presence:</strong>\u202fWe're a multinational\u202fcompany\u202fwith a diverse team across multiple locations around the globe. You'll collaborate on projects with international impact, gaining a global perspective of the tech industry.&nbsp;</li><li><strong>Work with industry leaders:</strong>\u202fOur solutions are used by the biggest names in tech. You'll be part of the team creating the next generation of groundbreaking products.&nbsp;</li><li><strong>Cutting-edge playground:</strong>\u202fWe use the latest machine learning,\u202fplatforms,\u202fand tools to push boundaries and achieve breakthroughs.&nbsp;</li><li><strong>Real-world impact:</strong>\u202fOur work keeps data centers, cars, and other critical systems running smoothly. Your work will directly contribute to safer, more reliable electronics.&nbsp;</li><li><strong>We are here for the win:</strong>\u202fBacked by industry veterans and leading investors, we offer a stable and secure work environment with plenty of room for growth.&nbsp;</li></ul><p>We are looking for a We are looking for a&nbsp;<strong>Senior Design Verification Engineer</strong>&nbsp;to join a <strong>global team of Application Engineers</strong> that own the technical success and customer satisfaction across multiple high-impact projects.</p>",
+          "order": 1
+        },
+        {
+          "name": "Requirements",
+          "value": "<ul><li>Bachelor\u2019s or Master\u2019s degree in electrical engineering or computer engineering, or related field with 3+ years of experience.</li><li>At least 3 years of hands-on experience with advanced DV flow development and integration</li><li>Proficiency in:</li><li>SystemVerilog / UVM</li><li>Advanced Testbench architecture development</li><li>Flow automation and deployment</li><li>Experience debugging&nbsp;RTL, gate-level, and test-related issues</li><li>Strong Debug &amp; Problem-Solving Skills</li><li>Strong foundation in&nbsp;digital design, SoC architecture, and silicon development flows</li></ul><p>&nbsp;<strong>Preferred Qualifications</strong></p><ul><li>Experience in&nbsp;Application Engineering, Field Engineering, or customer-facing technical roles</li><li>Exposure to&nbsp;silicon bring-up and manufacturing test</li><li>Knowledge of&nbsp;CDC/RDC, formal verification, and low-power flows</li><li>Good understanding of DFT concepts Scan, ATPG, IJTAG, BIST etc.</li><li>Experience supporting&nbsp;SoC-scale designs&nbsp;in advanced process nodes</li><li>Experience working with&nbsp;global customers and distributed teams</li><li>Familiarity with&nbsp;EDA tools and verification environments</li></ul>",
+          "order": 2
+        },
+        {
+          "name": "Responsibilities",
+          "value": "<p>-Customer Enablement &amp; Technical Support</p><p>-Serve as a&nbsp;primary technical interface&nbsp;for proteanTecs customers (Focus Noth America)</p><p>-Support customers with:</p><ul><li>Integration of proteanTecs IP into customer design, and signoff (Logic and DV)</li><li>Integration of proteanTecs DV flow into customer environment</li><li>Debug customer issues involving:</li><li>proteanTecs DV flow integration</li><li>RTL and gate-level simulations</li></ul><p>-Reproduce customer issues and work closely with&nbsp;proteanTecs R&amp;D teams&nbsp;to drive resolution</p><p>-Help customers correlate&nbsp;pre-silicon verification results with post-silicon behavior</p><p>-Create and maintain Application notes and Integration guides</p><p>-Act as the&nbsp;voice of the customer&nbsp;within proteanTecs</p><p>-Provide structured feedback to&nbsp;R&amp;D and Product Management&nbsp;based on real customer usage</p><p>-Participate in feature validation and early access programs</p><p>-Influence product roadmap with insights from customer engagements</p>",
+          "order": 3
+        },
+        {
+          "name": "Personal skills",
+          "value": "<ul><li>Strong customer-facing communication and presentation skills</li><li>Ability to translate complex technical issues into actionable guidance</li><li>Excellent problem-solving and debugging mindset</li><li>Self-motivated, proactive, and comfortable in fast-paced environments</li><li>Ability to manage multiple customer engagements in parallel</li></ul>",
+          "order": 4
+        }
+      ],
+      "categories": []
+    },
+    "is_internal": false
+  },
+  {
+    "uid": "05.F69",
+    "url_comeet_hosted_page": "https://www.comeet.com/jobs/proteantecs/D5.00E/senior-logic-design-engineer/05.F69",
+    "name": "Senior Logic Design Engineer",
+    "company_name": "proteanTecs",
+    "location": {
+      "name": "Israel - Haifa",
+      "country": "IL",
+      "city": "Haifa",
+      "state": "Haifa District",
+      "postal_code": "",
+      "street_name": "36 Kdoshei Bagdad Street",
+      "arrival_instructions": "<p>Kdoshei Bagdad 36, Port Town Building, Floor 3,Gate 3\u00a0 Haifa, IL</p><p><span style=\"font-size: 13px;\">Parking: Hanamal Street Number 36.</span></p><p>Waze: \u05d7\u05e0\u05d9\u05d5\u05df \u05e4\u05d5\u05e8\u05d8\u05d0\u05d5\u05df, \u05d4\u05e0\u05de\u05dc 36, \u05d7\u05d9\u05e4\u05d4</p><p>Train station: Haifa Mercaz Hashmona</p>",
+      "street_number": "36",
+      "timezone": "Asia/Jerusalem",
+      "location_uid": "BE.102",
+      "is_remote": true
+    },
+    "custom_fields": {
+      "details": [
+        {
+          "name": "Description",
+          "value": "<p><strong>Chips Talk, We Listen</strong>&nbsp;</p><p>proteanTecs is a\u202fgame-changing startup\u202fthat's giving advanced electronics the power to\u202freport on their own health. In a digital world built for autonomous driving, cloud computing, and AI, we depend on computing systems daily. But how can we guarantee their safety, reliability and functionality? proteanTecs is the\u202ffirst-ever\u202fcompany\u202fto provide visibility into next-gen chips while they are operating, based on the power of\u202fon-chip monitoring, machine learning, and data analytics.&nbsp;</p><p>Here at proteanTecs, you'll be part of a team that's\u202funlocking deep insights\u202fto make electronics more\u202freliable, efficient, and high-quality. We're trusted by industry leaders in data centers, automotive, communications, and consumer devices \u2013 we work with the world's largest and most notable companies in tech.&nbsp;</p><p><strong>Why proteanTecs is a great place to work:</strong>&nbsp;</p><ul><li><strong>Fast-paced and impactful:</strong>\u202fWe're a mission-driven startup,\u202fso you'll tackle new challenges daily,\u202fwear many hats,\u202fand see your work directly influence the future of electronics.&nbsp;</li><li><strong>Supportive\u202fcompany\u202fculture</strong>: Learn from the best. Our 200+ team members are experts in their field with a proven track record of success, and they're committed to fostering a collaborative and supportive work environment.&nbsp;</li><li><strong>International presence:</strong>\u202fWe're a multinational\u202fcompany\u202fwith a diverse team across multiple locations around the globe. You'll collaborate on projects with international impact, gaining a global perspective of the tech industry.&nbsp;</li><li><strong>Work with industry leaders:</strong>\u202fOur solutions are used by the biggest names in tech. You'll be part of the team creating the next generation of groundbreaking products.&nbsp;</li><li><strong>Cutting-edge playground:</strong>\u202fWe use the latest machine learning,\u202fplatforms,\u202fand tools to push boundaries and achieve breakthroughs.&nbsp;</li><li><strong>Real-world impact:</strong>\u202fOur work keeps data centers, cars, and other critical systems running smoothly. Your work will directly contribute to safer, more reliable electronics.&nbsp;</li><li><strong>We are here for the win:</strong>\u202fBacked by industry veterans and leading investors, we offer a stable and secure work environment with plenty of room for growth.&nbsp;</li></ul><p>We are looking for a <strong>Seinor Logic Design Engineer</strong> to join the ride as we spearhead the next revolution in electronics!.</p><p>Our Logic Design team builds the on-chip monitoring IP at the heart of the proteanTecs product \u2014 digital blocks that ship inside some of the most advanced chips in the industry. We\u2019re growing the team and looking for a Logic Design Engineer to take ownership of that logic, working alongside circuit, verification, physical design, EDA, and AE engineers. A strong fit if you enjoy hard digital design problems in a collaborative, technically demanding environment.</p>",
+          "order": 1
+        },
+        {
+          "name": "Requirements",
+          "value": "<ul><li>B.Sc. or M.Sc. in Electrical or Computer Engineering</li><li>5+ years as a VLSI front-end engineer (logic/ASIC/chip design) or in a similar domain</li><li>Strong background in RTL design, handoff methodologies, and signoff tools (Lint, CDC, RDC)</li><li>Close&nbsp;familiarity with&nbsp;python,&nbsp;Git,&nbsp;Unix-like&nbsp;environment - an advantage</li><li>Experience with low-power design techniques (clock gating, power domains, DVFS) - an advantage</li><li>Knowledge of DFT design and flows - an advantage</li></ul><p><strong><em>Personal skills:</em></strong></p><ul><li>Self-driven \u2014 takes a task from definition to signoff, pulling in whoever is needed along the way</li><li>Detail-oriented, with a sharp eye for issues others miss</li><li>A clear communicator who can convey technical tradeoffs to cross-functional teams</li><li>Curious about new design techniques and methodologies</li></ul>",
+          "order": 2
+        },
+        {
+          "name": "Responsibilities",
+          "value": "<ul><li>Define and implement digital logic micro-architecture \u2014 in plain English, diagrams, and SystemVerilog</li><li>Verify design quality against industry standards using static analysis tools (Lint, CDC, RDC)</li><li>Work with Circuit Engineers to turn low-level circuit designs into the well-behaved, insightful agents&nbsp;at the core of the <a href=\"https://www.proteantecs.com/technology\" target=\"_blank\" rel=\"noopener noreferrer\">proteanTecs&nbsp;solution</a></li><li>Work with Verification Engineers to simulate and debug the digital logic</li><li>Work with Physical Design Engineers to ensure correct implementation of proteanTecs\u2019 special circuits</li></ul>",
+          "order": 3
+        },
+        {
+          "name": "Personal skills",
+          "value": null,
+          "order": 4
+        }
+      ],
+      "categories": []
+    },
+    "is_internal": false
+  },
+  {
+    "uid": "82.D6A",
+    "url_comeet_hosted_page": "https://www.comeet.com/jobs/proteantecs/D5.00E/senior-ml-algorithm-engineer/82.D6A",
+    "name": "Senior ML Algorithm Engineer",
+    "company_name": "proteanTecs",
+    "location": {
+      "name": "Israel - Tel Aviv",
+      "country": "IL",
+      "city": "Tel Aviv-Yafo",
+      "state": "Tel Aviv District",
+      "postal_code": "",
+      "street_name": "154 Menakhem Begin Road",
+      "arrival_instructions": "<p>Beit Karden, 14 floor</p><p>Parking: Karden parking lot</p>",
+      "street_number": "154",
+      "timezone": "Asia/Jerusalem",
+      "location_uid": "BE.103",
+      "is_remote": true
+    },
+    "custom_fields": {
+      "details": [
+        {
+          "name": "Description",
+          "value": "<p><strong>Chips Talk, We Listen</strong>&nbsp;</p><p>proteanTecs is a\u202fgame-changing startup\u202fthat's giving advanced electronics the power to\u202freport on their own health. In a digital world built for autonomous driving, cloud computing, and AI, we depend on computing systems daily. But how can we guarantee their safety, reliability and functionality? proteanTecs is the\u202ffirst-ever\u202fcompany\u202fto provide visibility into next-gen chips while they are operating, based on the power of\u202fon-chip monitoring, machine learning, and data analytics.&nbsp;</p><p>Here at proteanTecs, you'll be part of a team that's\u202funlocking deep insights\u202fto make electronics more\u202freliable, efficient, and high-quality. We're trusted by industry leaders in data centers, automotive, communications, and consumer devices \u2013 we work with the world's largest and most notable companies in tech.&nbsp;</p><p><strong>Why proteanTecs is a great place to work:</strong>&nbsp;</p><ul><li><strong>Fast-paced and impactful:</strong>\u202fWe're a mission-driven startup,\u202fso you'll tackle new challenges daily,\u202fwear many hats,\u202fand see your work directly influence the future of electronics.&nbsp;</li><li><strong>Supportive\u202fcompany\u202fculture</strong>: Learn from the best. Our 200+ team members are experts in their field with a proven track record of success, and they're committed to fostering a collaborative and supportive work environment.&nbsp;</li><li><strong>International presence:</strong>\u202fWe're a multinational\u202fcompany\u202fwith a diverse team across multiple locations around the globe. You'll collaborate on projects with international impact, gaining a global perspective of the tech industry.&nbsp;</li><li><strong>Work with industry leaders:</strong>\u202fOur solutions are used by the biggest names in tech. You'll be part of the team creating the next generation of groundbreaking products.&nbsp;</li><li><strong>Cutting-edge playground:</strong>\u202fWe use the latest machine learning,\u202fplatforms,\u202fand tools to push boundaries and achieve breakthroughs.&nbsp;</li><li><strong>Real-world impact:</strong>\u202fOur work keeps data centers, cars, and other critical systems running smoothly. Your work will directly contribute to safer, more reliable electronics.&nbsp;</li><li><strong>We are here for the win:</strong>\u202fBacked by industry veterans and leading investors, we offer a stable and secure work environment with plenty of room for growth.&nbsp;</li></ul><p>We are looking for a <strong>Senior Machine Learning Algorithm Engineer</strong> who is passionate about solving complex, real-world problems at the intersection of hardware and software.</p><p>Location: Tel-Aviv in hybrid model.</p>",
+          "order": 1
+        },
+        {
+          "name": "Requirements",
+          "value": "<ul><li>B.Sc. in Electrical Engineering \u2013 MUST</li><li>5+ years experience in algorithm development, preferably in complex, data-intensive environments</li><li>Deep expertise in Python, including statistical and machine learning packages</li><li>Proven experience across all algorithm development phases: research, implementation, testing, deployment, and debugging\u00b7 Familiarity with testing frameworks (e.g., unit tests, E2E tests, performance and memory profiling)</li><li>Intensive usage of AI coding tools like Cursor or equivalent (e.g., GitHub Copilot, CodeWhisperer)</li></ul><p><strong>Advantage</strong></p><ul><li>M.Sc. or higher in Electrical Engineering, Computer Science, or a related field</li><li>Prior experience with:</li><li>HW/SW integration or ATE/Chip testing</li><li>Version control systems (e.g., Git) and CI/CD tools</li><li>Distributed compute frameworks (e.g., Spark, MLRun)</li><li>Containerization and cloud orchestration (e.g., Kubernetes, cloud APIs)</li><li>Business intelligence tools (e.g., Tableau or equivalent)</li><li>AI platforms and agents that interface with model training, data annotation, performance monitoring, or autonomous debugging</li><li>Familiarity with chip production or design methodologies</li></ul>",
+          "order": 2
+        },
+        {
+          "name": "Responsibilities",
+          "value": "<ul><li>Develop advanced ML algorithms using data from proteanTecs Agents embedded in silicon. Example domains include:</li><li>Lifetime predictions</li><li>Clustering and dimensionality reduction</li><li>Parametric modeling and screening</li><li>Time-series forecasting</li><li>Lead end-to-end algorithm lifecycle: ideation \u2192 research \u2192 POC \u2192 design \u2192 implementation \u2192 validation \u2192 deployment.</li><li>Collaborate closely with cross-functional teams and directly with customers to continuously refine and enhance deployed solutions.</li><li>Drive integration of AI-enhanced tools and intelligent pipelines into ML workflows.</li></ul>",
+          "order": 3
+        },
+        {
+          "name": "Personal skills",
+          "value": null,
+          "order": 4
+        }
+      ],
+      "categories": []
+    },
+    "is_internal": false
+  },
+  {
+    "uid": "83.27A",
+    "url_comeet_hosted_page": "https://www.comeet.com/jobs/proteantecs/D5.00E/senior-physical-design-application-engineer/83.27A",
+    "name": "Senior Physical Design Application Engineer",
+    "company_name": "proteanTecs",
+    "location": {
+      "name": "Korea",
+      "country": "KR",
+      "city": "Seoul",
+      "state": "",
+      "postal_code": "",
+      "street_name": "ARA WORK & ALL Inc.Greits Pangyo 4th FLR 117 Bundangnaegok-ro, Bundang-gu, Gyeon",
+      "arrival_instructions": "<p><br/></p>",
+      "street_number": null,
+      "timezone": "Asia/Seoul",
+      "location_uid": "81.404",
+      "is_remote": true
+    },
+    "custom_fields": {
+      "details": [
+        {
+          "name": "Description",
+          "value": "<p><strong>Chips Talk, We Listen</strong>&nbsp;</p><p>proteanTecs is a\u202fgame-changing startup\u202fthat's giving advanced electronics the power to\u202freport on their own health. In a digital world built for autonomous driving, cloud computing, and AI, we depend on computing systems daily. But how can we guarantee their safety, reliability and functionality? proteanTecs is the\u202ffirst-ever\u202fcompany\u202fto provide visibility into next-gen chips while they are operating, based on the power of\u202fon-chip monitoring, machine learning, and data analytics.&nbsp;</p><p>Here at proteanTecs, you'll be part of a team that's\u202funlocking deep insights\u202fto make electronics more\u202freliable, efficient, and high-quality. We're trusted by industry leaders in data centers, automotive, communications, and consumer devices \u2013 we work with the world's largest and most notable companies in tech.&nbsp;</p><p><strong>Why proteanTecs is a great place to work:</strong>&nbsp;</p><ul><li><strong>Fast-paced and impactful:</strong>\u202fWe're a mission-driven startup,\u202fso you'll tackle new challenges daily,\u202fwear many hats,\u202fand see your work directly influence the future of electronics.&nbsp;</li><li><strong>Supportive\u202fcompany\u202fculture</strong>: Learn from the best. Our 200+ team members are experts in their field with a proven track record of success, and they're committed to fostering a collaborative and supportive work environment.&nbsp;</li><li><strong>International presence:</strong>\u202fWe're a multinational\u202fcompany\u202fwith a diverse team across multiple locations around the globe. You'll collaborate on projects with international impact, gaining a global perspective of the tech industry.&nbsp;</li><li><strong>Work with industry leaders:</strong>\u202fOur solutions are used by the biggest names in tech. You'll be part of the team creating the next generation of groundbreaking products.&nbsp;</li><li><strong>Cutting-edge playground:</strong>\u202fWe use the latest machine learning,\u202fplatforms,\u202fand tools to push boundaries and achieve breakthroughs.&nbsp;</li><li><strong>Real-world impact:</strong>\u202fOur work keeps data centers, cars, and other critical systems running smoothly. Your work will directly contribute to safer, more reliable electronics.&nbsp;</li><li><strong>We are here for the win:</strong>\u202fBacked by industry veterans and leading investors, we offer a stable and secure work environment with plenty of room for growth.&nbsp;</li></ul><p>proteanTecs is looking for a<strong> Senior Physical Design Application Engineer,</strong> who wants to join the ride as we spearhead the next revolution in electronics!</p>",
+          "order": 1
+        },
+        {
+          "name": "Requirements",
+          "value": "<ul><li>Bachelor\u2019s in Electrical/Computer Engineering</li><li>3+ years of experience in RTL2GDS/implementation flow &amp; has taped out designs in advanced processes</li><li>Knowledge of Cadence and/or Synopsys tools</li><li>Strong scripting skills in TCL/python/Perl</li><li>Must have excellent debugging skills &amp; ability to prioritize tasks/issues</li><li>English proficiency</li><li>Experience in signoff STA/LVS/DRC flows of advanced processes \u2013 Advantage</li><li>Has customer interfacing experience (AE) \u2013 Advantage&nbsp;</li></ul>",
+          "order": 2
+        },
+        {
+          "name": "Responsibilities",
+          "value": "<ul><li>Provide close support to customers and resolve any challenges</li><li>Provide training to customers on our tools and present our technology</li><li>Work on full Implementation and Signoff flow for some IP hardening</li><li>Provide continuous feedback to R&amp;D to improve the product&nbsp;</li></ul>",
+          "order": 3
+        },
+        {
+          "name": "Personal skills",
+          "value": "<ul><li>Innovative &amp; Self-Driven&nbsp;</li><li>Team Player</li><li>Can articulate well</li><li>Customer Oriented - Advantage</li></ul><p><br></p>",
+          "order": 4
+        }
+      ],
+      "categories": []
+    },
+    "is_internal": false
+  },
+  {
+    "uid": "12.D6E",
+    "url_comeet_hosted_page": "https://www.comeet.com/jobs/proteantecs/D5.00E/senior-product-engineer/12.D6E",
+    "name": "Senior Product Engineer",
+    "company_name": "proteanTecs",
+    "location": {
+      "name": "Israel - Tel Aviv",
+      "country": "IL",
+      "city": "Tel Aviv-Yafo",
+      "state": "Tel Aviv District",
+      "postal_code": "",
+      "street_name": "154 Menakhem Begin Road",
+      "arrival_instructions": "<p>Beit Karden, 14 floor</p><p>Parking: Karden parking lot</p>",
+      "street_number": "154",
+      "timezone": "Asia/Jerusalem",
+      "location_uid": "BE.103",
+      "is_remote": true
+    },
+    "custom_fields": {
+      "details": [
+        {
+          "name": "Description",
+          "value": "<p><strong>Chips Talk, We Listen</strong>&nbsp;</p><p>proteanTecs is a\u202fgame-changing startup\u202fthat's giving advanced electronics the power to\u202freport on their own health. In a digital world built for autonomous driving, cloud computing, and AI, we depend on computing systems daily. But how can we guarantee their safety, reliability and functionality? proteanTecs is the\u202ffirst-ever\u202fcompany\u202fto provide visibility into next-gen chips while they are operating, based on the power of\u202fon-chip monitoring, machine learning, and data analytics.&nbsp;</p><p>Here at proteanTecs, you'll be part of a team that's\u202funlocking deep insights\u202fto make electronics more\u202freliable, efficient, and high-quality. We're trusted by industry leaders in data centers, automotive, communications, and consumer devices \u2013 we work with the world's largest and most notable companies in tech.&nbsp;</p><p><strong>Why proteanTecs is a great place to work:</strong>&nbsp;</p><ul><li><strong>Fast-paced and impactful:</strong>\u202fWe're a mission-driven startup,\u202fso you'll tackle new challenges daily,\u202fwear many hats,\u202fand see your work directly influence the future of electronics.&nbsp;</li><li><strong>Supportive\u202fcompany\u202fculture</strong>: Learn from the best. Our 200+ team members are experts in their field with a proven track record of success, and they're committed to fostering a collaborative and supportive work environment.&nbsp;</li><li><strong>International presence:</strong>\u202fWe're a multinational\u202fcompany\u202fwith a diverse team across multiple locations around the globe. You'll collaborate on projects with international impact, gaining a global perspective of the tech industry.&nbsp;</li><li><strong>Work with industry leaders:</strong>\u202fOur solutions are used by the biggest names in tech. You'll be part of the team creating the next generation of groundbreaking products.&nbsp;</li><li><strong>Cutting-edge playground:</strong>\u202fWe use the latest machine learning,\u202fplatforms,\u202fand tools to push boundaries and achieve breakthroughs.&nbsp;</li><li><strong>Real-world impact:</strong>\u202fOur work keeps data centers, cars, and other critical systems running smoothly. Your work will directly contribute to safer, more reliable electronics.&nbsp;</li><li><strong>We are here for the win:</strong>\u202fBacked by industry veterans and leading investors, we offer a stable and secure work environment with plenty of room for growth.&nbsp;</li></ul><p>We are looking for a&nbsp;<strong>Senior</strong>&nbsp;<strong>Product Engineer</strong>&nbsp;to join a global team of a Product Engineers that own a technical success and customer satisfaction across multiple high-impact projects. This role is deeply rooted in data analytics; you\u2019ll be working at the intersection of silicon, systems, and software to deliver high-value insights to customers.</p>",
+          "order": 1
+        },
+        {
+          "name": "Requirements",
+          "value": "<ul><li>B.Sc. or M.Sc. in Electrical Engineering or a related discipline.</li><li>3+ years in IC/system product, test, or yield engineering, including deep post-silicon analytics experience.</li><li>Strong track record in data analysis and root-cause debugging at the system or silicon level.</li><li>Deep understanding of IC manufacturing, characterization, and qualification processes.</li><li>Excellent communication and interpersonal skills \u2014 especially in customer-facing situations.</li><li>Strong organizational and prioritization skills with a results-oriented mindset.</li><li>Fluency in English (written and verbal) is a must.</li></ul><p>Preferred Qualifications</p><ul><li>Expertise in data analytics platforms (e.g., JMP, Python, or similar).</li><li>Experience in ATE test development or digital simulation tools (e.g., HSpice, PrimeTime)- advantage.</li><li>Background in silicon lifecycle management, reliability physics, or embedded monitoring.</li><li>Familiarity with cloud platforms or ML-based analytical solutions is a plus.</li></ul>",
+          "order": 2
+        },
+        {
+          "name": "Responsibilities",
+          "value": "<ul><li>Performing post-silicon and system-level data analysis and providing insights on data extracted from post-silicon stages</li><li>Supporting customers with analytics platform problems solving and new features introduction</li><li>Drive integration of proteanTecs\u2019 analytics platform within customer environments, bridging silicon, test, and system-level domains.</li><li>Collaborate with R&amp;D and data science teams to develop, validate, and improve advanced analytics algorithms.</li><li>Troubleshoot complex silicon/system issues through data-driven insights.</li><li>Partner with internal stakeholders (design, software, product) to influence roadmap and execution.</li><li>Act as a technical proffesional in customer onboarding, support, and ongoing engagement.</li></ul>",
+          "order": 3
+        },
+        {
+          "name": "Personal skills",
+          "value": null,
+          "order": 4
+        }
+      ],
+      "categories": []
+    },
+    "is_internal": false
+  },
+  {
+    "uid": "C6.271",
+    "url_comeet_hosted_page": "https://www.comeet.com/jobs/proteantecs/D5.00E/senior-software-engineer--eda-tools--ai-solutions/C6.271",
+    "name": "Senior Software Engineer \u2014 EDA Tools & AI Solutions",
+    "company_name": "proteanTecs",
+    "location": {
+      "name": "India",
+      "country": "IN",
+      "city": "Bangalore",
+      "state": null,
+      "postal_code": null,
+      "street_name": "01-104, WeWorks,Block L, Embassy Tech Village, Devarabisanahalli,Outer Ring Road",
+      "arrival_instructions": "<p><span>01-104, WeWorks,Block L, Embassy Tech Village, Devarabisanahalli,Outer Ring Road, Bellandur,Bengaluru, Karnataka \u2013 560103<br/><br/></span><br/></p>",
+      "street_number": null,
+      "timezone": "Asia/Jerusalem",
+      "location_uid": "FF.101",
+      "is_remote": true
+    },
+    "custom_fields": {
+      "details": [
+        {
+          "name": "Description",
+          "value": "<p class=\"editor-paragraph\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">Chips Talk, We Listen</strong></b><span style=\"white-space: pre-wrap;\">&nbsp;</span></p><p class=\"editor-paragraph\"><span style=\"white-space: pre-wrap;\">proteanTecs is a\u202fgame-changing startup\u202fthat's giving advanced electronics the power to\u202freport on their own health. In a digital world built for autonomous driving, cloud computing, and AI, we depend on computing systems daily. But how can we guarantee their safety, reliability and functionality? proteanTecs is the\u202ffirst-ever\u202fcompany\u202fto provide visibility into next-gen chips while they are operating, based on the power of\u202fon-chip monitoring, machine learning, and data analytics.&nbsp;</span></p><p class=\"editor-paragraph\"><span style=\"white-space: pre-wrap;\">Here at proteanTecs, you'll be part of a team that's\u202funlocking deep insights\u202fto make electronics more\u202freliable, efficient, and high-quality. We're trusted by industry leaders in data centers, automotive, communications, and consumer devices \u2013 we work with the world's largest and most notable companies in tech.&nbsp;</span></p><p class=\"editor-paragraph\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">Why proteanTecs is a great place to work:</strong></b><span style=\"white-space: pre-wrap;\">&nbsp;</span></p><ul class=\"editor-list-ul\"><li value=\"1\" class=\"editor-listitem\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">Fast-paced and impactful:</strong></b><span style=\"white-space: pre-wrap;\">\u202fWe're a mission-driven startup,\u202fso you'll tackle new challenges daily,\u202fwear many hats,\u202fand see your work directly influence the future of electronics.&nbsp;</span></li><li value=\"2\" class=\"editor-listitem\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">Supportive\u202fcompany\u202fculture</strong></b><span style=\"white-space: pre-wrap;\">: Learn from the best. Our 200+ team members are experts in their field with a proven track record of success, and they're committed to fostering a collaborative and supportive work environment.&nbsp;</span></li><li value=\"3\" class=\"editor-listitem\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">International presence:</strong></b><span style=\"white-space: pre-wrap;\">\u202fWe're a multinational\u202fcompany\u202fwith a diverse team across multiple locations around the globe. You'll collaborate on projects with international impact, gaining a global perspective of the tech industry.&nbsp;</span></li><li value=\"4\" class=\"editor-listitem\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">Work with industry leaders:</strong></b><span style=\"white-space: pre-wrap;\">\u202fOur solutions are used by the biggest names in tech. You'll be part of the team creating the next generation of groundbreaking products.&nbsp;</span></li><li value=\"5\" class=\"editor-listitem\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">Cutting-edge playground:</strong></b><span style=\"white-space: pre-wrap;\">\u202fWe use the latest machine learning,\u202fplatforms,\u202fand tools to push boundaries and achieve breakthroughs.&nbsp;</span></li><li value=\"6\" class=\"editor-listitem\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">Real-world impact:</strong></b><span style=\"white-space: pre-wrap;\">\u202fOur work keeps data centers, cars, and other critical systems running smoothly. Your work will directly contribute to safer, more reliable electronics.&nbsp;</span></li><li value=\"7\" class=\"editor-listitem\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">We are here for the win:</strong></b><span style=\"white-space: pre-wrap;\">\u202fBacked by industry veterans and leading investors, we offer a stable and secure work environment with plenty of room for growth.&nbsp;</span></li></ul><p class=\"editor-paragraph\"><span style=\"white-space: pre-wrap;\">We're looking for a </span><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">Senior Software engineer</strong></b><span style=\"white-space: pre-wrap;\"> to own a core slice of our product's EDA tooling \u2014 spanning data modelling, connectivity/encapsulation flows, and AI capabilities we're building directly into the product. You'll step into an area with real customer-facing impact and significant technical depth, working across the full stack from low-level handling of industry standard collaterals to modern AI-based product architectures.</span></p>",
+          "order": 1
+        },
+        {
+          "name": "Requirements",
+          "value": "<ul class=\"editor-list-ul\"><li value=\"1\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">5\u201310 years of experience in semiconductor engineering, ideally with exposure to EDA (Electronic Design Automation) tools, semiconductor design flows, or similar hardware-adjacent domains.</span></li><li value=\"2\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Strong software engineering fundamentals \u2014 Python and/or C++, with the ability to work in complex, long-lived codebases.</span></li><li value=\"3\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Experience with hardware description/design formats such as Verilog, LEF/DEF, SDC, or UPF is a strong plus.</span></li><li value=\"4\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Familiarity with building or integrating AI/LLM-based tooling is a significant plus.</span></li><li value=\"5\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Comfort owning customer-facing bugs and field issues end-to-end \u2014 from triage to root cause to fix.</span></li><li value=\"6\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Strong written and verbal communication skills; you'll be a primary point of contact for both customers and internal teams on your areas of ownership.</span></li><li value=\"7\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Self-directed and comfortable operating with ambiguity \u2014 much of the AI work is greenfield and evolving quickly.</span></li></ul><p class=\"editor-paragraph\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">Nice to Have</strong></b></p><ul class=\"editor-list-ul\"><li value=\"1\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Prior experience in chip design, physical verification, or power analysis workflows.</span></li><li value=\"2\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Experience building developer tools, CLIs, or SDKs.</span></li><li value=\"3\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Track record of taking a project from prototype to production deployment.</span></li></ul>",
+          "order": 2
+        },
+        {
+          "name": "Responsibilities",
+          "value": "<ul class=\"editor-list-ul\"><li value=\"1\" class=\"editor-listitem\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">Product Data Model</strong></b><span style=\"white-space: pre-wrap;\"> \u2014 our physical-aware data model that powers the product, triaging and resolving customer-reported issues and driving flow improvements.</span></li><li value=\"2\" class=\"editor-listitem\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">Product Tooling (Connectivity &amp; Encapsulation)</strong></b><span style=\"white-space: pre-wrap;\"> \u2014 supporting and enhancing core connectivity/encapsulation tooling within the product, including testing, and enhancing encapsulation flows in the context of proteanTecs' agents.</span></li><li value=\"3\" class=\"editor-listitem\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">AI Solutions</strong></b><span style=\"white-space: pre-wrap;\"> \u2014 joining the team that builds and grows AI capabilities as part of the product, from architecture through deployment.</span></li><li value=\"4\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Acting as a go-to technical resource for customers and internal teams on the above.</span></li></ul>",
+          "order": 3
+        },
+        {
+          "name": "Personal skills",
+          "value": null,
+          "order": 4
+        }
+      ],
+      "categories": []
+    },
+    "is_internal": false
+  },
+  {
+    "uid": "DF.073",
+    "url_comeet_hosted_page": "https://www.comeet.com/jobs/proteantecs/D5.00E/senior-vlsi-verification-engineer/DF.073",
+    "name": "Senior VLSI Verification Engineer",
+    "company_name": "proteanTecs",
+    "location": {
+      "name": "Israel - Haifa",
+      "country": "IL",
+      "city": "Haifa",
+      "state": "Haifa District",
+      "postal_code": "",
+      "street_name": "36 Kdoshei Bagdad Street",
+      "arrival_instructions": "<p>Kdoshei Bagdad 36, Port Town Building, Floor 3,Gate 3\u00a0 Haifa, IL</p><p><span style=\"font-size: 13px;\">Parking: Hanamal Street Number 36.</span></p><p>Waze: \u05d7\u05e0\u05d9\u05d5\u05df \u05e4\u05d5\u05e8\u05d8\u05d0\u05d5\u05df, \u05d4\u05e0\u05de\u05dc 36, \u05d7\u05d9\u05e4\u05d4</p><p>Train station: Haifa Mercaz Hashmona</p>",
+      "street_number": "36",
+      "timezone": "Asia/Jerusalem",
+      "location_uid": "BE.102",
+      "is_remote": true
+    },
+    "custom_fields": {
+      "details": [
+        {
+          "name": "Description",
+          "value": "<p class=\"editor-paragraph\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">Chips Talk, We Listen</strong></b><span style=\"white-space: pre-wrap;\">&nbsp;</span></p><p class=\"editor-paragraph\"><span style=\"white-space: pre-wrap;\">proteanTecs is a\u202fgame-changing startup\u202fthat's giving advanced electronics the power to\u202freport on their own health. In a digital world built for autonomous driving, cloud computing, and AI, we depend on computing systems daily. But how can we guarantee their safety, reliability and functionality? proteanTecs is the\u202ffirst-ever\u202fcompany\u202fto provide visibility into next-gen chips while they are operating, based on the power of\u202fon-chip monitoring, machine learning, and data analytics.&nbsp;</span></p><p class=\"editor-paragraph\"><span style=\"white-space: pre-wrap;\">Here at proteanTecs, you'll be part of a team that's\u202funlocking deep insights\u202fto make electronics more\u202freliable, efficient, and high-quality. We're trusted by industry leaders in data centers, automotive, communications, and consumer devices \u2013 we work with the world's largest and most notable companies in tech.&nbsp;</span></p><p class=\"editor-paragraph\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">Why proteanTecs is a great place to work:</strong></b><span style=\"white-space: pre-wrap;\">&nbsp;</span></p><ul class=\"editor-list-ul\"><li value=\"1\" class=\"editor-listitem\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">Fast-paced and impactful:</strong></b><span style=\"white-space: pre-wrap;\">\u202fWe're a mission-driven startup,\u202fso you'll tackle new challenges daily,\u202fwear many hats,\u202fand see your work directly influence the future of electronics.&nbsp;</span></li><li value=\"2\" class=\"editor-listitem\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">Supportive\u202fcompany\u202fculture</strong></b><span style=\"white-space: pre-wrap;\">: Learn from the best. Our 200+ team members are experts in their field with a proven track record of success, and they're committed to fostering a collaborative and supportive work environment.&nbsp;</span></li><li value=\"3\" class=\"editor-listitem\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">International presence:</strong></b><span style=\"white-space: pre-wrap;\">\u202fWe're a multinational\u202fcompany\u202fwith a diverse team across multiple locations around the globe. You'll collaborate on projects with international impact, gaining a global perspective of the tech industry.&nbsp;</span></li><li value=\"4\" class=\"editor-listitem\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">Work with industry leaders:</strong></b><span style=\"white-space: pre-wrap;\">\u202fOur solutions are used by the biggest names in tech. You'll be part of the team creating the next generation of groundbreaking products.&nbsp;</span></li><li value=\"5\" class=\"editor-listitem\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">Cutting-edge playground:</strong></b><span style=\"white-space: pre-wrap;\">\u202fWe use the latest machine learning,\u202fplatforms,\u202fand tools to push boundaries and achieve breakthroughs.&nbsp;</span></li><li value=\"6\" class=\"editor-listitem\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">Real-world impact:</strong></b><span style=\"white-space: pre-wrap;\">\u202fOur work keeps data centers, cars, and other critical systems running smoothly. Your work will directly contribute to safer, more reliable electronics.&nbsp;</span></li><li value=\"7\" class=\"editor-listitem\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">We are here for the win:</strong></b><span style=\"white-space: pre-wrap;\">\u202fBacked by industry veterans and leading investors, we offer a stable and secure work environment with plenty of room for growth.&nbsp;</span></li></ul><p class=\"editor-paragraph\"><span style=\"white-space: pre-wrap;\">proteanTecs is looking for a</span><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\"> Senior VLSI Verification Engineer</strong></b><span style=\"white-space: pre-wrap;\"> to join the ride as we spearhead the next revolution in electronics!</span></p>",
+          "order": 1
+        },
+        {
+          "name": "Requirements",
+          "value": "<ul class=\"editor-list-ul\"><li value=\"1\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">B.Sc. in Electrical/Computer Engineering or equivalent.</span></li><li value=\"2\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">5+ years of experience as a VLSI Verification Engineer. Expertise in System-Verilog and UVM.</span></li><li value=\"3\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Strong software development skills and the ability to develop reusable verification components and utilities.</span></li><li value=\"4\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Strong organizational and planning skills, with the ability to prioritize and drive verification projects to completion.</span></li><li value=\"5\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Effective communicator with a structured, detail-oriented approach to problem-solving and collaboration.</span></li></ul><p class=\"editor-paragraph\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">Advantages:</strong></b></p><ul class=\"editor-list-ul\"><li value=\"1\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Experience with Git, Python, code templating methods, and open-source verification workflows.</span></li><li value=\"2\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Familiarity with full-chip level aspects of VLSI verification (reset architecture and sequences, power domains and modes, etc.).</span></li><li value=\"3\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Experience in firmware verification, including emulation-based verification on FPGA.</span></li><li value=\"4\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Experience with formal verification or mixed-signal simulation.</span></li></ul><p class=\"editor-paragraph\"><br></p>",
+          "order": 2
+        },
+        {
+          "name": "Responsibilities",
+          "value": "<ul class=\"editor-list-ul\"><li value=\"1\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Develop and maintain advanced verification environments using SystemVerilog and UVM, ensuring scalability, configurability, and reusability across multiple IPs.</span></li><li value=\"2\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Design, implement, and execute comprehensive testbenches and random test suites to validate functional correctness, robustness, and corner-case behavior of complex IP within various SoC integration environments.</span></li><li value=\"3\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Drive coverage closure by defining, collecting, and analyzing code and functional coverage metrics; identify verification gaps and ensure complete validation of feature sets prior to sign-off.</span></li><li value=\"4\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Lead debug and root-cause analysis efforts in collaboration with senior verification and design engineers, leveraging carefully crafted logs, waveform analysis and assertions to isolate and resolve design or environment issues.</span></li><li value=\"5\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Collaborate closely with architecture, design, and firmware teams to ensure verification completeness, alignment with design intent, and seamless integration at the system level.</span></li><li value=\"6\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Contribute to methodology and infrastructure improvements, including reusable UVM components, automation scripts, and best practices that enhance team efficiency and verification quality.</span></li></ul>",
+          "order": 3
+        },
+        {
+          "name": "Personal skills",
+          "value": null,
+          "order": 4
+        }
+      ],
+      "categories": []
+    },
+    "is_internal": false
+  },
+  {
+    "uid": "DF.074",
+    "url_comeet_hosted_page": "https://www.comeet.com/jobs/proteantecs/D5.00E/vlsi-verification-engineer/DF.074",
+    "name": "VLSI Verification Engineer",
+    "company_name": "proteanTecs",
+    "location": {
+      "name": "Israel - Haifa",
+      "country": "IL",
+      "city": "Haifa",
+      "state": "Haifa District",
+      "postal_code": "",
+      "street_name": "36 Kdoshei Bagdad Street",
+      "arrival_instructions": "<p>Kdoshei Bagdad 36, Port Town Building, Floor 3,Gate 3\u00a0 Haifa, IL</p><p><span style=\"font-size: 13px;\">Parking: Hanamal Street Number 36.</span></p><p>Waze: \u05d7\u05e0\u05d9\u05d5\u05df \u05e4\u05d5\u05e8\u05d8\u05d0\u05d5\u05df, \u05d4\u05e0\u05de\u05dc 36, \u05d7\u05d9\u05e4\u05d4</p><p>Train station: Haifa Mercaz Hashmona</p>",
+      "street_number": "36",
+      "timezone": "Asia/Jerusalem",
+      "location_uid": "BE.102",
+      "is_remote": true
+    },
+    "custom_fields": {
+      "details": [
+        {
+          "name": "Description",
+          "value": "<p class=\"editor-paragraph\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">Chips Talk, We Listen</strong></b><span style=\"white-space: pre-wrap;\">&nbsp;</span></p><p class=\"editor-paragraph\"><span style=\"white-space: pre-wrap;\">proteanTecs is a\u202fgame-changing startup\u202fthat's giving advanced electronics the power to\u202freport on their own health. In a digital world built for autonomous driving, cloud computing, and AI, we depend on computing systems daily. But how can we guarantee their safety, reliability and functionality? proteanTecs is the\u202ffirst-ever\u202fcompany\u202fto provide visibility into next-gen chips while they are operating, based on the power of\u202fon-chip monitoring, machine learning, and data analytics.&nbsp;</span></p><p class=\"editor-paragraph\"><span style=\"white-space: pre-wrap;\">Here at proteanTecs, you'll be part of a team that's\u202funlocking deep insights\u202fto make electronics more\u202freliable, efficient, and high-quality. We're trusted by industry leaders in data centers, automotive, communications, and consumer devices \u2013 we work with the world's largest and most notable companies in tech.&nbsp;</span></p><p class=\"editor-paragraph\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">Why proteanTecs is a great place to work:</strong></b><span style=\"white-space: pre-wrap;\">&nbsp;</span></p><ul class=\"editor-list-ul\"><li value=\"1\" class=\"editor-listitem\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">Fast-paced and impactful:</strong></b><span style=\"white-space: pre-wrap;\">\u202fWe're a mission-driven startup,\u202fso you'll tackle new challenges daily,\u202fwear many hats,\u202fand see your work directly influence the future of electronics.&nbsp;</span></li><li value=\"2\" class=\"editor-listitem\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">Supportive\u202fcompany\u202fculture</strong></b><span style=\"white-space: pre-wrap;\">: Learn from the best. Our 200+ team members are experts in their field with a proven track record of success, and they're committed to fostering a collaborative and supportive work environment.&nbsp;</span></li><li value=\"3\" class=\"editor-listitem\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">International presence:</strong></b><span style=\"white-space: pre-wrap;\">\u202fWe're a multinational\u202fcompany\u202fwith a diverse team across multiple locations around the globe. You'll collaborate on projects with international impact, gaining a global perspective of the tech industry.&nbsp;</span></li><li value=\"4\" class=\"editor-listitem\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">Work with industry leaders:</strong></b><span style=\"white-space: pre-wrap;\">\u202fOur solutions are used by the biggest names in tech. You'll be part of the team creating the next generation of groundbreaking products.&nbsp;</span></li><li value=\"5\" class=\"editor-listitem\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">Cutting-edge playground:</strong></b><span style=\"white-space: pre-wrap;\">\u202fWe use the latest machine learning,\u202fplatforms,\u202fand tools to push boundaries and achieve breakthroughs.&nbsp;</span></li><li value=\"6\" class=\"editor-listitem\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">Real-world impact:</strong></b><span style=\"white-space: pre-wrap;\">\u202fOur work keeps data centers, cars, and other critical systems running smoothly. Your work will directly contribute to safer, more reliable electronics.&nbsp;</span></li><li value=\"7\" class=\"editor-listitem\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">We are here for the win:</strong></b><span style=\"white-space: pre-wrap;\">\u202fBacked by industry veterans and leading investors, we offer a stable and secure work environment with plenty of room for growth.&nbsp;</span></li></ul><p class=\"editor-paragraph\"><span style=\"white-space: pre-wrap;\">proteanTecs is looking for a</span><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\"> VLSI Verification Engineer</strong></b><span style=\"white-space: pre-wrap;\"> to join the ride as we spearhead the next revolution in electronics!</span></p>",
+          "order": 1
+        },
+        {
+          "name": "Requirements",
+          "value": "<ul class=\"editor-list-ul\"><li value=\"1\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">B.Sc. in Electrical/Computer Engineering, Computer Science, or a related field.</span></li><li value=\"2\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">1-2 years of experience in VLSI verification.</span></li><li value=\"3\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Working knowledge of SystemVerilog and UVM fundamentals .</span></li><li value=\"4\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Basic understanding of digital design and verification concepts (RTL structure, testbench architecture, simulation flow).</span></li><li value=\"5\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Strong problem-solving skills, curiosity, and eagerness to learn new tools and methodologies.</span></li><li value=\"6\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Detail-oriented approach and solid communication skills; comfortable asking questions and collaborating within a team.</span></li></ul><p class=\"editor-paragraph\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">Advantages</strong></b></p><ul class=\"editor-list-ul\"><li value=\"1\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Basic Python skills for scripting and test automation.</span></li><li value=\"2\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Familiarity with Git or other version control systems.</span></li><li value=\"3\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Hands-on experience with simulation tools such as VCS, Xcelium, or Questa.</span></li><li value=\"4\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Understanding of coverage concepts (code coverage, functional coverage).</span></li><li value=\"5\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Familiarity with common bus/interface protocols (e.g., AXI, APB, I2C, SPI).</span></li></ul>",
+          "order": 2
+        },
+        {
+          "name": "Responsibilities",
+          "value": "<ul class=\"editor-list-ul\"><li value=\"1\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Develop, debug, and maintain verification environments and testbenches using SystemVerilog and UVM.</span></li><li value=\"2\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Analyze simulation results and waveforms to identify, isolate, and root-cause bugs in design or testbench code.</span></li><li value=\"3\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Define, track, and analyze code and functional coverage metrics, and drive coverage closure on assigned blocks.</span></li><li value=\"4\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Own the verification of assigned IP blocks or features end-to-end, from test planning through sign-off.</span></li><li value=\"5\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Collaborate with the design team to clarify specifications and confirm verification completeness.</span></li><li value=\"6\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Escalate complex or ambiguous issues to senior engineers when needed, and incorporate their feedback to sharpen debug skills over time.</span></li><li value=\"7\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Participate in code reviews and team knowledge-sharing sessions to build best practices and technical depth.</span></li></ul>",
+          "order": 3
+        },
+        {
+          "name": "Personal skills",
+          "value": null,
+          "order": 4
+        }
+      ],
+      "categories": []
+    },
+    "is_internal": false
+  },
+  {
+    "uid": "2F.27D",
+    "url_comeet_hosted_page": "https://www.comeet.com/jobs/proteantecs/D5.00E/vp-of-worldwide-field-engineering/2F.27D",
+    "name": "VP of Worldwide Field Engineering",
+    "company_name": "proteanTecs",
+    "location": {
+      "name": "USA - Santa Clara, CA",
+      "country": "US",
+      "city": "Santa Clara",
+      "state": "CA",
+      "postal_code": "95054",
+      "street_name": "4633 Old Ironsides Drive",
+      "arrival_instructions": null,
+      "street_number": null,
+      "timezone": "America/Los_Angeles",
+      "location_uid": "BE.105",
+      "is_remote": true
+    },
+    "custom_fields": {
+      "details": [
+        {
+          "name": "Description",
+          "value": "<p class=\"editor-paragraph\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">Chips Talk, We Listen</strong></b><span style=\"white-space: pre-wrap;\">&nbsp;</span></p><p class=\"editor-paragraph\"><span style=\"white-space: pre-wrap;\">proteanTecs is a\u202fgame-changing startup\u202fthat's giving advanced electronics the power to\u202freport on their own health. In a digital world built for autonomous driving, cloud computing, and AI, we depend on computing systems daily. But how can we guarantee their safety, reliability and functionality? proteanTecs is the\u202ffirst-ever\u202fcompany\u202fto provide visibility into next-gen chips while they are operating, based on the power of\u202fon-chip monitoring, machine learning, and data analytics.&nbsp;</span></p><p class=\"editor-paragraph\"><span style=\"white-space: pre-wrap;\">Here at proteanTecs, you'll be part of a team that's\u202funlocking deep insights\u202fto make electronics more\u202freliable, efficient, and high-quality. We're trusted by industry leaders in data centers, automotive, communications, and consumer devices \u2013 we work with the world's largest and most notable companies in tech.&nbsp;</span></p><p class=\"editor-paragraph\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">Why proteanTecs is a great place to work:</strong></b><span style=\"white-space: pre-wrap;\">&nbsp;</span></p><ul class=\"editor-list-ul\"><li value=\"1\" class=\"editor-listitem\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">Fast-paced and impactful:</strong></b><span style=\"white-space: pre-wrap;\">\u202fWe're a mission-driven startup,\u202fso you'll tackle new challenges daily,\u202fwear many hats,\u202fand see your work directly influence the future of electronics.&nbsp;</span></li><li value=\"2\" class=\"editor-listitem\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">Supportive\u202fcompany\u202fculture</strong></b><span style=\"white-space: pre-wrap;\">: Learn from the best. Our 200+ team members are experts in their field with a proven track record of success, and they're committed to fostering a collaborative and supportive work environment.&nbsp;</span></li><li value=\"3\" class=\"editor-listitem\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">International presence:</strong></b><span style=\"white-space: pre-wrap;\">\u202fWe're a multinational\u202fcompany\u202fwith a diverse team across multiple locations around the globe. You'll collaborate on projects with international impact, gaining a global perspective of the tech industry.&nbsp;</span></li><li value=\"4\" class=\"editor-listitem\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">Work with industry leaders:</strong></b><span style=\"white-space: pre-wrap;\">\u202fOur solutions are used by the biggest names in tech. You'll be part of the team creating the next generation of groundbreaking products.&nbsp;</span></li><li value=\"5\" class=\"editor-listitem\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">Cutting-edge playground:</strong></b><span style=\"white-space: pre-wrap;\">\u202fWe use the latest machine learning,\u202fplatforms,\u202fand tools to push boundaries and achieve breakthroughs.&nbsp;</span></li><li value=\"6\" class=\"editor-listitem\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">Real-world impact:</strong></b><span style=\"white-space: pre-wrap;\">\u202fOur work keeps data centers, cars, and other critical systems running smoothly. Your work will directly contribute to safer, more reliable electronics.&nbsp;</span></li><li value=\"7\" class=\"editor-listitem\"><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">We are here for the win:</strong></b><span style=\"white-space: pre-wrap;\">\u202fBacked by industry veterans and leading investors, we offer a stable and secure work environment with plenty of room for growth.&nbsp;</span></li></ul><p class=\"editor-paragraph\"><span style=\"white-space: pre-wrap;\">We are looking for </span><b><strong class=\"editor-text-bold\" style=\"white-space: pre-wrap;\">an experienced and strategic VP of Worldwide Field Application Engineering</strong></b><span style=\"white-space: pre-wrap;\"> who combines deep semiconductor expertise with strong executive presence and the ability to build trusted, long-term relationships with leading companies.&nbsp;</span></p><p class=\"editor-paragraph\"><span style=\"white-space: pre-wrap;\">In this role, you will lead our global Field Engineering organization end-to-end - managing the regional Application Engineering leaders globally - and own the technical customer journey across our accounts worldwide. You will act as a key strategic partner in driving business growth, shaping organizational culture, and managing our most strategic customer relationships. You will work in ongoing partnership with our CTO, R&amp;D leadership, and Sales organization to drive successful adoption, integration, and expansion of our solutions throughout the silicon development lifecycle.</span></p>",
+          "order": 1
+        },
+        {
+          "name": "Requirements",
+          "value": "<ul class=\"editor-list-ul\"><li value=\"1\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">15+ years of experience in the semiconductor industry, with significant experience in Field Engineering, Applications Engineering, Customer Engineering, or a related technical customer-facing role.&nbsp;</span></li><li value=\"2\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Proven experience leading and scaling global technical organizations through multiple layers of management, across geographies.&nbsp;</span></li><li value=\"3\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Strong, hands-on technical foundation in semiconductor design and physical design flows - synthesis, place &amp; route, STA, SoC/ASIC - at a level that enables direct, credible engagement with customer design teams, not only organizational oversight.&nbsp;</span></li><li value=\"4\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Experience with semiconductor IP and/or EDA solutions and their integration into customer design environments.&nbsp;</span></li><li value=\"5\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Proven track record of managing strategic, executive-level relationships with leading semiconductor companies.&nbsp;</span></li><li value=\"6\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Exceptional combination of technical depth, customer orientation, business acumen, and executive presence - able to operate as a trusted strategic partner to senior leadership.&nbsp;</span></li><li value=\"7\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Demonstrated ability to collaborate effectively with Sales, R&amp;D, Product Management, Program Management, and senior customer stakeholders.&nbsp;</span></li><li value=\"8\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Exceptional communication, presentation, negotiation, and relationship-building skills.&nbsp;</span></li><li value=\"9\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Willingness to travel globally.&nbsp;</span></li></ul>",
+          "order": 2
+        },
+        {
+          "name": "Responsibilities",
+          "value": "<ul class=\"editor-list-ul\"><li value=\"1\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Lead, develop, and scale a high-performing worldwide Field Engineering organization, managing regional and functional Application Engineering leaders across multiple territories, supporting silicon design, verification, and implementation activities.&nbsp;</span></li><li value=\"2\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Own the end-to-end technical customer journey across accounts globally, from initial engagement and evaluation through IP integration, deployment, and ongoing adoption.&nbsp;&nbsp;</span></li><li value=\"3\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Oversee the integration of our IPs and related EDA tools into customer silicon design flows, including RTL, synthesis, place &amp; route, and static timing analysis.&nbsp;</span></li><li value=\"4\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Develop trusted relationships with senior technical and executive stakeholders at strategic customers.&nbsp;</span></li><li value=\"5\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Partner with Sales and Business Development on strategic accounts, technical sales cycles, design wins, and business expansion opportunities.&nbsp;</span></li><li value=\"6\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Lead customer engagements, technical evaluations, PoCs, and enablement activities, positioning our solutions and driving business growth.&nbsp;</span></li><li value=\"7\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Drive technical review meetings with customers to understand their technical challenges, requirements, and opportunities for innovation.&nbsp;</span></li><li value=\"8\" class=\"editor-listitem\"><span style=\"white-space: pre-wrap;\">Partner closely with senior leadership across R&amp;D, Product Management, and Program Management to translate customer feedback and market needs into new features, products, and solutions.&nbsp;</span></li></ul>",
+          "order": 3
+        },
+        {
+          "name": "Personal skills",
+          "value": null,
+          "order": 4
+        }
+      ],
+      "categories": []
+    },
+    "is_internal": false
+  }
+]
