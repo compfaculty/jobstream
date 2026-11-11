@@ -699,6 +699,15 @@ def resume_profile(request, pk):
     latest = document.profiles.filter(owner=request.user).order_by("-pk").first()
     initial = {}
     extracted = ""
+    try:
+        extracted = extract(document)
+    except ValidationError as exc:
+        messages.error(request, "; ".join(exc.messages))
+    prefilled = not latest and request.method == "GET" and bool(extracted)
+    if prefilled:
+        from .services.profile_prefill import from_text
+
+        initial = from_text(extracted)
     if latest:
         if latest.details:
             initial = latest.details.get("basics", {}).copy()
@@ -711,6 +720,9 @@ def resume_profile(request, pk):
         initial["name"] = latest.name
     data = request.POST if request.method == "POST" else None
     form = ResumeProfileForm(data, initial=initial, label_suffix="")
+    if prefilled:
+        for field in ("experience", "education", "projects"):
+            form.fields[field].label = f"{field.title()} imported from your PDF"
     groups = entry_sets(data, latest.details if latest else None)
     if request.method == "POST":
         valid = form.is_valid()
@@ -743,11 +755,6 @@ def resume_profile(request, pk):
                         request, "Profile saved. Existing batches retain their profile version."
                     )
                     return redirect("documents")
-    if request.method in {"GET", "POST"}:
-        try:
-            extracted = extract(document)
-        except ValidationError as exc:
-            messages.error(request, "; ".join(exc.messages))
     return render(
         request,
         "jobs/profile.html",
@@ -756,6 +763,7 @@ def resume_profile(request, pk):
             "document": document,
             "entry_groups": groups,
             "extracted": extracted,
+            "prefilled": prefilled,
         },
     )
 

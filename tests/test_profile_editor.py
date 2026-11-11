@@ -93,13 +93,28 @@ def test_legacy_profile_preserved(authenticated, user, document):  # noqa: F811
 
 @pytest.mark.browser
 @pytest.mark.django_db(transaction=True)
-def test_profile_desktop_mobile_and_dynamic_entries(page, live_server, settings, user, document):  # noqa: F811
+def test_profile_desktop_mobile_and_dynamic_entries(
+    page,
+    live_server,
+    settings,
+    user,
+    document,  # noqa: F811
+    monkeypatch,
+):
     from playwright.sync_api import expect
 
     settings.STORAGES = {
         **settings.STORAGES,
         "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
     }
+    monkeypatch.setattr(
+        "jobs.services.resumes.extract",
+        lambda doc: (
+            "Example Engineer\nBackend Engineer\nengineer@example.com\n"
+            "PROFESSIONAL SUMMARY\nBuilds reliable services.\n"
+            "WORK EXPERIENCE\nEngineer at Example Co, 2020–2024."
+        ),
+    )
     errors = []
     page.on("pageerror", lambda error: errors.append(str(error)))
     page.goto(live_server.url + "/account/login/")
@@ -108,6 +123,12 @@ def test_profile_desktop_mobile_and_dynamic_entries(page, live_server, settings,
     page.get_by_role("button", name="Next", exact=True).click()
     page.goto(live_server.url + reverse("resume-profile", args=[document.pk]))
     expect(page.get_by_label("Email address", exact=True)).to_be_visible()
+    expect(page.get_by_label("Email address", exact=True)).to_have_value("engineer@example.com")
+    expect(page.get_by_label("Professional headline", exact=True)).to_have_value("Backend Engineer")
+    expect(page.get_by_label("About you", exact=True)).to_have_value("Builds reliable services.")
+    expect(page.get_by_label("Experience imported from your PDF", exact=True)).to_have_value(
+        "Engineer at Example Co, 2020–2024."
+    )
     page.get_by_label("Full name", exact=True).fill("Example Engineer")
     page.get_by_label("Email address", exact=True).fill("engineer@example.com")
     page.get_by_label("Skills and technologies", exact=True).fill("Python, Linux")
