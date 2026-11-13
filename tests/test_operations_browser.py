@@ -138,7 +138,9 @@ def test_evaluate_accepts_uploaded_pdf_without_profile(
     page.goto(live_server.url + f"/jobs/{job.pk}/")
     panel = page.locator("#vacancy-evaluation")
     expect(panel.get_by_role("button", name="Evaluate", exact=True)).to_be_enabled()
-    expect(panel.get_by_label("CV to evaluate")).to_have_value(f"document:{document.pk}")
+    expect(panel.locator('input[type="hidden"][name="cv"]')).to_have_value(
+        f"document:{document.pk}"
+    )
     assert not ResumeProfile.objects.exists()
     assert not AgentExecution.objects.exists()
     page.screenshot(path="/tmp/jobstream-direct-pdf-evaluation.png", full_page=False)

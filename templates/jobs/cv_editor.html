@@ -1,0 +1,7 @@
+{% extends 'base.html' %}{% block content %}
+<h1>{% if application %}Edit CV — {{ application.job.company }} · {{ application.job.title }}{% else %}Edit your base CV{% endif %}</h1>
+<p>{% if application %}Changes apply only to this application. Your base CV stays unchanged. Saving clears approval.{% else %}Your base CV is the starting point for future applications. Sent attachments stay unchanged.{% endif %}</p>
+<form method="post" class="stack">{% csrf_token %}<input type="hidden" name="simple_cv" value="1">
+{{ form.as_p }}<button>Save CV</button>
+<a href="{% if application %}{% url 'application' application.pk %}{% else %}{% url 'documents' %}{% endif %}">Cancel</a>
+</form>{% endblock %}

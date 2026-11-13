@@ -211,12 +211,28 @@ from tests.test_batches import document  # noqa: E402,F401
 
 
 @pytest.mark.django_db(transaction=True)
-def test_reset_preserves_auth_sources_and_budget(tmp_path, user, job, settings):
+def test_reset_preserves_auth_sources_and_budget(tmp_path, user, job, settings, document):  # noqa: F811
     import hashlib
 
     from django.contrib.auth import get_user_model
     from django_otp.plugins.otp_static.models import StaticDevice, StaticToken
     from django_otp.plugins.otp_totp.models import TOTPDevice
+
+    from jobs.models import AgentExecution, RecommendationRun
+
+    execution = AgentExecution.objects.create(
+        owner=user,
+        job=job,
+        document=document,
+        key="reset-fixture",
+        snapshot={},
+        model="fake",
+        status="completed",
+    )
+    recommendation = RecommendationRun.objects.create(
+        owner=user, document=document, status="completed"
+    )
+    recommendation.executions.add(execution)
 
     user.is_superuser = user.is_staff = True
     user.save()
@@ -264,6 +280,9 @@ def test_reset_preserves_auth_sources_and_budget(tmp_path, user, job, settings):
     assert StaticToken.objects.get(pk=token.pk).token == "test-recovery"
     assert not get_user_model().objects.filter(pk=other.pk).exists()
     assert not Job.objects.exists() and not AICharge.objects.exists()
+    assert not RecommendationRun.objects.exists()
+    assert not RecommendationRun.executions.through.objects.exists()
+    assert not AgentExecution.objects.exists()
     assert source.enabled and source.inventory_cursor == {} and source.failure_count == 0
     assert AICostMonth.objects.get().carried_usd == amount
 

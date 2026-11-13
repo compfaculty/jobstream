@@ -68,3 +68,11 @@ monitoring-check:
 	$(MONITOR) run --rm --no-deps --entrypoint promtool prometheus test rules /etc/prometheus/alerts.test.yml
 	$(MONITOR) run --rm --no-deps alloy validate /etc/alloy/config.alloy
 	$(MONITOR) run --rm --no-deps loki -config.file=/etc/loki/config.yaml -verify-config
+
+.PHONY: mail-sandbox-up mail-sandbox-test mail-sandbox-stop
+mail-sandbox-up:
+	docker compose -p jobstream-mail-sandbox -f compose.mail-sandbox.yaml up -d
+mail-sandbox-test:
+	DEBUG=1 MAILPIT_INTEGRATION=1 uv run pytest tests/test_mail_sandbox.py --browser chromium -q
+mail-sandbox-stop:
+	docker compose -p jobstream-mail-sandbox -f compose.mail-sandbox.yaml stop

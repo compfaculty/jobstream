@@ -359,8 +359,9 @@ class Job(models.Model):
     @property
     def preferred_application_email(self) -> str:
         """Operator-maintained company contact takes priority for new drafts only."""
-        if self.company_profile_id and self.company_profile.application_email:
-            return self.company_profile.application_email
+        company = self.company_profile
+        if company is not None and company.application_email:
+            return company.application_email
         return self.apply_email
 
     @classmethod

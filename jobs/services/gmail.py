@@ -70,13 +70,19 @@ def build_message(application, sender: str, attachment: bytes | None) -> str:
     message["Message-ID"] = application.message_id
     message.set_content(application.body)
     if attachment is not None:
-        message.add_attachment(
-            attachment, maintype="application", subtype="pdf", filename="resume.pdf"
-        )
+        from .documents import pdf_filename
+
+        document = getattr(application, "document", None)
+        filename = pdf_filename(document.name if document else "resume.pdf")
+        message.add_attachment(attachment, maintype="application", subtype="pdf", filename=filename)
     return base64.urlsafe_b64encode(message.as_bytes()).decode()
 
 
 def send(connection, application, attachment: bytes | None) -> str:
+    from . import sandbox_mail
+
+    if sandbox_mail.marked(connection):
+        return sandbox_mail.send(connection, application, attachment)
     client = gmail_client(connection)
     result = (
         client.users()
@@ -90,6 +96,10 @@ def send(connection, application, attachment: bytes | None) -> str:
 
 
 def find_sent(connection, message_id: str) -> str | None:
+    from . import sandbox_mail
+
+    if sandbox_mail.marked(connection):
+        return sandbox_mail.find_sent(connection, message_id)
     client = gmail_client(connection)
     result = (
         client.users()

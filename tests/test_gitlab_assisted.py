@@ -31,8 +31,10 @@ def test_reserved_approval_ui_and_worker_exclusion(approved, client, monkeypatch
     client.force_login(approved.owner)
     response = client.get(f"/applications/{approved.pk}/")
     assert response.status_code == 200
-    assert b"assist_application" in response.content
-    assert b"Reserved for local assisted delivery" in response.content
+    assert b"Your application is approved but has not been sent." in response.content
+    assert b"python manage.py" not in response.content
+    assert b"--owner-id" not in response.content
+    assert b"background worker" not in response.content
     ordinary, browser = Mock(), Mock()
     monkeypatch.setattr(tasks.send_application, "delay", ordinary)
     monkeypatch.setattr(tasks.send_browser_application, "delay", browser)
@@ -145,8 +147,9 @@ def test_assisted_and_worker_race(approved, monkeypatch):
     send.assert_called_once()
 
 
-def test_assisted_approval_through_ui(gitlab_application, client, monkeypatch):  # noqa: F811
+def test_assisted_approval_through_ui(gitlab_application, client, monkeypatch, prepare_review_cv):  # noqa: F811
     monkeypatch.setattr(gitlab, "read_schema", lambda job: SCHEMA)
+    prepare_review_cv(gitlab_application)
     client.force_login(gitlab_application.owner)
     detail = client.get(f"/applications/{gitlab_application.pk}/")
     assert b'name="assisted" value="1" checked' in detail.content

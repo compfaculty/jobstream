@@ -10,12 +10,8 @@
   <input type="hidden" name="cv" value="{{ selected_cv }}" form="job-search">
   <form method="post" action="{% url 'recommendations-update' %}" class="recommendation-filter">
     {% csrf_token %}
-    <label for="recommendation-cv">CV for recommendations</label>
-    <select id="recommendation-cv" name="cv" required>
-      {% if not selected_cv %}<option value="" selected>Choose one of your CVs</option>{% endif %}
-      {% if recommendation_documents %}<optgroup label="Uploaded PDFs">{% for document in recommendation_documents %}<option value="{{ document.value }}"{% if selected_cv == document.value %} selected{% endif %}>{{ document.name }}</option>{% endfor %}</optgroup>{% endif %}
-      {% if recommendation_profiles %}<optgroup label="Optional reviewed profiles">{% for profile in recommendation_profiles %}<option value="{{ profile.value }}"{% if selected_cv == profile.value %} selected{% endif %}>{{ profile.name }} · version {{ profile.pk }}</option>{% endfor %}</optgroup>{% endif %}
-    </select>
+    <input type="hidden" name="cv" value="{{ selected_cv }}">
+    <span>Using your base CV</span>
     <button type="submit" class="secondary"{% if recommendation_poll or not evaluation_enabled %} disabled{% endif %}>Update recommendations</button>
   </form>
   {% endif %}

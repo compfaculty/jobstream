@@ -52,6 +52,14 @@ def digest(application: Application, sender: str) -> str:
 
 
 def validate_content(application: Application, *, for_send: bool = True) -> None:
+    from . import sandbox_mail
+
+    if application.owner.username == sandbox_mail.USERNAME:
+        try:
+            sandbox_connection = GmailConnection.objects.get(owner=application.owner)
+        except GmailConnection.DoesNotExist as exc:
+            raise ValidationError("Synthetic mail account is unavailable.") from exc
+        sandbox_mail.validate(sandbox_connection, application)
     if for_send:
         from .preference_matching import evaluate, preferences_for
 
@@ -137,6 +145,10 @@ def approve(user, pk: int, *, assisted: bool = False) -> Application:
             connection = GmailConnection.objects.get(owner=user, revoked=False)
         except GmailConnection.DoesNotExist as exc:
             raise ValidationError("Connect Gmail before approving.") from exc
+        from . import sandbox_mail
+
+        if sandbox_mail.marked(connection):
+            sandbox_mail.validate(connection, application)
         application.send_attempts = 0
         application.retry_not_before = None
         application.approval_digest = digest(application, connection.email)
@@ -175,6 +187,8 @@ def edit(user, pk: int, values: dict) -> Application:
         application.status = Application.Status.DRAFT
         application.approval_digest = ""
         application.approved_at = None
+        application.error_code = ""
+        application.retry_not_before = None
         application.save()
         AuditEvent.objects.create(actor=user, application=application, event="application.edited")
         from .batches import refresh_ready
@@ -240,6 +254,10 @@ def submit(pk: int, *, assisted_owner_id: int | None = None, on_human_verificati
             if application.channel == "email":
                 connection = GmailConnection.objects.get(owner=application.owner, revoked=False)
                 sender = connection.email
+                from . import sandbox_mail
+
+                if sandbox_mail.marked(connection):
+                    sandbox_mail.validate(connection, application)
             validate_content(application)
             if digest(application, sender) != application.approval_digest:
                 raise ValidationError("Approval no longer matches content.")

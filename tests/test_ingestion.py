@@ -76,11 +76,33 @@ def test_search_vector_changes_on_update(job):
     assert not search_jobs("Python").filter(pk=job.pk).exists()
 
 
-def test_search_query_budget(job, django_assert_num_queries):
-    with django_assert_num_queries(2):
+@pytest.mark.parametrize("size", [1, 25])
+@pytest.mark.parametrize("with_origins", [False, True])
+def test_search_query_budget(job, django_assert_num_queries, size, with_origins):
+    jobs = [job]
+    for index in range(1, size):
+        jobs.append(
+            Job.objects.create(
+                title=job.title,
+                description=job.description,
+                location=job.location,
+                canonical_url=f"https://example.com/jobs/budget-{index}",
+            )
+        )
+    if with_origins:
+        source = Source.objects.create(name="Budget", url="https://example.com/feed", adapter="rss")
+        JobOrigin.objects.bulk_create([JobOrigin(job=item, source=source) for item in jobs])
+    # COUNT + jobs + prefetched origins; a populated inventory also prefetches sources.
+    # Rendering provenance must not add queries as the page grows.
+    with django_assert_num_queries(4 if with_origins else 3):
         results = search_jobs("Python", "Tel Aviv")
-        assert results.count() == 1
-        assert len(list(results[:25])) == 1
+        assert results.count() == size
+        page = list(results[:25])
+        assert len(page) == size
+        for item in page:
+            assert [origin.source.name for origin in item.origins.all()] == (
+                ["Budget"] if with_origins else []
+            )
 
 
 def test_realwork_detail_failure_keeps_feed_data(monkeypatch):

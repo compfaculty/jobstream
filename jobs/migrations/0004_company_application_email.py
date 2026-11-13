@@ -14,7 +14,11 @@ class Migration(migrations.Migration):
             name="application_email",
             field=models.EmailField(
                 blank=True,
-                help_text="Verified address published by the company for CV applications. Preferred over job emails and portals for new drafts. Sending still requires user approval.",
+                help_text=(
+                    "Verified address published by the company for CV applications. "
+                    "Preferred over job emails and portals for new drafts. "
+                    "Sending still requires user approval."
+                ),
                 max_length=254,
                 verbose_name="HR / CV application email",
             ),

@@ -45,6 +45,8 @@ def test_csrf(user, application, connection):
 
 
 def test_save_create_edit_track(authenticated, user, job, connection):
+    job.apply_email = "hr@example.com"
+    job.save(update_fields=["apply_email"])
     url = f"/jobs/{job.pk}/"
     assert authenticated.get(url).status_code == 200
     authenticated.post(url + "save/")
@@ -221,7 +223,8 @@ def test_evaluation_controls_with_profile(authenticated, job, evaluation_profile
     response = authenticated.get(f"/jobs/{job.pk}/")
     panel = BeautifulSoup(response.content, "html.parser").select_one("#vacancy-evaluation")
     assert not panel.find("button", string="Evaluate").has_attr("disabled")
-    assert panel.find("option", value=f"profile:{evaluation_profile.pk}") is not None
+    assert panel.find("select") is None
+    assert panel.find("input", value=f"document:{evaluation_profile.document_id}") is not None
     assert panel.find("form")["action"] == f"/jobs/{job.pk}/evaluate/"
 
 
