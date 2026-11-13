@@ -88,6 +88,59 @@ def connection(user):
 
 
 @pytest.fixture
+def confirmed_base_cv(settings, tmp_path):
+    from django.core.files.base import ContentFile
+
+    from jobs.services import resumes
+    from jobs.services.documents import upload_document
+
+    settings.MEDIA_ROOT = tmp_path
+    settings.STORAGES = {
+        **settings.STORAGES,
+        "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    }
+
+    def confirm(owner, document=None):
+        email = owner.email or "candidate@example.com"
+        if document is None:
+            data = resumes.pdf_bytes(
+                "Fixture Candidate", email, [{"section": "Skills", "text": "Python and Linux"}]
+            )
+            document = upload_document(owner, ContentFile(data, name="synthetic-base.pdf"))
+        resumes.confirm(
+            owner,
+            document,
+            "Fixture Candidate",
+            email,
+            {"Skills": "Python and Linux"},
+            details={"basics": {"email": email}},
+        )
+        return document
+
+    return confirm
+
+
+@pytest.fixture
+def prepare_review_cv():
+    """Give an existing portal draft an actual generated, owner-confirmed review CV."""
+    from jobs.services import cv_workspace, resumes
+
+    def prepare(application):
+        email = application.portal_answers.get("email") or application.owner.email
+        resumes.confirm(
+            application.owner,
+            application.document,
+            "Fixture Candidate",
+            email,
+            {"Skills": "Python and Linux"},
+            details={"basics": {"email": email}},
+        )
+        return cv_workspace.generate(application.owner, application.pk)
+
+    return prepare
+
+
+@pytest.fixture
 def authenticated(client, user):
     client.force_login(user)
     return client

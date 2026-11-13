@@ -112,7 +112,7 @@ def test_tokens_overdue_and_unavailable_detail(staff, execution, monkeypatch):
 
 
 def test_ingestion_preparation_delivery(staff, application):
-    source = Source.objects.create(name="Synthetic", url="https://example.com/jobs")
+    source = Source.objects.create(name="Synthetic", url="https://example.com/jobs", adapter="rss")
     run = IngestionRun.objects.create(source=source)
     IngestionRun.objects.filter(pk=run.pk).update(started_at=timezone.now() - timedelta(minutes=11))
     response = staff.get("/operations/?kind=ingestion")

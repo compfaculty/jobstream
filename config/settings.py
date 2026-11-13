@@ -10,6 +10,12 @@ from django.core.exceptions import ImproperlyConfigured
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 DEBUG = os.getenv("DEBUG", "0") == "1"
+SANDBOX_MAIL_ENABLED = os.getenv("SANDBOX_MAIL_ENABLED", "0") == "1"
+if SANDBOX_MAIL_ENABLED and not DEBUG:
+    raise ImproperlyConfigured("Sandbox mail requires DEBUG=1")
+# Host-run development only: never accept a configurable remote SMTP destination.
+SANDBOX_MAIL_SMTP_PORT = int(os.getenv("SANDBOX_MAIL_SMTP_PORT", "11025"))
+SANDBOX_MAIL_API_PORT = int(os.getenv("SANDBOX_MAIL_API_PORT", "18025"))
 SECRET_KEY = os.getenv("SECRET_KEY", "")
 if not SECRET_KEY:
     if not DEBUG:
@@ -226,6 +232,7 @@ SEND_PROVIDER_INTERVAL = float(os.getenv("SEND_PROVIDER_INTERVAL", "0.5"))
 SEND_ACCOUNT_INTERVAL = float(os.getenv("SEND_ACCOUNT_INTERVAL", "2"))
 SEND_DOMAIN_INTERVAL = float(os.getenv("SEND_DOMAIN_INTERVAL", "5"))
 CV_FONT_PATH = os.getenv("CV_FONT_PATH", "")
+CV_BOLD_FONT_PATH = os.getenv("CV_BOLD_FONT_PATH", "")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
 OPENAI_MODEL = os.getenv("OPENAI_MODEL", "")
 OPENAI_REASONING_EFFORT = os.getenv("OPENAI_REASONING_EFFORT", "low")
@@ -361,3 +368,6 @@ CELERY_BEAT_SCHEDULE["recommendation-runs"] = {
     "schedule": 10.0,
 }
 CELERY_TASK_ROUTES["jobs.tasks.coordinate_recommendations"] = {"queue": "preparation"}
+
+# Offline synthetic source exercises only; never authorizes live ingestion.
+JOB_SOURCE_FIXTURES_ENABLED = False

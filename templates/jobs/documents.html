@@ -1,1 +1,13 @@
-{% extends 'base.html' %}{% block content %}<h1>Your resumes</h1><p class="muted">PDF files only. Upload a new version to change a resume; existing applications keep their original attachment. Uploaded PDFs can be selected directly on a job page for evaluation. Manual fact review is optional for evaluation.</p><form method="post" enctype="multipart/form-data" class="stack">{% csrf_token %}{{ form.as_p }}<button>Upload resume</button></form><h2>Uploaded files</h2>{% for document in documents %}<p><a href="{% url 'document-download' document.pk %}">{{ document.name }}</a> <a href="{% url 'resume-profile' document.pk %}">Edit CV facts (optional)</a> <a href="{% url 'document-delete' document.pk %}">Delete</a> <span class="muted">· {{ document.processing_status }} · {{ document.created_at|date:'M j, Y' }}</span></p>{% empty %}<p>No resumes uploaded.</p>{% endfor %}{% endblock %}
+{% extends 'base.html' %}{% block content %}
+<h1>Your base CV</h1>
+<p>Keep your experience here. Each application gets its own CV, which you can review and edit before sending.</p>
+{% if base %}
+<section><h2>Base CV</h2><p><a href="{% url 'document-download' base.pk %}">{{ base.name }}</a></p>
+<div class="actions"><a class="button" href="{% url 'base-cv-edit' %}">Edit base CV</a></div>
+<p class="muted">{{ base.processing_status }}</p></section>
+<details><summary>Replace base CV with a PDF</summary>
+{% else %}<h2>Upload your base CV</h2>{% endif %}
+<form method="post" enctype="multipart/form-data" class="stack">{% csrf_token %}{{ form.as_p }}<button>{% if base %}Replace base CV{% else %}Upload base CV{% endif %}</button></form>
+{% if base %}<p><a href="{% url 'document-delete' base.pk %}">Remove base CV</a></p></details>{% endif %}
+<p><a href="{% url 'applications' %}">Application CVs are kept with their applications →</a></p>
+{% endblock %}

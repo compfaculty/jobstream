@@ -253,10 +253,7 @@ def test_single_job_portal_form_and_private_details(authenticated, user, job, tm
     assert app.portal_answers["agree_terms"] is True
     assert app.portal_answers["forward_headhunters"] is False
     assert app.body
-    assert (
-        b"Approve and send this application"
-        in authenticated.get(f"/applications/{app.pk}/").content
-    )
+    assert b"Regenerate from base CV" in authenticated.get(f"/applications/{app.pk}/").content
 
 
 def test_transport_keeps_cookies_and_pins_public_connections(monkeypatch):
@@ -428,3 +425,145 @@ def test_job_description_cannot_forge_delivery_confirmation():
                 b'<div class="wpjb-text"><div class="wpjb-flash-info">Application sent</div></div>',
             )
         )
+
+
+def ajax_html():
+    import json
+
+    from jobs.services.portals import UPLOAD_PARAMS, UPLOAD_URL
+
+    config = {
+        "url": UPLOAD_URL,
+        "file_data_name": "file",
+        "browse_button": "wpjb-upload-browse-file",
+        "container": "wpjb-upload-container-file",
+        "multipart": True,
+        "multipart_params": UPLOAD_PARAMS,
+    }
+    return HTML + ("<script>WPJB.upload.init(" + json.dumps(config) + ");</script>").encode()
+
+
+def test_session_upload_precedes_application_and_uses_descriptive_filename():
+    from jobs.services.portals import UPLOAD_URL
+
+    html = ajax_html()
+    application = draft()
+    application.portal_fingerprint = inspect_secret(html, URL).fingerprint
+    application.document = SimpleNamespace(
+        name="Example_Candidate_Earnix_Automation_Engineer_CV.pdf"
+    )
+    session = Mock()
+    session.request.side_effect = [
+        sta.Response(200, {}, html),
+        sta.Response(200, {}, b'{"result":1,"name":"resume.pdf"}'),
+        sta.Response(
+            200, {}, b'<div class="wpjb-flash-info">Your application has been sent.</div>'
+        ),
+    ]
+    assert sta.send(application, PDF, session=session).startswith("secret_telaviv:")
+    calls = session.request.call_args_list
+    assert len(calls) == 3 and calls[1].args[:2] == ("POST", UPLOAD_URL)
+    assert PDF in calls[1].args[2]
+    assert b'filename="Example_Candidate_Earnix_Automation_Engineer_CV.pdf"' in calls[1].args[2]
+    assert b"wpjb_main_upload" in calls[1].args[2]
+    assert calls[2].args[:2] == ("POST", URL + "?form=apply")
+    assert PDF not in calls[2].args[2] and b"filename=" not in calls[2].args[2]
+    assert b'name="email"' in calls[2].args[2]
+
+
+@pytest.mark.parametrize(
+    "response",
+    [
+        sta.Response(200, {}, b'{"result":0,"msg":"private reflected data"}'),
+        sta.Response(200, {}, b"not json"),
+        sta.Response(200, {}, b'{"result":true}'),
+        sta.Response(302, {"location": "https://attacker.example/"}, b""),
+        TimeoutError(),
+    ],
+)
+def test_failed_or_uncertain_upload_never_submits_application(response):
+    html = ajax_html()
+    application = draft()
+    application.portal_fingerprint = inspect_secret(html, URL).fingerprint
+    session = Mock()
+    session.request.side_effect = [sta.Response(200, {}, html), response]
+    with pytest.raises(sta.PortalRejected) as exc:
+        sta.send(application, PDF, session=session)
+    assert session.request.call_count == 2
+    assert "private" not in str(exc.value)
+
+
+@pytest.mark.parametrize(
+    "mutate",
+    [
+        lambda data: data.replace(b"wpjb_main_upload", b"unknown_action"),
+        lambda data: data.replace(b"jobs.secrettelaviv.com/wp-admin", b"attacker.example/wp-admin"),
+        lambda data: data.replace(b'"field": "file"', b'"field": "other"'),
+        lambda data: data + data[data.index(b"<script>") :],
+    ],
+)
+def test_upload_configuration_changes_stop_before_any_post(mutate):
+    html = mutate(ajax_html())
+    session = Mock()
+    session.request.return_value = sta.Response(200, {}, html)
+    with pytest.raises(sta.PortalRejected, match="form_changed"):
+        sta.send(draft(), PDF, session=session)
+    session.request.assert_called_once()
+
+
+@pytest.mark.parametrize(
+    ("text", "code"),
+    [
+        ("CV file is required", "portal_cv_required"),
+        ("Email is invalid: private@example.com", "portal_email_rejected"),
+        ("Telephone is invalid: 12345678", "portal_phone_rejected"),
+        ("You already applied for this job", "portal_duplicate_application"),
+        ("Unknown error private@example.com", "portal_validation_rejected"),
+    ],
+)
+def test_portal_diagnostics_are_allowlisted_not_reflected(text, code):
+    response = sta.Response(200, {}, f'<div class="wpjb-flash-error">{text}</div>'.encode())
+    with pytest.raises(sta.PortalRejected) as exc:
+        sta.confirmation(response)
+    assert str(exc.value) == code
+
+
+@pytest.mark.parametrize(
+    ("formatted", "expected"),
+    [
+        ("+972-52-123-4567", "972521234567"),
+        ("052-123-4567", "0521234567"),
+        ("+1 (212) 555-0100", "12125550100"),
+    ],
+)
+def test_phone_transport_preserves_digits_and_leading_zeroes(formatted, expected):
+    application = draft()
+    application.portal_answers["phone"] = formatted
+    session = Mock()
+    session.request.side_effect = [
+        sta.Response(200, {}, HTML),
+        sta.Response(200, {}, b'<div class="wpjb-flash-info">Application sent</div>'),
+    ]
+    sta.send(application, PDF, session=session)
+    assert expected.encode() in session.request.call_args.args[2]
+    assert application.portal_answers["phone"] == formatted
+
+
+@pytest.mark.parametrize(
+    "phone", ["123", "+1234567890123456", "phone@example.com", "0521234567 ext 2"]
+)
+def test_invalid_phone_stops_before_network(phone):
+    application = draft()
+    application.portal_answers["phone"] = phone
+    session = Mock()
+    with pytest.raises(ValidationError):
+        sta.send(application, PDF, session=session)
+    session.request.assert_not_called()
+
+
+def test_numeric_phone_validation_is_actionable():
+    response = sta.Response(
+        200, {}, b'<div class="wpjb-errors">Telephone number * Value is not a Float.</div>'
+    )
+    with pytest.raises(sta.PortalRejected, match="portal_phone_rejected"):
+        sta.confirmation(response)

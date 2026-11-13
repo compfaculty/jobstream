@@ -5,6 +5,7 @@ One POST per attempt. Explicit rejection can be retried; uncertain POST outcomes
 
 import hashlib
 import http.client
+import json
 import re
 import secrets
 from contextlib import closing
@@ -18,7 +19,14 @@ from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 
 from .network import PinnedHTTPSConnection, canonical_url, public_addresses
-from .portals import SECRET_HOST, inspect_secret, secret_url
+from .portals import (
+    SECRET_HOST,
+    UPLOAD_PARAMS,
+    UPLOAD_URL,
+    inspect_secret,
+    secret_url,
+    upload_configuration,
+)
 
 TERMS_URL = "https://www.secrettelaviv.com/terms-and-conditions-2"
 ANSWER_FIELDS = {
@@ -108,6 +116,21 @@ def supported(application):
     return application.channel == "portal"
 
 
+def phone_for_submission(value):
+    """The portal uses a numeric validator, so remove display-only formatting.
+
+    Keep the country code and leading zeroes as text; never convert a telephone
+    number to an actual float or guess a country/extension.
+    """
+    value = value.strip()
+    if not re.fullmatch(r"\+?[0-9][0-9 ().-]*", value):
+        raise ValidationError("Use a telephone number with digits and optional country code.")
+    digits = re.sub(r"[^0-9]", "", value)
+    if not 7 <= len(digits) <= 15:
+        raise ValidationError("Use a telephone number with 7 to 15 digits.")
+    return digits
+
+
 def validate_answers(answers):
     if not isinstance(answers, dict) or set(answers) - ANSWER_FIELDS:
         raise ValidationError("Invalid Secret Tel Aviv applicant details.")
@@ -123,6 +146,7 @@ def validate_answers(answers):
                 "Provide first name, family name, email, and telephone for Secret Tel Aviv."
             )
     validate_email(answers["email"])
+    phone_for_submission(answers["phone"])
     if answers.get("agree_terms") is not True or answers.get("terms_url") != TERMS_URL:
         raise ValidationError("Review and accept the Secret Tel Aviv terms before approval.")
     if type(answers.get("forward_headhunters", False)) is not bool:
@@ -167,7 +191,10 @@ def read_form(session, url):
     return assessment, form, fields
 
 
-def multipart(fields, attachment):
+def multipart(fields, attachment=None, *, filename="resume.pdf"):
+    from .documents import pdf_filename
+
+    filename = pdf_filename(filename)
     boundary = "jobstream-" + secrets.token_hex(24)
     parts = []
     for name, value in fields.items():
@@ -176,23 +203,80 @@ def multipart(fields, attachment):
                 f'--{boundary}\r\nContent-Disposition: form-data; name="{name}"\r\n\r\n{value}\r\n'
             ).encode()
         )
-    parts.append(
-        (
-            f'--{boundary}\r\nContent-Disposition: form-data; name="file"; '
-            'filename="resume.pdf"\r\nContent-Type: application/pdf\r\n\r\n'
-        ).encode()
-    )
-    parts += [attachment, f"\r\n--{boundary}--\r\n".encode()]
+    if attachment is not None:
+        parts.append(
+            (
+                f'--{boundary}\r\nContent-Disposition: form-data; name="file"; '
+                f'filename="{filename}"\r\nContent-Type: application/pdf\r\n\r\n'
+            ).encode()
+        )
+        parts += [attachment, b"\r\n"]
+    parts.append(f"--{boundary}--\r\n".encode())
     return b"".join(parts), f"multipart/form-data; boundary={boundary}"
+
+
+def validation_code(soup):
+    """Return only allowlisted error categories, never reflected applicant data."""
+    errors = [
+        node.get_text(" ", strip=True).casefold()
+        for node in soup.select(".wpjb-flash-error, .wpjb-error, .wpjb-errors")
+        if node.get_text(strip=True)
+    ]
+    if not errors:
+        return ""
+    text = " ".join(errors)
+    for pattern, code in (
+        (r"already (?:applied|submitted)|duplicate application", "portal_duplicate_application"),
+        (
+            (
+                r"(?:cv|resume|file|attachment).{0,60}(?:required|missing|upload)|"
+                r"(?:required|missing).{0,40}(?:cv|resume|file|attachment)"
+            ),
+            "portal_cv_required",
+        ),
+        (r"(?:e-?mail).{0,40}(?:invalid|required|incorrect)", "portal_email_rejected"),
+        (
+            r"(?:phone|telephone).{0,60}(?:invalid|required|incorrect|not a float|numeric)",
+            "portal_phone_rejected",
+        ),
+        (r"(?:terms|consent).{0,40}(?:required|accept|agree)", "portal_terms_required"),
+    ):
+        if re.search(pattern, text):
+            return code
+    return "portal_validation_rejected"
+
+
+def upload_attachment(session, attachment, filename):
+    """One session-bound temporary upload; never submit after an uncertain upload."""
+    body, content_type = multipart(UPLOAD_PARAMS, attachment, filename=filename)
+    try:
+        response = session.request("POST", UPLOAD_URL, body, content_type)
+    except (ValueError, OSError, http.client.HTTPException) as exc:
+        # Uploading a temporary CV cannot submit an application. Do not follow it
+        # with the application POST when attachment acceptance is unverified.
+        raise PortalRejected("portal_upload_unconfirmed") from exc
+    if response.status == 429:
+        raise PortalRateLimited(response.headers.get("retry-after", ""))
+    if response.status != 200:
+        raise PortalRejected("portal_upload_rejected")
+    try:
+        result = json.loads(response.body)
+    except (ValueError, RecursionError) as exc:
+        raise PortalRejected("portal_upload_unconfirmed") from exc
+    if not isinstance(result, dict) or type(result.get("result")) is not int:
+        raise PortalRejected("portal_upload_unconfirmed")
+    if result["result"] != 1:
+        raise PortalRejected("portal_upload_rejected")
+    # The site's public uploader keeps attachment state in the cookie session;
+    # it does not add a file token to the final application form. Never follow
+    # response-supplied URLs or persist temporary file paths.
 
 
 def confirmation(response, redirected_url=""):
     soup = BeautifulSoup(response.body, "html.parser")
-    if any(
-        node.get_text(strip=True)
-        for node in soup.select(".wpjb-flash-error, .wpjb-error, .wpjb-errors")
-    ):
-        raise PortalRejected("portal_validation_rejected")
+    code = validation_code(soup)
+    if code:
+        raise PortalRejected(code)
     for node in soup.select(".wpjb-flash-info, .wpjb-flash-success, .wpjb-success"):
         if node.find_parent(class_="wpjb-text"):
             continue
@@ -227,14 +311,21 @@ def send(application, attachment, *, session=None):
         applicant_name=answers["first_name"],
         applicant_surname=answers["last_name"],
         email=answers["email"],
-        telephone_number_apply_form=answers["phone"],
+        telephone_number_apply_form=phone_for_submission(answers["phone"]),
     )
     fields["similar_employers_cv[]"] = form.select_one('[name="similar_employers_cv[]"]').get(
         "value", "1"
     )
     if answers.get("forward_headhunters"):
         fields["headhunters[]"] = form.select_one('[name="headhunters[]"]').get("value", "1")
-    body, content_type = multipart(fields, attachment)
+    from .documents import pdf_filename
+
+    document = getattr(application, "document", None)
+    filename = pdf_filename(document.name if document else "resume.pdf")
+    config = upload_configuration(form.find_parent("html") or form.parent)
+    if config:
+        upload_attachment(session, attachment, filename)
+    body, content_type = multipart(fields, None if config else attachment, filename=filename)
     # Do not try other file-field names after an error: the first POST may have succeeded.
     response = session.request("POST", assessment.form_url, body, content_type)
     if response.status == 429:

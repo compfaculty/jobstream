@@ -1,0 +1,7 @@
+{
+  "jobs": [
+    {"id": 1, "title": "Backend Engineer", "absolute_url": "https://example.org/jobs/1", "location": {"name": "Example City"}, "content": "<p>Synthetic Python role.</p>", "updated_at": "2026-11-13T10:00:00Z"},
+    {"id": 2, "title": "Platform Engineer", "absolute_url": "https://example.org/jobs/2", "location": {"name": "Remote"}, "content": "<p>Synthetic Linux role.</p>"}
+  ],
+  "meta": {"total": 2}
+}

@@ -46,7 +46,7 @@ def test_uploaded_pdf_without_manual_profile_is_immutable_and_deduplicated(
     assert evaluations.start(user, job, document_id=uploaded_cv.pk).pk == record.pk
     assert not ResumeProfile.objects.exists()
     original = record.snapshot["job"]["description"]
-    job.description = "Changed vacancy"
+    job.description = "Changed vacancy requiring Python and Linux"
     job.save()
     record.refresh_from_db()
     assert record.snapshot["job"]["description"] == original
@@ -104,7 +104,10 @@ def test_document_ui_and_post_do_not_require_profile(
     response = authenticated.get(f"/jobs/{job.pk}/")
     panel = BeautifulSoup(response.content, "html.parser").select_one("#vacancy-evaluation")
     assert not panel.find("button", string="Evaluate").has_attr("disabled")
-    assert panel.find("option")["value"] == f"document:{uploaded_cv.pk}"
+    assert panel.select_one('input[type="hidden"][name="cv"]')["value"] == (
+        f"document:{uploaded_cv.pk}"
+    )
+    assert not panel.find("select")  # Current-base selection is automatic in the UI.
     response = authenticated.post(f"/jobs/{job.pk}/evaluate/", {"cv": f"document:{uploaded_cv.pk}"})
     assert response.status_code == 302
     assert AgentExecution.objects.get().document_id == uploaded_cv.pk

@@ -80,7 +80,7 @@ def test_concurrent_context_isolation():
     assert not context.get()
 
 
-def test_http_metrics_routes_and_stream_close(monkeypatch, caplog):
+def test_http_metrics_routes_and_stream_close(monkeypatch, caplog, db):
     monkeypatch.setenv("JOBSTREAM_METRICS_ENABLED", "1")
     request = RequestFactory().get("/unknown/" + SECRET, HTTP_X_REQUEST_ID=SECRET)
     response = TelemetryMiddleware(lambda request: HttpResponse(b"ok"))(request)

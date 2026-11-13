@@ -30,8 +30,11 @@ def assisted_case(request, monkeypatch):
     return provider, application
 
 
-def test_approval_reservation_ui_and_worker_exclusion(assisted_case, client, monkeypatch):
+def test_approval_reservation_ui_and_worker_exclusion(
+    assisted_case, client, monkeypatch, prepare_review_cv
+):
     provider, application = assisted_case
+    prepare_review_cv(application)
     client.force_login(application.owner)
     detail = client.get(f"/applications/{application.pk}/")
     assert b'name="assisted" value="1"' in detail.content
@@ -42,7 +45,10 @@ def test_approval_reservation_ui_and_worker_exclusion(assisted_case, client, mon
     application.refresh_from_db()
     assert application.assisted_delivery and application.status == "approved"
     assert application.approval_digest == submissions.digest(application, "")
-    assert b"assist_application" in response.content
+    assert b"Your application is approved but has not been sent." in response.content
+    assert b"python manage.py" not in response.content
+    assert b"--owner-id" not in response.content
+    assert b"background worker" not in response.content
     send = Mock()
     monkeypatch.setattr(provider, "send", send)
     monkeypatch.setattr(tasks.send_browser_application, "delay", Mock())

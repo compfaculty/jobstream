@@ -57,3 +57,36 @@ def test_nonstaff_cannot_edit_company(authenticated, job):
     assert response.status_code == 302
     company.refresh_from_db()
     assert company.application_email == "hr@example.com"
+
+
+def test_no_email_uses_manual_portal_and_optional_private_note(authenticated, job, monkeypatch):
+    from jobs.services import cv_workspace
+
+    monkeypatch.setattr(cv_workspace, "generate", lambda *args: None)
+    url = f"/jobs/{job.pk}/apply/"
+    response = authenticated.get(url)
+    form = response.context["form"]
+    assert form.instance.channel == "portal"
+    assert form.instance.portal_url == job.canonical_url
+    assert form.manual_portal
+    assert not form.fields["body"].required
+    assert form.fields["body"].label == "Private note (optional)"
+    assert b"Jobstream will not submit this application" in response.content
+    assert authenticated.post(url, {"subject": "Application"}).status_code == 302
+    app = Application.objects.get(job=job)
+    assert app.channel == "portal" and app.body == ""
+    response = authenticated.post(f"/applications/{app.pk}/approve/")
+    assert response.status_code == 302
+    app.refresh_from_db()
+    assert app.status == "draft" and app.send_attempts == 0
+
+
+def test_email_body_explains_what_will_be_sent(authenticated, job):
+    job.apply_email = "hr@example.com"
+    job.save(update_fields=["apply_email"])
+    response = authenticated.get(f"/jobs/{job.pk}/apply/")
+    form = response.context["form"]
+    assert form.fields["body"].label == "Message to employer"
+    assert form.fields["body"].required
+    assert "email text sent with your CV" in form.fields["body"].help_text
+    assert not form.manual_portal

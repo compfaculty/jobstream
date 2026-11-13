@@ -5,6 +5,7 @@ from django.db.models.functions import JSONObject
 
 from jobs.models import AgentExecution, Document, ResumeProfile
 
+from .documents import base_documents, current_base
 from .evaluations import POLICY_FIELDS, VERSION
 from .preference_matching import preferences_for
 
@@ -13,11 +14,11 @@ JOB_FIELDS = ("title", "company", "description", "location", "normalized")
 
 
 def sources_for(owner, selected: str = "") -> dict:
-    documents = list(Document.objects.filter(owner=owner).order_by("-created_at", "-pk"))
+    documents = list(base_documents(owner))
     profiles = list(
-        ResumeProfile.objects.filter(owner=owner, document__owner=owner)
+        ResumeProfile.objects.filter(owner=owner, document=current_base(owner))
         .defer("facts", "contact")
-        .order_by("-confirmed_at", "-pk")
+        .order_by("-confirmed_at", "-pk")[:1]
     )
     if not selected:
         if documents:

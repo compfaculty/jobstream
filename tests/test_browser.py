@@ -7,19 +7,21 @@ from jobs.models import Job
 pytestmark = [pytest.mark.browser, pytest.mark.django_db(transaction=True)]
 
 
-def test_search_save_and_prepare(page, live_server, settings):
+def test_search_save_and_prepare(page, live_server, settings, confirmed_base_cv):
     # Django's test StaticFilesHandler uses source finders, not collected hashed assets.
     settings.STORAGES = {
         **settings.STORAGES,
         "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
     }
-    User.objects.create_user("browser-user", password="browser-only-password-871")
+    owner = User.objects.create_user("browser-user", password="browser-only-password-871")
+    confirmed_base_cv(owner)
     Job.objects.create(
         canonical_url="https://example.com/browser-job",
         title="Backend Engineer",
         company="Example",
         location="Tel Aviv",
         description="Python and Linux",
+        apply_email="hr@example.com",
     )
     errors = []
     page.on("pageerror", lambda error: errors.append(str(error)))
@@ -47,8 +49,8 @@ def test_search_save_and_prepare(page, live_server, settings):
     expect(page.get_by_role("button", name="Unsave")).to_be_visible()
     page.get_by_role("link", name="Prepare application").click()
     page.get_by_label("Recipient").fill("hr@example.com")
-    page.get_by_label("Body").fill("Please review my application.")
-    page.get_by_role("button", name="Save draft").click()
+    page.get_by_label("Message to employer").fill("Please review my application.")
+    page.get_by_role("button", name="Prepare CV and application").click()
     expect(page.get_by_text("Prepared", exact=True)).to_be_visible()
     page.get_by_role("button", name="Approve and send this application").click()
     expect(page.get_by_text("Connect Gmail before approving.", exact=False)).to_be_visible()
@@ -122,7 +124,20 @@ def test_company_picker_and_profile(page, live_server, settings):
         "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
     }
     User.objects.create_user("company-browser", password="browser-only-password-931")
-    source = Source.objects.create(name="Company feed", adapter="rss", url="https://example.com")
+    employer = Company.objects.create(
+        name="Acme",
+        identity_key="feed-company",
+        website="https://acme.example/",
+        website_verified=True,
+        official_domain="acme.example",
+    )
+    source = Source.objects.create(
+        name="Company feed",
+        kind=Source.Kind.COMPANY,
+        company=employer,
+        adapter="rss",
+        url="https://example.com",
+    )
     company = resolve_company("Acme", source)
     other = Company.objects.create(name="Acme", identity_key="other-company")
     for profile, title in [(company, "Platform Engineer"), (other, "Product Designer")]:
@@ -138,11 +153,11 @@ def test_company_picker_and_profile(page, live_server, settings):
     page.get_by_role("button", name="Next").click()
     picker = page.get_by_role("combobox", name="Company", exact=True)
     picker.fill("Acme")
-    expect(page.get_by_role("option", name="Acme · Company feed", exact=True)).to_be_visible()
+    expect(page.get_by_role("option", name="Acme · acme.example", exact=True)).to_be_visible()
     picker.press("ArrowDown")  # All companies
     picker.press("ArrowDown")  # Exact company from this feed
     picker.press("Enter")
-    expect(picker).to_have_value("Acme · Company feed")
+    expect(picker).to_have_value("Acme · acme.example")
     page.get_by_role("button", name="Search", exact=True).click()
     expect(page.get_by_role("link", name="Platform Engineer")).to_be_visible()
     expect(page.get_by_role("link", name="Product Designer")).to_have_count(0)
@@ -160,7 +175,7 @@ def test_company_picker_and_profile(page, live_server, settings):
     expect(page.get_by_role("link", name="Product Designer")).to_be_visible()
     page.set_viewport_size({"width": 390, "height": 844})
     picker.fill("Acme")
-    expect(page.get_by_role("option", name="Acme · Company feed", exact=True)).to_be_visible()
+    expect(page.get_by_role("option", name="Acme · acme.example", exact=True)).to_be_visible()
     assert page.evaluate("document.documentElement.scrollWidth <= window.innerWidth")
     page.screenshot(path="/tmp/jobstream-company-picker-mobile.png", full_page=True)
 
@@ -204,8 +219,8 @@ def test_batch_select_profile_and_review(page, live_server, user, job, settings,
     page.goto(live_server.url)
     page.get_by_label("Select Python engineer", exact=True).check()
     page.get_by_role("button", name="Apply to selected jobs").click()
-    page.locator("select[name=document]").select_option(str(document.pk))
-    page.locator("select[name=profile]").select_option(str(profile.pk))
+    expect(page.locator('input[type="hidden"][name="document"]')).to_have_value(str(document.pk))
+    expect(page.locator('input[type="hidden"][name="profile"]')).to_have_value(str(profile.pk))
     page.get_by_role("button", name="Prepare selected applications").click()
     expect(page.get_by_role("heading", name="Application batch", exact=False)).to_be_visible()
     batch = ApplicationBatch.objects.get(owner=user)
@@ -228,7 +243,7 @@ def test_batch_select_profile_and_review(page, live_server, user, job, settings,
 
 
 def test_secret_telaviv_review_and_approve_without_gmail(
-    page, live_server, user, job, settings, tmp_path, monkeypatch
+    page, live_server, user, job, settings, tmp_path, monkeypatch, confirmed_base_cv
 ):
     from unittest.mock import Mock
 
@@ -277,19 +292,27 @@ def test_secret_telaviv_review_and_approve_without_gmail(
     page.get_by_label("Password").fill("a-long-test-password-123")
     page.get_by_role("button", name="Next").click()
     page.goto(f"{live_server.url}/jobs/{job.pk}/apply/")
-    page.locator("select[name=document]").select_option(str(document.pk))
+    confirmed_base_cv(user, document)
     page.get_by_label("First name", exact=False).fill("Test")
     page.get_by_label("Family name", exact=False).fill("Applicant")
     page.get_by_label("Applicant email", exact=False).fill("test@example.invalid")
     page.get_by_label("Telephone", exact=False).fill("0000000000")
     page.get_by_label("I accept the Secret Tel Aviv", exact=False).check()
     expect(page.get_by_label("Forward my CV to headhunters")).not_to_be_checked()
-    page.get_by_role("button", name="Save draft").click()
+    page.get_by_role("button", name="Prepare CV and application").click()
+    page.get_by_text("Applicant answers & delivery details", exact=False).click()
     expect(
         page.get_by_role("heading", name="Secret Tel Aviv application", exact=True)
     ).to_be_visible()
     page.get_by_role("button", name="Approve and send this application").click()
     app = Application.objects.get(owner=user, job=job)
+    # Automatic CV generation clears consent. The changed package needs fresh review.
+    assert app.status == "draft" and app.portal_answers["agree_terms"] is False
+    page.get_by_role("link", name="Edit draft", exact=True).click()
+    page.get_by_label("I accept the Secret Tel Aviv", exact=False).check()
+    page.get_by_role("button", name="Save draft").click()
+    page.get_by_role("button", name="Approve and send this application").click()
+    app.refresh_from_db()
     assert app.status == "approved"
     submissions.submit(app.pk)
     page.reload()

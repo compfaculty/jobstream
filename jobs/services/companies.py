@@ -71,8 +71,11 @@ def website_metadata(data: bytes, base_url: str) -> tuple[str, list[str]]:
     candidates = [logo] if logo else []
     icons = soup.find_all("link", rel=lambda rel: rel and "icon" in rel.lower())[:30]
     # Prefer raster touch icons over tiny favicons or unsupported SVG assets.
-    icons.sort(key=lambda icon: "apple-touch-icon" not in icon.get("rel", []))
-    candidates.extend(icon["href"] for icon in icons if isinstance(icon.get("href"), str))
+    icons.sort(key=lambda icon: "apple-touch-icon" not in icon.get_attribute_list("rel"))
+    for icon in icons:
+        href = icon.get("href")
+        if isinstance(href, str):
+            candidates.append(href)
     logos = []
     for candidate in candidates:
         if urlsplit(candidate).path.lower().endswith(".svg"):
@@ -139,7 +142,11 @@ def enrich_company(
         break
     if candidates and logo is None:
         raise ValueError("No valid raster company logo") from last_error
-    changes = {"description": description, "logo_url": logo_url, "has_logo": logo is not None}
+    changes: dict[str, str | bool] = {
+        "description": description,
+        "logo_url": logo_url,
+        "has_logo": logo is not None,
+    }
     if dry_run:
         return changes
     from .discovery import from_html

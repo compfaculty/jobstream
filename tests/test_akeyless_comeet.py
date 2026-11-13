@@ -394,11 +394,11 @@ def test_chromium_manual_handoff(
 
     page.context.route("**/*", intercept)
     page.goto(f"{live_server.url}/jobs/{job.pk}/apply/")
-    expect(page.get_by_label("Recipient")).not_to_have_attribute("required", "")
+    expect(page.locator('input[name="recipient"]')).to_have_attribute("type", "hidden")
     page.get_by_label("Subject").fill("Application")
     page.get_by_label("Private note (not sent to Akeyless)").fill("Synthetic private note")
-    page.get_by_label("Document").select_option(str(document.pk))
-    page.get_by_role("button", name="Save draft").click()
+    expect(page.locator('input[type="hidden"][name="document"]')).to_have_value(str(document.pk))
+    page.get_by_role("button", name="Prepare CV and application").click()
     expect(
         page.get_by_text("Akeyless / Comeet requires manual application", exact=False)
     ).to_be_visible()

@@ -31,6 +31,14 @@ class Command(BaseCommand):
             raise CommandError("An exact active superuser is required.") from exc
         keep = {Source, Company, CompanyAlias, AICostMonth, AIQuota}
         clear = [m for m in apps.get_app_config("jobs").get_models() if m not in keep]
+        # TRUNCATE must explicitly include implicit join tables, even when empty.
+        # Do not use CASCADE: its reach would extend beyond this reviewed reset set.
+        clear += [
+            field.remote_field.through
+            for model in list(clear)
+            for field in model._meta.local_many_to_many
+            if field.remote_field.through._meta.auto_created
+        ]
         report = {
             "apply": options["apply"],
             "preserve_admin_id": admin.pk,

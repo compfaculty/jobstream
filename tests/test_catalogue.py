@@ -11,7 +11,6 @@ from django.contrib import admin
 from django.contrib.auth.models import Permission
 from django.core.exceptions import PermissionDenied
 from django.db import close_old_connections
-from django.db.models.deletion import ProtectedError
 from django.test import RequestFactory
 from django.utils import timezone
 
@@ -331,7 +330,7 @@ def test_request_capacity_cooldown_and_expired_leases(settings):
         acquire("acme.example")
 
 
-def test_admin_crud_permissions_curated_content_and_protection(user, application):
+def test_admin_crud_permissions_curated_content_and_cascade(user, application):
     job_admin = admin.site._registry[Job]
     company_admin = admin.site._registry[Company]
     request = RequestFactory().get("/admin/")
@@ -357,8 +356,11 @@ def test_admin_crud_permissions_curated_content_and_protection(user, application
     job_admin.resume_automatic_status(request, Job.objects.filter(pk=obj.pk))
     obj.refresh_from_db()
     assert obj.active
-    with pytest.raises(ProtectedError):
-        obj.delete()
+    job_pk = obj.pk
+    application_pk = application.pk
+    obj.delete()
+    assert not Job.objects.filter(pk=job_pk).exists()
+    assert not type(application).objects.filter(pk=application_pk).exists()
     free = Job.objects.create(title="Manual", canonical_url="https://manual.example/job")
     free.delete()
     assert not Job.objects.filter(pk=free.pk).exists()

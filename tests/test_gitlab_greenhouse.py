@@ -282,3 +282,63 @@ def test_batch_pauses_for_role_specific_answers_and_uses_browser_queue(
     tasks.dispatch_submissions()
     browser_task.assert_called_once_with(a.pk)
     ordinary.assert_not_called()
+
+
+@pytest.mark.parametrize("enabled", [True, False])
+def test_new_form_prefills_only_opted_in_owned_contacts(
+    gitlab_job, user, other, settings, monkeypatch, authenticated, enabled
+):
+    from cryptography.fernet import Fernet
+
+    from jobs.services.saved_answers import save_answers
+
+    settings.TOKEN_ENCRYPTION_KEY = Fernet.generate_key().decode()
+    monkeypatch.setattr(gitlab, "read_schema", lambda job: SCHEMA)
+    contacts = {
+        "first_name": "Saved",
+        "last_name": "Candidate",
+        "email": "saved@example.invalid",
+        "phone": "+972502345678",
+        "phone_country": "IL",
+        "linkedin": "https://linkedin.com/in/synthetic",
+        "gender_identity": "male",
+        "work_authorization_notes": "Do not infer sponsorship",
+    }
+    save_answers(user.pk, contacts, reuse_enabled=enabled)
+    save_answers(other.pk, {"first_name": "Other owner"}, reuse_enabled=True)
+    response = authenticated.get(f"/jobs/{gitlab_job.pk}/apply/")
+    assert response.status_code == 200
+    form = response.context["form"]
+    for name in ("first_name", "last_name", "email", "phone", "phone_country"):
+        assert form[f"gitlab_{name}"].value() == (contacts[name] if enabled else "")
+    assert form["gitlab_question_37761129002"].value() == (contacts["linkedin"] if enabled else "")
+    for question in SCHEMA.entries:
+        name = question["fields"][0]["name"]
+        if name.startswith("question_") and name != "question_37761129002":
+            assert form[f"gitlab_{name}"].value() == ""
+    assert not Application.objects.filter(owner=user, job=gitlab_job).exists()
+
+    # Invalid POST must keep explicit edits and blanks, not resurrect saved data.
+    response = authenticated.post(
+        f"/jobs/{gitlab_job.pk}/apply/",
+        {"subject": "Application", "gitlab_first_name": "Edited", "gitlab_email": ""},
+    )
+    assert response.context["form"]["gitlab_first_name"].value() == "Edited"
+    assert response.context["form"]["gitlab_email"].value() == ""
+
+
+def test_prefill_never_replaces_existing_draft_or_changed_schema(
+    gitlab_application, settings, monkeypatch
+):
+    from cryptography.fernet import Fernet
+
+    from jobs.forms import ApplicationForm
+    from jobs.services.saved_answers import save_answers
+
+    a = gitlab_application
+    settings.TOKEN_ENCRYPTION_KEY = Fernet.generate_key().decode()
+    save_answers(a.owner_id, {"first_name": "Saved"}, reuse_enabled=True)
+    monkeypatch.setattr(gitlab, "read_schema", lambda job: SCHEMA)
+    assert ApplicationForm(owner=a.owner, instance=a)["gitlab_first_name"].value() == "Synthetic"
+    a.portal_fingerprint = "outdated"
+    assert ApplicationForm(owner=a.owner, instance=a)["gitlab_first_name"].value() == ""

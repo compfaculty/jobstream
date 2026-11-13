@@ -21,7 +21,26 @@ class ApplicationForm(forms.ModelForm):
     def __init__(self, *args, owner, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["recipient"].required = self.instance.channel == "email"
-        self.fields["document"].queryset = Document.objects.filter(owner=owner)
+        self.fields["body"].label = "Message to employer"
+        self.fields["body"].help_text = (
+            "The email text sent with your CV. Briefly introduce yourself and explain "
+            "your interest in this role. Review it before approving delivery."
+        )
+        self.manual_portal = False
+        if self.instance.channel == "portal":
+            self.fields["recipient"].widget = forms.HiddenInput()
+            self.fields["body"].label = "Private note (optional)"
+            self.fields["body"].required = False
+            self.fields["body"].help_text = "For your records only; not sent to the employer."
+            self.fields["body"].widget.attrs["rows"] = 3
+        from django.db.models import Q
+
+        from .services.documents import base_documents
+
+        self.fields["document"].queryset = Document.objects.filter(owner=owner).filter(
+            Q(pk__in=base_documents(owner).values("pk")) | Q(pk=self.instance.document_id)
+        )
+        self.fields["document"].widget = forms.HiddenInput()
         self.fields["document"].label_from_instance = lambda obj: obj.name
         from .services.comeet import manual_url
 
@@ -175,6 +194,36 @@ class ApplicationForm(forms.ModelForm):
                 )
             else:
                 schema = self.gitlab_schema
+                defaults = {}
+                if not self.instance.pk and not self.is_bound:
+                    from .services.saved_answers import read_answers
+
+                    try:
+                        saved, enabled = read_answers(owner.pk)
+                    except forms.ValidationError:
+                        saved, enabled = {}, False
+                    if enabled:
+                        defaults = {
+                            key: saved[key]
+                            for key in (
+                                "first_name",
+                                "last_name",
+                                "email",
+                                "phone",
+                                "phone_country",
+                            )
+                            if key in saved
+                        }
+                        for question in schema.entries:
+                            field = question["fields"][0]
+                            if field["type"] == "input_text" and question[
+                                "label"
+                            ].strip().casefold() in {
+                                "linkedin profile",
+                                "linkedin profile url",
+                                "linkedin url",
+                            }:
+                                defaults[field["name"]] = saved.get("linkedin", "")
                 reuse = self.instance.portal_fingerprint == schema.fingerprint
                 if self.instance.pk and not reuse:
                     self.fields["schema_notice"] = forms.CharField(
@@ -208,14 +257,22 @@ class ApplicationForm(forms.ModelForm):
                     key = "gitlab_" + f["name"]
                     self.fields[key] = field
                     self.initial[key] = (
-                        self.instance.portal_answers.get(f["name"], "") if reuse else ""
+                        self.instance.portal_answers.get(f["name"], "")
+                        if reuse
+                        else defaults.get(f["name"], "")
                     )
                 self.fields["gitlab_phone_country"] = forms.CharField(
                     max_length=2, required=False, label="Phone country (ISO code, e.g. IL)"
                 )
                 self.initial["gitlab_phone_country"] = (
-                    self.instance.portal_answers.get("phone_country", "") if reuse else ""
+                    self.instance.portal_answers.get("phone_country", "")
+                    if reuse
+                    else defaults.get("phone_country", "")
                 )
+
+        self.manual_portal = self.instance.channel == "portal" and not any(
+            (self.secret_portal, self.cato_portal, self.camunda_portal, self.gitlab_portal)
+        )
 
     def clean(self):
         values = super().clean()
@@ -656,3 +713,39 @@ class CatoApplicantForm(CommonAnswersForm):
         super().__init__(*args, **kwargs)
         for name, field in self.fields.items():
             field.required = name != "linkedin"
+
+
+class CVEditorForm(forms.Form):
+    name = forms.CharField(max_length=150, label="Full name")
+    email = forms.EmailField(label="Contact email")
+    contact = forms.CharField(max_length=350, required=False, label="Phone, location and links")
+    summary = forms.CharField(
+        max_length=10000, required=False, widget=forms.Textarea(attrs={"rows": 5})
+    )
+    skills = forms.CharField(
+        max_length=10000, required=False, widget=forms.Textarea(attrs={"rows": 5})
+    )
+    experience = forms.CharField(
+        max_length=30000, required=False, widget=forms.Textarea(attrs={"rows": 16})
+    )
+    education = forms.CharField(
+        max_length=5000, required=False, widget=forms.Textarea(attrs={"rows": 4})
+    )
+    projects = forms.CharField(
+        max_length=5000, required=False, widget=forms.Textarea(attrs={"rows": 4})
+    )
+    other = forms.CharField(
+        max_length=5000,
+        required=False,
+        label="Languages and other details",
+        widget=forms.Textarea(attrs={"rows": 4}),
+    )
+
+    def clean(self):
+        values = super().clean()
+        if not any(
+            values.get(key)
+            for key in ("summary", "skills", "experience", "education", "projects", "other")
+        ):
+            raise forms.ValidationError("Add your experience or skills before saving your CV.")
+        return values

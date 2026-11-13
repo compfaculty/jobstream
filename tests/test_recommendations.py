@@ -59,10 +59,7 @@ def test_threshold_current_cv_and_read_only(authenticated, user, job, source, mo
     assert [j.pk for j in response.context["page"]] == [job.pk]
     assert response.context["page"][0].recommendation_score == 70
     soup = BeautifulSoup(response.content, "html.parser")
-    assert (
-        soup.select_one("#recommendation-cv option[selected]")["value"]
-        == f"document:{source.document_id}"
-    )
+    assert soup.select_one('input[name="cv"]')["value"] == f"document:{source.document_id}"
     assert AgentExecution.objects.count() == counts
     assert b"Good for you \xc2\xb7 70% fit" in response.content
 
@@ -240,7 +237,7 @@ def test_feed_navigation_cv_filter_categories_and_mobile(
             }
         ]
     )
-    page.goto(live_server.url)
+    page.goto(live_server.url + f"/?cv=profile:{source.pk}")
     tabs = page.get_by_role("navigation", name="Job views")
     expect(tabs.get_by_role("link", name="All jobs", exact=True)).to_have_attribute(
         "aria-current", "page"
@@ -250,7 +247,9 @@ def test_feed_navigation_cv_filter_categories_and_mobile(
     page.screenshot(path="/tmp/jobstream-all-feed.png", full_page=True)
     tabs.get_by_role("link", name="Recommended for you", exact=True).click()
     expect(page.locator('input[name="mode"]')).to_have_value("recommended")
-    page.get_by_label("CV for recommendations", exact=True).select_option(f"profile:{source.pk}")
+    expect(page.locator('input[name="cv"][form="job-search"]')).to_have_value(
+        f"profile:{source.pk}"
+    )
     page.get_by_role("button", name="Update recommendations", exact=True).click()
     from jobs.models import RecommendationRun
 
@@ -279,7 +278,7 @@ def test_feed_navigation_cv_filter_categories_and_mobile(
         page.locator(".job-list article").first.get_by_role("link", name=low.title)
     ).to_be_visible()
     expect(page.get_by_role("link", name=closed.title, exact=True)).to_have_count(0)
-    expect(page.get_by_label("CV for recommendations", exact=True)).to_have_value(
+    expect(page.locator('input[name="cv"][form="job-search"]')).to_have_value(
         f"profile:{source.pk}"
     )
     page.get_by_role("button", name="☰ Categories", exact=True).click()
@@ -301,7 +300,7 @@ def test_feed_navigation_cv_filter_categories_and_mobile(
     page.get_by_role("navigation", name="Job views").get_by_role(
         "link", name="All jobs", exact=True
     ).click()
-    expect(page.get_by_label("CV for recommendations", exact=True)).to_have_value(
+    expect(page.locator('input[name="cv"][form="job-search"]')).to_have_value(
         f"profile:{source.pk}"
     )
     expect(page.get_by_role("link", name=closed.title, exact=True)).to_be_visible()

@@ -4,19 +4,11 @@
     {% if evaluation_documents or evaluation_profiles %}
       <form method="post" action="{% url 'evaluation-start' job.pk %}">
         {% csrf_token %}
-        <label>CV to evaluate
-          <select name="cv" required>
-            {% if evaluation_documents %}<optgroup label="Uploaded PDFs">
-              {% for document in evaluation_documents %}<option value="document:{{ document.pk }}">{{ document.name }}{% if document.processing_status %} · {{ document.processing_status }}{% endif %}</option>{% endfor %}
-            </optgroup>{% endif %}
-            {% if evaluation_profiles %}<optgroup label="Optional reviewed profiles">
-              {% for profile in evaluation_profiles %}<option value="profile:{{ profile.pk }}">{{ profile.name }}</option>{% endfor %}
-            </optgroup>{% endif %}
-          </select>
-        </label>
+        {% for document in evaluation_documents %}<input type="hidden" name="cv" value="document:{{ document.pk }}">{% endfor %}
+        <span>Using your base CV</span>
         <button>Evaluate</button>
       </form>
-      <p class="muted">Evaluation reads the selected CV automatically. No manual profile setup is required.</p>
+      <p class="muted">Evaluation uses your current base CV.</p>
     {% else %}
       <p>Upload a PDF resume to evaluate this vacancy.</p>
       <div class="actions">

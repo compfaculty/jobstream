@@ -22,7 +22,7 @@ from .models import Application, AuditEvent, Company, GmailConnection, Invitatio
 from .services import recommendation_runs, submissions
 from .services.authorization import owned_application, owned_document
 from .services.categories import CATEGORIES, category_filter, resolve_category
-from .services.documents import upload_document
+from .services.documents import base_documents, current_base, pdf_filename, upload_document
 from .services.gmail import encrypt_credentials, gmail_client
 from .services.recommendations import (
     evaluated_jobs,
@@ -122,8 +122,10 @@ def job_detail(request, pk):
         {
             "job": job,
             "evaluation_enabled": settings.AGENT_BACKEND == "infinity",
-            "evaluation_profiles": request.user.resumeprofile_set.all(),
-            "evaluation_documents": request.user.document_set.order_by("-created_at", "-pk"),
+            "evaluation_profiles": request.user.resumeprofile_set.filter(
+                document=current_base(request.user)
+            ).order_by("-pk")[:1],
+            "evaluation_documents": base_documents(request.user),
             "evaluations": executions,
             "evaluation_poll": settings.AGENT_BACKEND == "infinity"
             and any(item.status in {"queued", "running"} for item in executions),
@@ -192,6 +194,9 @@ def application_create(request, pk):
     from .services.secret_telaviv import secret_url
 
     draft = Application(owner=request.user, job=job)
+    if not job.preferred_application_email:
+        draft.channel = "portal"
+        draft.portal_url = job.apply_url or job.canonical_url
     try:
         draft.portal_url = secret_url(job.apply_url or job.canonical_url)
         if not job.preferred_application_email:
@@ -234,6 +239,7 @@ def application_create(request, pk):
         initial={
             "recipient": job.preferred_application_email,
             "subject": f"Application: {job.title}"[:250],
+            "document": getattr(current_base(request.user), "pk", None),
         },
     )
     if request.method == "POST" and form.is_valid():
@@ -251,11 +257,17 @@ def application_create(request, pk):
                 AuditEvent.objects.create(
                     actor=request.user, application=application, event="application.created"
                 )
+        from .services.cv_workspace import generate
+
+        try:
+            generate(request.user, application.pk)
+        except ValidationError as exc:
+            messages.warning(request, str(exc))
         return redirect("application", pk=application.pk)
     return render(
         request,
         "jobs/form.html",
-        {"form": form, "title": "Prepare application", "button": "Save draft"},
+        {"form": form, "title": "Prepare application", "button": "Prepare CV and application"},
     )
 
 
@@ -269,6 +281,10 @@ def application_detail(request, pk):
     from .services.comeet import manual_url
     from .services.secret_telaviv import supported
 
+    has_application_cv = bool(
+        application.document_id
+        and application.document.prepared_resumes.filter(owner=request.user).exists()
+    )
     gitlab_review = []
     if gitlab.supported(application):
         try:
@@ -307,6 +323,8 @@ def application_detail(request, pk):
         {
             "application": application,
             "tracking_form": TrackingForm(instance=application),
+            "base_cv": current_base(request.user),
+            "has_application_cv": has_application_cv,
             "activity": AuditEvent.objects.filter(application=application).order_by(
                 "-created_at", "-pk"
             ),
@@ -332,9 +350,33 @@ def application_detail(request, pk):
                 or camunda_supported(application)
                 or gitlab.supported(application)
             )
-            and application.status in {"draft", "failed"},
+            and application.status in {"draft", "failed"}
+            and has_application_cv,
         },
     )
+
+
+@login_required
+@require_POST
+def application_cv(request, pk):
+    application = owned_application(request.user, pk)
+    from .services.cv_workspace import generate
+
+    if application.status not in {"draft", "failed", "approved"}:
+        return HttpResponse("The submitted CV cannot be changed.", status=400)
+    # Older clients can still post a profile ID, but it can never select another owner's data.
+    if (
+        request.POST.get("profile")
+        and not request.user.resumeprofile_set.filter(pk=request.POST["profile"]).exists()
+    ):
+        return HttpResponse("Select your base CV.", status=400)
+    try:
+        generate(request.user, application.pk)
+    except (ValidationError, submissions.InvalidTransition) as exc:
+        messages.error(request, str(exc))
+    else:
+        messages.success(request, "Application CV generated. Review or edit it before sending.")
+    return redirect("application", pk=application.pk)
 
 
 @login_required
@@ -372,9 +414,9 @@ def application_approve(request, pk):
     else:
         messages.success(
             request,
-            "Approved for local assisted delivery. Start the local assisted command."
+            "Application approved, awaiting assisted submission. It has not been sent."
             if application.assisted_delivery
-            else "Approved. The worker will send this exact application.",
+            else "Approved. Your application is queued for submission.",
         )
     return redirect("application", pk=pk)
 
@@ -425,7 +467,7 @@ def documents(request):
     return render(
         request,
         "jobs/documents.html",
-        {"form": form, "documents": request.user.document_set.order_by("-created_at")},
+        {"form": form, "base": current_base(request.user)},
     )
 
 
@@ -456,7 +498,7 @@ def document_download(request, pk):
     return FileResponse(
         document.file.open("rb"),
         as_attachment=True,
-        filename="resume.pdf",
+        filename=pdf_filename(document.name),
         content_type="application/pdf",
     )
 
@@ -584,7 +626,6 @@ def batch_create(request):
     import uuid
 
     from .forms import SecretApplicantForm
-    from .models import Document
     from .services.batches import create
 
     ids = request.POST.getlist("jobs")
@@ -619,12 +660,18 @@ def batch_create(request):
         try:
             if supplied_applicant and not applicant_form.is_valid():
                 raise ValidationError("Complete the Secret Tel Aviv applicant details and terms.")
+            base = current_base(request.user)
+            profile = (
+                base.profiles.filter(owner=request.user).order_by("-pk").first() if base else None
+            )
+            if not profile:
+                raise ValidationError("Edit and save your base CV before preparing applications.")
             batch = create(
                 request.user,
-                request.POST["document"],
+                base.pk,
                 [int(value) for value in ids],
                 uuid.UUID(request.POST["request_key"]),
-                profile_id=request.POST.get("profile") or None,
+                profile_id=profile.pk,
                 use_ai=request.POST.get("use_ai") == "1",
                 check_fit=request.POST.get("check_fit") == "1",
                 portal_answers=applicant_form.answers() if supplied_applicant else {},
@@ -638,12 +685,12 @@ def batch_create(request):
         "jobs/batch_create.html",
         {
             "jobs": Job.objects.filter(pk__in=[value for value in ids if value.isdecimal()]),
-            "documents": Document.objects.filter(owner=request.user),
+            "documents": base_documents(request.user),
             "request_key": uuid.uuid4(),
             "applicant_form": applicant_form,
-            "profiles": request.user.resumeprofile_set.select_related("document").order_by(
-                "-confirmed_at"
-            ),
+            "profiles": request.user.resumeprofile_set.filter(
+                document=current_base(request.user)
+            ).order_by("-pk")[:1],
         },
     )
 
@@ -682,6 +729,56 @@ def batch_detail(request, pk):
         else "jobs/batch.html",
         {"batch": batch, "items": items, "polling": polling},
     )
+
+
+def cv_editor(request, *, document_id=None, application_id=None):
+    from .forms import CVEditorForm
+    from .services.cv_workspace import editor_initial, save_editor
+
+    application = owned_application(request.user, application_id) if application_id else None
+    document = application.document if application else owned_document(request.user, document_id)
+    if application:
+        if application.status not in {"draft", "failed", "approved"} or not document:
+            return HttpResponse("The submitted CV is read-only.", status=409)
+    elif not document or document.pk != getattr(current_base(request.user), "pk", None):
+        raise Http404
+    try:
+        initial = editor_initial(request.user, document)
+    except ValidationError as exc:
+        messages.error(request, str(exc))
+        return redirect("documents")
+    form = CVEditorForm(request.POST if request.method == "POST" else None, initial=initial)
+    if request.method == "POST" and form.is_valid():
+        try:
+            save_editor(request.user, document, form.cleaned_data, application=application)
+        except (ValidationError, submissions.InvalidTransition) as exc:
+            form.add_error(None, str(exc))
+        else:
+            messages.success(
+                request,
+                "CV saved. Review the updated PDF before sending."
+                if application
+                else "Base CV saved.",
+            )
+            return (
+                redirect("application", pk=application.pk) if application else redirect("documents")
+            )
+    return render(request, "jobs/cv_editor.html", {"form": form, "application": application})
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def base_cv_edit(request):
+    base = current_base(request.user)
+    if not base:
+        return redirect("documents")
+    return cv_editor(request, document_id=base.pk)
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def application_cv_edit(request, pk):
+    return cv_editor(request, application_id=pk)
 
 
 @login_required

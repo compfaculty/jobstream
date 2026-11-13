@@ -216,7 +216,9 @@ def test_changed_answers_and_schema_do_not_send(cato_application, monkeypatch):
 
 
 @pytest.mark.django_db
-def test_create_form_and_owner_bound_cv(authenticated, cato_job, cato_application, other):
+def test_create_form_and_owner_bound_cv(
+    authenticated, cato_job, cato_application, other, prepare_review_cv
+):
     cato_application.delete()
     url = f"/jobs/{cato_job.pk}/apply/"
     response = authenticated.get(url)
@@ -231,6 +233,9 @@ def test_create_form_and_owner_bound_cv(authenticated, cato_job, cato_applicatio
     assert app.channel == "portal" and app.portal_answers == ANSWERS
     detail = authenticated.get(f"/applications/{app.pk}/")
     assert b"Cato Networks application" in detail.content
+    assert b"Approve this application" not in detail.content
+    prepare_review_cv(app)
+    detail = authenticated.get(f"/applications/{app.pk}/")
     assert b"Approve this application" in detail.content
     assert b'name="assisted" value="1"' in detail.content
 
@@ -369,3 +374,19 @@ def test_company_inventory_to_approved_adapter(
     submissions.submit(application.pk)
     submissions.reconcile(application.pk)
     delivery.assert_called_once()
+
+
+@pytest.mark.django_db
+def test_unverified_cato_job_has_optional_note_and_manual_handoff(authenticated, cato_job):
+    cato_job.employer_source = None
+    cato_job.save(update_fields=["employer_source"])
+    response = authenticated.get(f"/jobs/{cato_job.pk}/apply/")
+    form = response.context["form"]
+    assert form.instance.channel == "portal"
+    assert form.manual_portal and not form.cato_portal
+    assert not form.fields["body"].required
+    assert form.fields["body"].label == "Private note (optional)"
+    assert b"Jobstream will not submit this application" in response.content
+    assert b'name="cato_first_name"' not in response.content
+    cato_job.refresh_from_db()
+    assert cato_job.employer_source_id is None

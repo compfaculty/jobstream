@@ -51,6 +51,51 @@ def secret_url(url: str) -> str:
     return url
 
 
+UPLOAD_URL = f"https://{SECRET_HOST}/wp-admin/admin-ajax.php"
+UPLOAD_PARAMS = {
+    "action": "wpjb_main_upload",
+    "form": "Wpjb_Form_Apply",
+    "form_code": "wpjb_form_application",
+    "object": "Wpjb_Model_Application",
+    "field": "file",
+    "id": "null",
+}
+
+
+def upload_configuration(soup):
+    """Parse the known public JSON initializer; never evaluate website JavaScript."""
+    configs = []
+    seen = False
+    for script in soup.select("script:not([src])"):
+        text = script.get_text()
+        seen = seen or "WPJB.upload.init" in text
+        for match in re.finditer(r"\bWPJB\.upload\.init\(\s*(?=\{)", text):
+            try:
+                config, length = json.JSONDecoder().raw_decode(text[match.end() :])
+            except (ValueError, RecursionError) as exc:
+                raise ValueError("Unrecognized attachment upload configuration") from exc
+            if not text[match.end() + length :].lstrip().startswith(")"):
+                raise ValueError("Unrecognized attachment upload initializer")
+            configs.append(config)
+    if not configs and not seen:
+        return None  # Older native multipart form; no guessing after a rejection.
+    if len(configs) != 1:
+        raise ValueError("Missing or ambiguous attachment upload configuration")
+    config = configs[0]
+    if (
+        not isinstance(config, dict)
+        or config.get("url") != UPLOAD_URL
+        or config.get("file_data_name") != "file"
+        or config.get("browse_button") != "wpjb-upload-browse-file"
+        or config.get("container") != "wpjb-upload-container-file"
+        or config.get("multipart") is not True
+        or config.get("chunk_size")
+        or config.get("multipart_params") != UPLOAD_PARAMS
+    ):
+        raise ValueError("Attachment upload protocol changed")
+    return config
+
+
 def inspect_secret(data: bytes, url: str) -> PortalAssessment:
     url = secret_url(url)
     if len(data) > 2 * 1024 * 1024:
@@ -122,6 +167,11 @@ def inspect_secret(data: bytes, url: str) -> PortalAssessment:
             )
         ],
     }
+    try:
+        if upload_configuration(soup):
+            structure["upload_protocol"] = "wpjb-session-v1"
+    except ValueError:
+        issues.append("attachment_upload_changed")
     fingerprint = hashlib.sha256(json.dumps(structure, sort_keys=True).encode()).hexdigest()
     return PortalAssessment(
         "secret_telaviv", action, fingerprint, tuple(names), terms_url, tuple(issues)
